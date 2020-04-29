@@ -11,7 +11,7 @@ import SwiftUI
 struct HostEditView: View {
     @Binding var host: Host
     @Binding var showingModal: Bool
-
+    
     var disableSave: Bool {
         let alias = $host.alias.wrappedValue
         let hostname = $host.hostname.wrappedValue
@@ -24,11 +24,11 @@ struct HostEditView: View {
                 Section {
                     HStack {
                         Text ("Alias").modifier(PrimaryLabel())
-
                         TextField("name", text: self.$host.alias)
+
                     }
                     HStack {
-                        Text ("Hostname").modifier(PrimaryLabel())
+                        Text ("Host").modifier(PrimaryLabel())
                         TextField ("Required", text: self.$host.hostname)
                     }
                     HStack {
@@ -41,8 +41,19 @@ struct HostEditView: View {
 
                 Section (header: Text ("Identity")) {
                     HStack {
-                        Text ("Username").modifier(PrimaryLabel())
+                        Text ("User").modifier(PrimaryLabel())
                         TextField ("username", text: self.$host.username)
+                    }
+                    HStack {
+                        Text ("Authentication")
+                        Spacer ()
+                        Picker(selection: self.$host.usePassword, label: Text ("Auth")) {
+                            Text ("Password")
+                                .tag (true)
+                            Text ("SSH Key")
+                                .tag (false)
+                        }.pickerStyle(SegmentedPickerStyle())
+                            .frame(width: 200)
                     }
                     HStack {
                         Text ("Password").modifier(PrimaryLabel())

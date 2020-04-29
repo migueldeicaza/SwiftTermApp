@@ -15,8 +15,10 @@ struct Host: Codable, Identifiable {
     var hostname: String = ""
     var backspaceAsControlH: Bool = false
     var port: Int = 22
+    var usePassword: Bool = true
     var username: String = ""
     var password: String = ""
+    var sskKey: String = ""
     var style: String = ""
     var lastUsed: Date = Date.distantPast
 }

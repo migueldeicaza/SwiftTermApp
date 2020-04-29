@@ -95,7 +95,7 @@ struct HomeView: View {
                     Text("Sessions")
                 }
                 NavigationLink(
-                    destination: KeyManagementView()
+                    destination: Text ("Waiting on stuff")
                 ) {
                     Text("Keychain")
                 }
