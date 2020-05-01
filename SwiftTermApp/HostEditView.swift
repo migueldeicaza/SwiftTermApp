@@ -20,29 +20,32 @@ struct HostEditView: View {
     
     var body: some View {
         //NavigationView {
-            List {
+            Form {
                 Section {
                     HStack {
-                        Text ("Alias").modifier(PrimaryLabel())
+                        Text ("Alias")//.modifier(PrimaryLabel())
                         TextField("name", text: self.$host.alias)
+                            .multilineTextAlignment(.trailing)
 
                     }
                     HStack {
-                        Text ("Host").modifier(PrimaryLabel())
-                        TextField ("Required", text: self.$host.hostname)
+                        Text ("Host")//.modifier(PrimaryLabel())
+                        TextField ("192.168.1.100", text: self.$host.hostname)
+                            .multilineTextAlignment(.trailing)
                     }
                     HStack {
                         Text ("Port").modifier(PrimaryLabel())
                         TextField ("22", value: self.$host.port, formatter: NumberFormatter ())
                             .keyboardType(.numberPad)
-                        
+                            .multilineTextAlignment(.trailing)
                     }
                 }
 
                 Section (header: Text ("Identity")) {
                     HStack {
                         Text ("User").modifier(PrimaryLabel())
-                        TextField ("username", text: self.$host.username)
+                        TextField ("user", text: self.$host.username)
+                            .multilineTextAlignment(.trailing)
                     }
                     HStack {
                         Text ("Authentication")
@@ -55,12 +58,16 @@ struct HostEditView: View {
                         }.pickerStyle(SegmentedPickerStyle())
                             .frame(width: 200)
                     }
-                    HStack {
-                        Text ("Password").modifier(PrimaryLabel())
-                        TextField ("password, or leave empty to use a key", text: self.$host.username)
-                    }
-                    HStack {
-                        Text ("SSH Key").modifier(PrimaryLabel())
+                    if self.$host.usePassword.wrappedValue {
+                        HStack {
+                            Text ("Password").modifier(PrimaryLabel())
+                            SecureField ("•••••••", text: self.$host.username)
+                                .multilineTextAlignment(.trailing)
+                        }
+                    } else {
+                        HStack {
+                            Text ("SSH Key").modifier(PrimaryLabel())
+                        }
                     }
                 }
                 

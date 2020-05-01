@@ -43,6 +43,7 @@ struct Hosts: View {
     {
         print ("Clicked")
     }
+    
     var body: some View {
         List (store.hosts.indices) { idx in
             HostSummaryView(host: self.$store.hosts [idx])
@@ -66,7 +67,8 @@ struct Hosts: View {
 
 struct PrimaryLabel: ViewModifier {
     func body(content: Content) -> some View {
-        content.frame (width: 100, alignment: .leading)
+        content
+        // content.frame (width: 100, alignment: .leading)
     }
 }
 
