@@ -9,61 +9,67 @@
 
 import SwiftUI
 
+
 struct AddKeyView: View {
-    @State var name: String = ""
-    @State var privateKey: String = ""
-    @State var publicKey: String = ""
-    @State var password: String = ""
-    
+    @Binding var showGenerator: Bool
+    @State var key: Key = Key()
+    @State var showingPassword = false
     var disableSave: Bool {
-        name == "" || privateKey == ""
+        key.name == "" || key.privateKey == ""
     }
     
     var body: some View {
-        NavigationView {
-            List {
-                Section (header: Text ("Settings")){
-                    VStack (alignment: .leading){
+        Form {
+            Section {
+                VStack {
+                    HStack {
                         Text ("Name")
-                        TextField ("Required", text: self.$name)
+                        Spacer ()
                     }
-                    VStack (alignment: .leading) {
-                        Text ("Private Key").modifier(PrimaryLabel())
-                        TextField ("Required", text: self.$privateKey)
+                    TextField ("Required", text: self.$key.name)
+                }
+                VStack {
+                    HStack {
+                        Text ("Private Key")
+                        Spacer ()
                     }
-                    VStack (alignment: .leading) {
-                        Text ("Public Key").modifier(PrimaryLabel())
-                        TextField ("Optional", text: self.$publicKey)
+                    TextField ("Required", text: self.$key.privateKey)
+                }
+                VStack {
+                    HStack {
+                        Text ("Public Key")
+                        Spacer ()
+                    }
+                    TextField ("Optional", text: self.$key.publicKey)
+                }
+                HStack {
+                    Text ("Passphrase")
+                    if showingPassword {
+                        TextField ("•••••••", text: self.$key.passphrase)
+                            .multilineTextAlignment(.trailing)
+                    
+                    } else {
+                        SecureField ("•••••••", text: self.$key.passphrase)
+                            .multilineTextAlignment(.trailing)
                     }
                     
-                    VStack (alignment: .leading){
-                        Text ("Password")
-                        HStack {
-                            TextField ("Optional", text: self.$password)
-                            Button (action: {}, label: {
-                                Text ("SHOW").foregroundColor(Color (UIColor.link))
-                                
-                            })
-                        }
-                    }
+                    Button (action: { self.showingPassword.toggle () }, label: {
+                        Text (self.showingPassword ? "HIDE" : "SHOW").foregroundColor(Color (UIColor.link))
+                    })
                 }
             }
-            .listStyle(GroupedListStyle ())
-            .navigationBarItems(
-                leading:  Button ("Cancel") {},
-                trailing: Button("Save") {
-                
-                }.disabled (disableSave))
-        }
+        }.navigationBarItems(
+            leading:  Button ("Cancel") {},
+            trailing: Button("Save") {
         
+        }.disabled (disableSave))
     }
 }
-
 struct PasteKey_Previews: PreviewProvider {
     
     static var previews: some View {
         Text ("").sheet(isPresented: .constant (true)) {
-            AddKeyView()
+            AddKeyView(showGenerator: .constant(true))
         }
     }
 }

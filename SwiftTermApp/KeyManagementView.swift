@@ -15,7 +15,7 @@ struct Key: Codable, Identifiable {
     var name: String = ""
     var privateKey: String = ""
     var publicKey: String = ""
-    var password: String = ""
+    var passphrase: String = ""
 }
 
 enum KeyType {
@@ -130,14 +130,36 @@ struct GenerateKeyView: View {
     }
 }
 
+struct KeyButton: View {
+    let highColor = Color(#colorLiteral(red: 0.007762347814, green: 0.4766914248, blue: 0.9985215068, alpha: 1))
+    let backgroundColor = Color(#colorLiteral(red: 0.9307063222, green: 0.945577085, blue: 0.9838711619, alpha: 1))
+    var text: String
+    
+    var body: some View {
+        HStack {
+            Spacer()
+            Image (systemName: "plus.circle")
+                .foregroundColor(highColor)
+                .font(Font.title.weight(.semibold))
+            Text (self.text)
+                .foregroundColor(highColor)
+                .fontWeight(.bold)
+            Spacer()
+        }
+        .padding ()
+        .background(backgroundColor)
+        .cornerRadius(10)
+        .foregroundColor(highColor)
+        .padding()
+    }
+}
+
 //
 // This either uses the secure enclave to store the key (which is limited to the
 // EC key, or an RSA key.
 //
 struct LocalKeyButton: View {
     @State var showGenerator = false
-    let highColor = Color(#colorLiteral(red: 0.007762347814, green: 0.4766914248, blue: 0.9985215068, alpha: 1))
-    let backgroundColor = Color(#colorLiteral(red: 0.9307063222, green: 0.945577085, blue: 0.9838711619, alpha: 1))
     let keyTag = "SE.ST.PK"
     
     func generateSecureEnclaveKey (_ type: KeyType, _ comment: String, _ passphrase: String)->()
@@ -172,38 +194,40 @@ struct LocalKeyButton: View {
     
     var body: some View {
         HStack {
-            if SecureEnclave.isAvailable {
-                HStack {
-                    Spacer()
-                    Image (systemName: "plus.circle")
-                        .foregroundColor(highColor)
-                        .font(Font.title.weight(.semibold))
-                    Text ("Create Local Key")
-                        .foregroundColor(highColor)
-                        .fontWeight(.bold)
-                    Spacer()
-                }
-                .padding ()
-                .background(backgroundColor)
-                .cornerRadius(10)
-                .foregroundColor(highColor)
-                .padding()
+            if false && SecureEnclave.isAvailable {
+                KeyButton(text: "Create Local Key")
             }
         }.onTapGesture {
             self.showGenerator = true
         }.sheet(isPresented: self.$showGenerator) {
             // SecureEnclave SwiftTerm PrivateKey (SE.ST.PK)
-            GenerateKeyView (showGenerator: self.$showGenerator, keyName: keyTag, generateKey: self.generateSecureEnclaveKey)
+            GenerateKeyView (showGenerator: self.$showGenerator, keyName: self.keyTag, generateKey: self.generateSecureEnclaveKey)
         }
     }
 }
+
+struct PasteKeyButton: View {
+    @State var showGenerator = false
+    
+    var body: some View {
+        KeyButton (text: "Import Key from Clipboard")
+            .onTapGesture {
+                self.showGenerator = true
+            }
+        .sheet (isPresented: self.$showGenerator) {
+                AddKeyView (showGenerator: self.$showGenerator)
+            }
+    }
+}
+
 struct KeyManagementView: View {
     @State var newKeyShown = false
     @ObservedObject var store: DataStore = DataStore.shared
     
     var body: some View {
         List {
-            LocalKeyButton ()
+            // LocalKeyButton ()
+            PasteKeyButton ()
             ForEach(store.keys){ key in
                 HStack(alignment: .center, spacing: 10) {
                     Image(systemName: "lock")
@@ -213,7 +237,7 @@ struct KeyManagementView: View {
                         .padding(8)
                     VStack (alignment: .leading) {
                         Text ("\(key.name)")
-                            .font(.title)
+                            .font(.body)
                         Text ("Key Type: \(key.type)")
                             .font(.subheadline)
                             .foregroundColor(.gray)

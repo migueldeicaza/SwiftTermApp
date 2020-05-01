@@ -32,8 +32,8 @@ class DataStore: ObservableObject {
         Host(alias: "Old DECStation", hostname: "decstation.tirania.org"),
     ]
     @Published var keys: [Key] = [
-        Key (type: "RSA/1024", name: "Legacy Key", privateKey: "", publicKey: "", password: ""),
-        Key (type: "RSA/4098", name: "2020 iPhone Key", privateKey: "", publicKey: "", password: "")
+        Key (type: "RSA/1024", name: "Legacy Key", privateKey: "", publicKey: "", passphrase: ""),
+        Key (type: "RSA/4098", name: "2020 iPhone Key", privateKey: "", publicKey: "", passphrase: "")
     ]
     
     // Returns the most recent 3 values
