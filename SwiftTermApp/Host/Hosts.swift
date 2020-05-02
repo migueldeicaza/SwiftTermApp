@@ -28,40 +28,42 @@ struct HostSummaryView: View {
                     self.showingModal = true
                 }
             }.sheet(isPresented: $showingModal) {
-                HostEditView(host: self.$host, showingModal: self.$showingModal)
+                HostEditView(host: self.host, showingModal: self.$showingModal)
             }
         }
     }
 }
 
-struct Hosts: View {
+
+struct HostsView : View {
+    @State var showHostEdit: Bool = false
     @ObservedObject var store: DataStore = DataStore.shared
-    @State var hostEdit = false
-    @State var freshHost: Host = Host()
     
-    func run ()
+    func delete (at offsets: IndexSet)
     {
-        print ("Clicked")
+        store.hosts.remove(atOffsets: offsets)
     }
     
     var body: some View {
-        List (store.hosts.indices) { idx in
-            HostSummaryView(host: self.$store.hosts [idx])
+        List {
+            AddButton (text: "Add Host")
+                .onTapGesture { self.showHostEdit = true }
+
+            Section {
+                ForEach(self.store.hosts.indices, id: \.self) { idx in
+                    HostSummaryView (host: self.$store.hosts [idx])
+                }.onDelete(perform: delete)
+            }
         }
         .listStyle(GroupedListStyle())
-        .navigationBarTitle("Hosts")
-        .navigationBarItems(trailing: HStack {
-            Button (action: {}) {
-                Image (systemName: "square.and.pencil")
-            }.padding ()
-            Button (action: {
-                self.hostEdit = true
-            }) {
-                Image (systemName: "plus")
-            }.sheet(isPresented: self.$hostEdit) {
-                HostEditView (host: self.$freshHost, showingModal: self.$hostEdit)
-            }
+        .navigationBarTitle(Text("Hosts"))
+        .navigationBarItems(trailing: Button (action: { self.showHostEdit = true }) {
+            Image (systemName: "plus")
         })
+        .sheet (isPresented: $showHostEdit) {
+            HostEditView(host: Host(), showingModal: self.$showHostEdit)
+        }
+        
     }
 }
 
@@ -75,7 +77,7 @@ struct PrimaryLabel: ViewModifier {
 struct Hosts_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            Hosts()
+            HostsView()
         }
     }
 }

@@ -8,6 +8,11 @@
 
 import SwiftUI
 
+enum KeyType {
+    case ed25519
+    case rsa(Int)
+}
+
 struct Keys: View {
     var body: some View {
         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)

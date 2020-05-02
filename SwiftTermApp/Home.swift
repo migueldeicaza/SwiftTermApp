@@ -37,39 +37,9 @@ struct ContentView: View {
     }
 }
 
-
-struct HostsView : View {
-    @State var showHostEdit: Bool = false
-    @ObservedObject var store: DataStore = DataStore.shared
-    
-    func newHost ()
-    {
-        
-    }
-    var body: some View {
-        List {
-            Section {
-                ForEach(self.store.hosts.indices) { idx in
-                    HostSummaryView (host: self.$store.hosts [idx])
-                }
-            }
-        }.listStyle(GroupedListStyle())
-        .navigationBarTitle(Text("Hosts"))
-        .navigationBarItems(trailing: Button (action: {
-            self.showHostEdit = true
-        }) {
-            Image (systemName: "plus")
-        })
-        .sheet (isPresented: $showHostEdit) {
-            //HostEditView(showingModal: self.$showHostEdit).frame(width: 300, height: 200)
-            Text ("Hosts Editing Goes here")
-        }
-    }
-}
-
 struct HomeView: View {
-    @Binding var dates: [Date]
     @ObservedObject var store: DataStore = DataStore.shared
+    @Binding var dates: [Date]
 
     func sortDate (first: Host, second: Host) throws -> Bool
     {
@@ -79,7 +49,7 @@ struct HomeView: View {
     var body: some View {
         List {
             Section (header: Text ("Recent")) {
-                ForEach(self.store.recentIndices ()) { idx in
+                ForEach(self.store.recentIndices (), id: \.self) { idx in
                     HostSummaryView (host: self.$store.hosts [idx])
                 }
             }

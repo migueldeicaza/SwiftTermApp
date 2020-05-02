@@ -9,20 +9,6 @@
 import SwiftUI
 import CryptoKit
 
-struct Key: Codable, Identifiable {
-    let id = UUID()
-    var type: String = ""
-    var name: String = ""
-    var privateKey: String = ""
-    var publicKey: String = ""
-    var passphrase: String = ""
-}
-
-enum KeyType {
-    case ed25519
-    case rsa(Int)
-}
-
 //
 // This dialog can be used to create new SSH keys, and can either be
 // for the secure enclave (so no passphrase is required), or regular
@@ -130,30 +116,6 @@ struct GenerateKeyView: View {
     }
 }
 
-struct KeyButton: View {
-    let highColor = Color(#colorLiteral(red: 0.007762347814, green: 0.4766914248, blue: 0.9985215068, alpha: 1))
-    let backgroundColor = Color(#colorLiteral(red: 0.9307063222, green: 0.945577085, blue: 0.9838711619, alpha: 1))
-    var text: String
-    
-    var body: some View {
-        HStack {
-            Spacer()
-            Image (systemName: "plus.circle")
-                .foregroundColor(highColor)
-                .font(Font.title.weight(.semibold))
-            Text (self.text)
-                .foregroundColor(highColor)
-                .fontWeight(.bold)
-            Spacer()
-        }
-        .padding ()
-        .background(backgroundColor)
-        .cornerRadius(10)
-        .foregroundColor(highColor)
-        .padding()
-    }
-}
-
 //
 // This either uses the secure enclave to store the key (which is limited to the
 // EC key, or an RSA key.
@@ -164,38 +126,38 @@ struct LocalKeyButton: View {
     
     func generateSecureEnclaveKey (_ type: KeyType, _ comment: String, _ passphrase: String)->()
     {
-        switch type {
-        case .ed25519:
-            let access =
-            SecAccessControlCreateWithFlags(kCFAllocatorDefault,
-                                            kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
-                                            .privateKeyUsage,
-                                            nil)!   // Ignore error
-            
-            let attributes: [String: Any] = [
-                kSecAttrKeyType as String:            kSecAttrKeyTypeEC,
-                kSecAttrKeySizeInBits as String:      256,
-                kSecAttrTokenID as String:            kSecAttrTokenIDSecureEnclave,
-                kSecPrivateKeyAttrs as String: [
-                    kSecAttrIsPermanent as String:     true,
-                    kSecAttrApplicationTag as String:  keyTag,
-                    kSecAttrAccessControl as String:   access
-                ]
-            ]
-            
-        case .rsa(let bits):
-            if let (priv, pub) = try? CC.RSA.generateKeyPair(2048) {
-                
-            }
-            break
-        }
+//        switch type {
+//        case .ed25519:
+//            let access =
+//            SecAccessControlCreateWithFlags(kCFAllocatorDefault,
+//                                            kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
+//                                            .privateKeyUsage,
+//                                            nil)!   // Ignore error
+//
+//            let attributes: [String: Any] = [
+//                kSecAttrKeyType as String:            kSecAttrKeyTypeEC,
+//                kSecAttrKeySizeInBits as String:      256,
+//                kSecAttrTokenID as String:            kSecAttrTokenIDSecureEnclave,
+//                kSecPrivateKeyAttrs as String: [
+//                    kSecAttrIsPermanent as String:     true,
+//                    kSecAttrApplicationTag as String:  keyTag,
+//                    kSecAttrAccessControl as String:   access
+//                ]
+//            ]
+//
+//        case .rsa(let bits):
+//            if let (priv, pub) = try? CC.RSA.generateKeyPair(2048) {
+//
+//            }
+//            break
+//        }
     }
     
     
     var body: some View {
         HStack {
             if false && SecureEnclave.isAvailable {
-                KeyButton(text: "Create Local Key")
+                AddButton(text: "Create Local Key")
             }
         }.onTapGesture {
             self.showGenerator = true
@@ -210,7 +172,7 @@ struct PasteKeyButton: View {
     @State var showGenerator = false
     
     var body: some View {
-        KeyButton (text: "Import Key from Clipboard")
+        AddButton (text: "Import Key from Clipboard")
             .onTapGesture {
                 self.showGenerator = true
             }
@@ -223,6 +185,7 @@ struct PasteKeyButton: View {
 struct KeyManagementView: View {
     @State var newKeyShown = false
     @ObservedObject var store: DataStore = DataStore.shared
+    var action: (Key)-> () = { x in }
     
     var body: some View {
         List {
@@ -242,6 +205,8 @@ struct KeyManagementView: View {
                             .font(.subheadline)
                             .foregroundColor(.gray)
                     }
+                }.onTapGesture {
+                    self.action (key)
                 }
             }.cornerRadius(10)
         }

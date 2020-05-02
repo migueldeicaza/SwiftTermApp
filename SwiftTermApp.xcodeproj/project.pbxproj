@@ -23,6 +23,7 @@
 		4967BA0224592D3600A9D2A6 /* SessionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967BA0124592D3600A9D2A6 /* SessionsView.swift */; };
 		4967BA04245A7AF300A9D2A6 /* Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967BA03245A7AF300A9D2A6 /* Keys.swift */; };
 		4967BA07245A85F800A9D2A6 /* SwCrypt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967BA06245A85F800A9D2A6 /* SwCrypt.swift */; };
+		49EED560245D0A0B00A8794E /* AddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EED55F245D0A0B00A8794E /* AddButton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +45,7 @@
 		4967BA0124592D3600A9D2A6 /* SessionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionsView.swift; sourceTree = "<group>"; };
 		4967BA03245A7AF300A9D2A6 /* Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keys.swift; sourceTree = "<group>"; };
 		4967BA06245A85F800A9D2A6 /* SwCrypt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwCrypt.swift; sourceTree = "<group>"; };
+		49EED55F245D0A0B00A8794E /* AddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddButton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,6 +78,9 @@
 		4901167424553789002C1F85 /* SwiftTermApp */ = {
 			isa = PBXGroup;
 			children = (
+				49C216C4245D102600280B6A /* Keys */,
+				49C216C3245D101200280B6A /* Host */,
+				49B2473F245D09A50075F01B /* UIs */,
 				4967BA05245A85E200A9D2A6 /* SwCrypt */,
 				4901167524553789002C1F85 /* AppDelegate.swift */,
 				4901167724553789002C1F85 /* SceneDelegate.swift */,
@@ -84,15 +89,10 @@
 				490116802455378A002C1F85 /* LaunchScreen.storyboard */,
 				490116832455378A002C1F85 /* Info.plist */,
 				4901167D2455378A002C1F85 /* Preview Content */,
-				49011689245540F2002C1F85 /* HostEditView.swift */,
-				4901168B24554A51002C1F85 /* AddKeyView.swift */,
-				4901168D2456058B002C1F85 /* KeyManagementView.swift */,
-				4901168F245607F7002C1F85 /* Hosts.swift */,
 				49011691245622C6002C1F85 /* DataStore.swift */,
 				4967B9FB2459239700A9D2A6 /* Connections.swift */,
 				4967B9FD24592D0B00A9D2A6 /* SettingsView.swift */,
 				4967BA0124592D3600A9D2A6 /* SessionsView.swift */,
-				4967BA03245A7AF300A9D2A6 /* Keys.swift */,
 			);
 			path = SwiftTermApp;
 			sourceTree = "<group>";
@@ -111,6 +111,33 @@
 				4967BA06245A85F800A9D2A6 /* SwCrypt.swift */,
 			);
 			path = SwCrypt;
+			sourceTree = "<group>";
+		};
+		49B2473F245D09A50075F01B /* UIs */ = {
+			isa = PBXGroup;
+			children = (
+				49EED55F245D0A0B00A8794E /* AddButton.swift */,
+			);
+			path = UIs;
+			sourceTree = "<group>";
+		};
+		49C216C3245D101200280B6A /* Host */ = {
+			isa = PBXGroup;
+			children = (
+				49011689245540F2002C1F85 /* HostEditView.swift */,
+				4901168F245607F7002C1F85 /* Hosts.swift */,
+			);
+			path = Host;
+			sourceTree = "<group>";
+		};
+		49C216C4245D102600280B6A /* Keys */ = {
+			isa = PBXGroup;
+			children = (
+				4967BA03245A7AF300A9D2A6 /* Keys.swift */,
+				4901168B24554A51002C1F85 /* AddKeyView.swift */,
+				4901168D2456058B002C1F85 /* KeyManagementView.swift */,
+			);
+			path = Keys;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -185,6 +212,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4901168A245540F2002C1F85 /* HostEditView.swift in Sources */,
+				49EED560245D0A0B00A8794E /* AddButton.swift in Sources */,
 				4967BA04245A7AF300A9D2A6 /* Keys.swift in Sources */,
 				49011692245622C6002C1F85 /* DataStore.swift in Sources */,
 				4901168C24554A51002C1F85 /* AddKeyView.swift in Sources */,
