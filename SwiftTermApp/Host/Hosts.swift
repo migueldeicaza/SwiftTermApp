@@ -38,11 +38,18 @@ struct HostSummaryView: View {
 struct HostsView : View {
     @State var showHostEdit: Bool = false
     @ObservedObject var store: DataStore = DataStore.shared
-    
+    @State private var editMode = EditMode.inactive
+
     func delete (at offsets: IndexSet)
     {
         store.hosts.remove(atOffsets: offsets)
     }
+    
+    private func move(source: IndexSet, destination: Int)
+    {
+        store.hosts.move (fromOffsets: source, toOffset: destination)
+    }
+
     
     var body: some View {
         List {
@@ -52,13 +59,19 @@ struct HostsView : View {
             Section {
                 ForEach(self.store.hosts.indices, id: \.self) { idx in
                     HostSummaryView (host: self.$store.hosts [idx])
-                }.onDelete(perform: delete)
+                }
+                .onDelete(perform: delete)
+                .onMove(perform: move)
+                .environment(\.editMode, $editMode)
             }
         }
         .listStyle(GroupedListStyle())
         .navigationBarTitle(Text("Hosts"))
-        .navigationBarItems(trailing: Button (action: { self.showHostEdit = true }) {
-            Image (systemName: "plus")
+        .navigationBarItems(trailing: HStack {
+            Button (action: { self.showHostEdit = true }) {
+                Image (systemName: "plus")
+            }
+            EditButton()
         })
         .sheet (isPresented: $showHostEdit) {
             HostEditView(host: Host(), showingModal: self.$showHostEdit)

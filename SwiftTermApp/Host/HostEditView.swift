@@ -24,6 +24,7 @@ struct HostEditView: View {
     
     func saveAndLeave ()
     {
+        self.host.lastUsed = Date()
         store.save (host: self.host)
         showingModal = false
     }
@@ -66,7 +67,7 @@ struct HostEditView: View {
                     if self.$host.usePassword.wrappedValue {
                         HStack {
                             Text ("Password").modifier(PrimaryLabel())
-                            SecureField ("•••••••", text: self.$host.username)
+                            SecureField ("•••••••", text: self.$host.password)
                                 .multilineTextAlignment(.trailing)
                         }
                     } else {

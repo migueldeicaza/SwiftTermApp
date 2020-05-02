@@ -33,14 +33,16 @@ struct Host: Codable, Identifiable {
     var sshKey: UUID?
     var style: String = ""
     var lastUsed: Date = Date.distantPast
-
+    
 }
 
 class DataStore: ObservableObject {
     static let testKey1 = Key (type: "RSA/1024", name: "Legacy Key", privateKey: "", publicKey: "", passphrase: "")
     static let testKey2 = Key (type: "RSA/4098", name: "2020 iPhone Key", privateKey: "", publicKey: "", passphrase: "")
-
+    
     static let testUuid2 = UUID ()
+    
+    var defaults: UserDefaults?
     
     @Published var hosts: [Host] = [
         Host(alias: "MacPro",         hostname: "mac.tirania.org", lastUsed: Date ()),
@@ -54,6 +56,43 @@ class DataStore: ObservableObject {
         testKey1, testKey2
     ]
     
+    let hostsArrayKey = "hostsArray"
+    let keysArrayKey = "keysArray"
+    
+    init ()
+    {
+        defaults = UserDefaults (suiteName: "SwiftTermApp")
+        let decoder = JSONDecoder ()
+        if let d = defaults {
+            if let data = d.data(forKey: hostsArrayKey) {
+                if let h = try? decoder.decode ([Host].self, from: data) {
+                    hosts = h
+                }
+            }
+            if let data = d.data(forKey: keysArrayKey) {
+                if let k = try? decoder.decode ([Key].self, from: data) {
+                    keys = k
+                }
+            }
+        }
+    }
+    
+    // Saves the data store
+    func saveState ()
+    {
+        guard let d = defaults else {
+            return
+        }
+        let coder = JSONEncoder ()
+        if let hostData = try? coder.encode(hosts) {
+            d.set (hostData, forKey: hostsArrayKey)
+        }
+        if let keyData = try? coder.encode (keys) {
+            d.set (keyData, forKey: keysArrayKey)
+        }
+    }
+    
+    // Records the new host in the data store
     func save (host: Host)
     {
         if let idx = hosts.firstIndex (where: { $0.alias == host.alias }) {
@@ -62,6 +101,7 @@ class DataStore: ObservableObject {
         } else {
             hosts.append(host)
         }
+        saveState ()
     }
     
     func hasHost (withAlias: String) -> Bool
