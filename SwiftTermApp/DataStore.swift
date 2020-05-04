@@ -103,7 +103,14 @@ class DataStore: ObservableObject {
         }
         saveState ()
     }
-    
+
+    // Records the new host in the data store
+    func save (key: Key)
+    {
+        keys.append(key)
+        saveState ()
+    }
+
     func hasHost (withAlias: String) -> Bool
     {
         hosts.contains { $0.alias == withAlias }

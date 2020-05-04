@@ -126,31 +126,31 @@ struct LocalKeyButton: View {
     
     func generateSecureEnclaveKey (_ type: KeyType, _ comment: String, _ passphrase: String)->()
     {
-//        switch type {
-//        case .ed25519:
-//            let access =
-//            SecAccessControlCreateWithFlags(kCFAllocatorDefault,
-//                                            kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
-//                                            .privateKeyUsage,
-//                                            nil)!   // Ignore error
-//
-//            let attributes: [String: Any] = [
-//                kSecAttrKeyType as String:            kSecAttrKeyTypeEC,
-//                kSecAttrKeySizeInBits as String:      256,
-//                kSecAttrTokenID as String:            kSecAttrTokenIDSecureEnclave,
-//                kSecPrivateKeyAttrs as String: [
-//                    kSecAttrIsPermanent as String:     true,
-//                    kSecAttrApplicationTag as String:  keyTag,
-//                    kSecAttrAccessControl as String:   access
-//                ]
-//            ]
-//
-//        case .rsa(let bits):
-//            if let (priv, pub) = try? CC.RSA.generateKeyPair(2048) {
-//
-//            }
-//            break
-//        }
+        //        switch type {
+        //        case .ed25519:
+        //            let access =
+        //            SecAccessControlCreateWithFlags(kCFAllocatorDefault,
+        //                                            kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
+        //                                            .privateKeyUsage,
+        //                                            nil)!   // Ignore error
+        //
+        //            let attributes: [String: Any] = [
+        //                kSecAttrKeyType as String:            kSecAttrKeyTypeEC,
+        //                kSecAttrKeySizeInBits as String:      256,
+        //                kSecAttrTokenID as String:            kSecAttrTokenIDSecureEnclave,
+        //                kSecPrivateKeyAttrs as String: [
+        //                    kSecAttrIsPermanent as String:     true,
+        //                    kSecAttrApplicationTag as String:  keyTag,
+        //                    kSecAttrAccessControl as String:   access
+        //                ]
+        //            ]
+        //
+        //        case .rsa(let bits):
+        //            if let (priv, pub) = try? CC.RSA.generateKeyPair(2048) {
+        //
+        //            }
+        //            break
+        //        }
     }
     
     
@@ -169,28 +169,26 @@ struct LocalKeyButton: View {
 }
 
 struct PasteKeyButton: View {
-    @State var showGenerator = false
+    @Binding var addKeyManuallyShown: Bool
     
     var body: some View {
         AddButton (text: "Import Key from Clipboard")
             .onTapGesture {
-                self.showGenerator = true
-            }
-        .sheet (isPresented: self.$showGenerator) {
-                AddKeyView (showGenerator: self.$showGenerator)
-            }
+                self.addKeyManuallyShown = true
+        }
     }
 }
 
 struct KeyManagementView: View {
     @State var newKeyShown = false
+    @State var addKeyManuallyShown = false
     @ObservedObject var store: DataStore = DataStore.shared
     var action: (Key)-> () = { x in }
     
     var body: some View {
         List {
             // LocalKeyButton ()
-            PasteKeyButton ()
+            PasteKeyButton (addKeyManuallyShown: self.$addKeyManuallyShown)
             ForEach(store.keys){ key in
                 HStack(alignment: .center, spacing: 10) {
                     Image(systemName: "lock")
@@ -219,7 +217,10 @@ struct KeyManagementView: View {
                 Image (systemName: "plus")
             }.sheet(isPresented: self.$newKeyShown) {
                 GenerateKeyView(showGenerator: self.$newKeyShown, generateKey: { a, b, c in } )
+            }.sheet (isPresented: self.$addKeyManuallyShown) {
+                AddKeyManually (addKeyManuallyShown: self.$addKeyManuallyShown)
             }
+
         })
     }
 }

@@ -14,7 +14,7 @@
 		4901167F2455378A002C1F85 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4901167E2455378A002C1F85 /* Preview Assets.xcassets */; };
 		490116822455378A002C1F85 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 490116802455378A002C1F85 /* LaunchScreen.storyboard */; };
 		4901168A245540F2002C1F85 /* HostEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49011689245540F2002C1F85 /* HostEditView.swift */; };
-		4901168C24554A51002C1F85 /* AddKeyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901168B24554A51002C1F85 /* AddKeyView.swift */; };
+		4901168C24554A51002C1F85 /* AddKeyManually.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901168B24554A51002C1F85 /* AddKeyManually.swift */; };
 		4901168E2456058B002C1F85 /* KeyManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901168D2456058B002C1F85 /* KeyManagementView.swift */; };
 		49011690245607F7002C1F85 /* Hosts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901168F245607F7002C1F85 /* Hosts.swift */; };
 		49011692245622C6002C1F85 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49011691245622C6002C1F85 /* DataStore.swift */; };
@@ -36,7 +36,7 @@
 		490116812455378A002C1F85 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		490116832455378A002C1F85 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		49011689245540F2002C1F85 /* HostEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostEditView.swift; sourceTree = "<group>"; };
-		4901168B24554A51002C1F85 /* AddKeyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddKeyView.swift; sourceTree = "<group>"; };
+		4901168B24554A51002C1F85 /* AddKeyManually.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddKeyManually.swift; sourceTree = "<group>"; };
 		4901168D2456058B002C1F85 /* KeyManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyManagementView.swift; sourceTree = "<group>"; };
 		4901168F245607F7002C1F85 /* Hosts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hosts.swift; sourceTree = "<group>"; };
 		49011691245622C6002C1F85 /* DataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
@@ -134,7 +134,7 @@
 			isa = PBXGroup;
 			children = (
 				4967BA03245A7AF300A9D2A6 /* Keys.swift */,
-				4901168B24554A51002C1F85 /* AddKeyView.swift */,
+				4901168B24554A51002C1F85 /* AddKeyManually.swift */,
 				4901168D2456058B002C1F85 /* KeyManagementView.swift */,
 			);
 			path = Keys;
@@ -215,7 +215,7 @@
 				49EED560245D0A0B00A8794E /* AddButton.swift in Sources */,
 				4967BA04245A7AF300A9D2A6 /* Keys.swift in Sources */,
 				49011692245622C6002C1F85 /* DataStore.swift in Sources */,
-				4901168C24554A51002C1F85 /* AddKeyView.swift in Sources */,
+				4901168C24554A51002C1F85 /* AddKeyManually.swift in Sources */,
 				4901167624553789002C1F85 /* AppDelegate.swift in Sources */,
 				4967B9FC2459239700A9D2A6 /* Connections.swift in Sources */,
 				4967B9FE24592D0B00A9D2A6 /* SettingsView.swift in Sources */,
