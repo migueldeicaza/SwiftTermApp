@@ -43,13 +43,14 @@ struct HostsView : View {
     func delete (at offsets: IndexSet)
     {
         store.hosts.remove(atOffsets: offsets)
+        store.saveState()
     }
     
     private func move(source: IndexSet, destination: Int)
     {
         store.hosts.move (fromOffsets: source, toOffset: destination)
+        store.saveState()
     }
-
     
     var body: some View {
         List {

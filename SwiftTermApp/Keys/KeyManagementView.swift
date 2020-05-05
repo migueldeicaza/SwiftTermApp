@@ -179,34 +179,73 @@ struct PasteKeyButton: View {
     }
 }
 
+struct KeyView: View {
+    @Binding var key: Key
+    var action: (Key)-> () = { x in }
+    
+    var body: some View {
+        HStack(alignment: .center, spacing: 10) {
+            Image(systemName: "lock")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 24)
+                .padding(8)
+            VStack (alignment: .leading) {
+                Text ("\(key.name)")
+                    .font(.body)
+                Text ("Key Type: \(key.type)")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+            }
+        }.onTapGesture {
+            self.action (self.key)
+        }
+    }
+}
+
 struct KeyManagementView: View {
     @State var newKeyShown = false
     @State var addKeyManuallyShown = false
+    @State var addFromFileShown = false
     @ObservedObject var store: DataStore = DataStore.shared
+    @State private var editMode = EditMode.inactive
+
     var action: (Key)-> () = { x in }
     
+    func delete (at offsets: IndexSet)
+    {
+        store.keys.remove(atOffsets: offsets)
+        store.saveState()
+    }
+    
+    private func move(source: IndexSet, destination: Int)
+    {
+        store.keys.move (fromOffsets: source, toOffset: destination)
+        store.saveState()
+    }
+
     var body: some View {
         List {
             // LocalKeyButton ()
             PasteKeyButton (addKeyManuallyShown: self.$addKeyManuallyShown)
-            ForEach(store.keys){ key in
-                HStack(alignment: .center, spacing: 10) {
-                    Image(systemName: "lock")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 24)
-                        .padding(8)
-                    VStack (alignment: .leading) {
-                        Text ("\(key.name)")
-                            .font(.body)
-                        Text ("Key Type: \(key.type)")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                    }
-                }.onTapGesture {
-                    self.action (key)
+                .sheet (isPresented: self.$addKeyManuallyShown) {
+                    AddKeyManually (addKeyManuallyShown: self.$addKeyManuallyShown)
                 }
-            }.cornerRadius(10)
+            AddButton (text: "Import Key from File")
+                .onTapGesture {
+                    self.addFromFileShown = true
+                }
+            
+            .sheet (isPresented: self.$addFromFileShown, onDismiss: { self.addFromFileShown = false }) {
+                SshKeyFilePicker()
+            }
+            ForEach(store.keys.indices, id: \.self){ idx in
+                KeyView (key: self.$store.keys [idx], action: self.action)
+            }
+            .onDelete(perform: delete)
+            .onMove(perform: move)
+            .environment(\.editMode, $editMode)
+            .cornerRadius(10)
         }
         .listStyle(GroupedListStyle())
         .navigationBarTitle("Keys")
@@ -215,13 +254,14 @@ struct KeyManagementView: View {
                 self.newKeyShown = true
             }) {
                 Image (systemName: "plus")
-            }.sheet(isPresented: self.$newKeyShown) {
-                GenerateKeyView(showGenerator: self.$newKeyShown, generateKey: { a, b, c in } )
-            }.sheet (isPresented: self.$addKeyManuallyShown) {
-                AddKeyManually (addKeyManuallyShown: self.$addKeyManuallyShown)
             }
-
-        })
+            EditButton()
+        }
+        .sheet(isPresented: self.$newKeyShown) {
+            GenerateKeyView(showGenerator: self.$newKeyShown, generateKey: { a, b, c in } )
+        }
+        
+        )
     }
 }
 

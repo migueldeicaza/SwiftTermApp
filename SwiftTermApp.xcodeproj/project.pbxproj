@@ -24,6 +24,7 @@
 		4967BA04245A7AF300A9D2A6 /* Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967BA03245A7AF300A9D2A6 /* Keys.swift */; };
 		4967BA07245A85F800A9D2A6 /* SwCrypt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967BA06245A85F800A9D2A6 /* SwCrypt.swift */; };
 		49EED560245D0A0B00A8794E /* AddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EED55F245D0A0B00A8794E /* AddButton.swift */; };
+		49F02ADF24610D7A00CFEB50 /* AddKeyFromFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F02ADE24610D7A00CFEB50 /* AddKeyFromFile.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,6 +47,7 @@
 		4967BA03245A7AF300A9D2A6 /* Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keys.swift; sourceTree = "<group>"; };
 		4967BA06245A85F800A9D2A6 /* SwCrypt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwCrypt.swift; sourceTree = "<group>"; };
 		49EED55F245D0A0B00A8794E /* AddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddButton.swift; sourceTree = "<group>"; };
+		49F02ADE24610D7A00CFEB50 /* AddKeyFromFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddKeyFromFile.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -136,6 +138,7 @@
 				4967BA03245A7AF300A9D2A6 /* Keys.swift */,
 				4901168B24554A51002C1F85 /* AddKeyManually.swift */,
 				4901168D2456058B002C1F85 /* KeyManagementView.swift */,
+				49F02ADE24610D7A00CFEB50 /* AddKeyFromFile.swift */,
 			);
 			path = Keys;
 			sourceTree = "<group>";
@@ -222,6 +225,7 @@
 				4967BA0224592D3600A9D2A6 /* SessionsView.swift in Sources */,
 				4901168E2456058B002C1F85 /* KeyManagementView.swift in Sources */,
 				4901167824553789002C1F85 /* SceneDelegate.swift in Sources */,
+				49F02ADF24610D7A00CFEB50 /* AddKeyFromFile.swift in Sources */,
 				49011690245607F7002C1F85 /* Hosts.swift in Sources */,
 				4901167A24553789002C1F85 /* Home.swift in Sources */,
 				4967BA07245A85F800A9D2A6 /* SwCrypt.swift in Sources */,

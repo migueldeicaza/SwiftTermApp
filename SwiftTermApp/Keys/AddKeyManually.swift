@@ -29,6 +29,7 @@ struct AddKeyManually: View {
     
     var body: some View {
         NavigationView {
+            
             Form {
                 Section {
                     VStack {
