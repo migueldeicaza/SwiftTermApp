@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -23,9 +23,28 @@
 		4967BA0224592D3600A9D2A6 /* SessionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967BA0124592D3600A9D2A6 /* SessionsView.swift */; };
 		4967BA04245A7AF300A9D2A6 /* Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967BA03245A7AF300A9D2A6 /* Keys.swift */; };
 		4967BA07245A85F800A9D2A6 /* SwCrypt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967BA06245A85F800A9D2A6 /* SwCrypt.swift */; };
-		49EED560245D0A0B00A8794E /* AddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EED55F245D0A0B00A8794E /* AddButton.swift */; };
-		49F02ADF24610D7A00CFEB50 /* AddKeyFromFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F02ADE24610D7A00CFEB50 /* AddKeyFromFile.swift */; };
+		49C1B6AF24625C7D00D54F6F /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 49C1B6AE24625C7D00D54F6F /* SwiftTerm */; };
+		49C1B6B5246260DC00D54F6F /* TerminalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6B4246260DC00D54F6F /* TerminalViewController.swift */; };
+		49C1B6B72462611F00D54F6F /* SshTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6B62462611F00D54F6F /* SshTerminalView.swift */; };
+		49C1B6BA246263F100D54F6F /* SwiftSH.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49C1B6B9246263F100D54F6F /* SwiftSH.framework */; };
+		49C1B6BB246263F100D54F6F /* SwiftSH.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 49C1B6B9246263F100D54F6F /* SwiftSH.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		49EED560245D0A0B00A8794E /* STButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EED55F245D0A0B00A8794E /* STButton.swift */; };
+		49F02ADF24610D7A00CFEB50 /* STFilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		49C1B6BC246263F100D54F6F /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				49C1B6BB246263F100D54F6F /* SwiftSH.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		4901167224553789002C1F85 /* SwiftTermApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftTermApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -46,8 +65,11 @@
 		4967BA0124592D3600A9D2A6 /* SessionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionsView.swift; sourceTree = "<group>"; };
 		4967BA03245A7AF300A9D2A6 /* Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keys.swift; sourceTree = "<group>"; };
 		4967BA06245A85F800A9D2A6 /* SwCrypt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwCrypt.swift; sourceTree = "<group>"; };
-		49EED55F245D0A0B00A8794E /* AddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddButton.swift; sourceTree = "<group>"; };
-		49F02ADE24610D7A00CFEB50 /* AddKeyFromFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddKeyFromFile.swift; sourceTree = "<group>"; };
+		49C1B6B4246260DC00D54F6F /* TerminalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalViewController.swift; sourceTree = "<group>"; };
+		49C1B6B62462611F00D54F6F /* SshTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SshTerminalView.swift; sourceTree = "<group>"; };
+		49C1B6B9246263F100D54F6F /* SwiftSH.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftSH.framework; path = SwiftSH.binaries/SwiftSH.framework; sourceTree = "<group>"; };
+		49EED55F245D0A0B00A8794E /* STButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STButton.swift; sourceTree = "<group>"; };
+		49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STFilePicker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,6 +77,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49C1B6AF24625C7D00D54F6F /* SwiftTerm in Frameworks */,
+				49C1B6BA246263F100D54F6F /* SwiftSH.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -66,6 +90,7 @@
 			children = (
 				4901167424553789002C1F85 /* SwiftTermApp */,
 				4901167324553789002C1F85 /* Products */,
+				49C1B6B8246263F100D54F6F /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -80,8 +105,9 @@
 		4901167424553789002C1F85 /* SwiftTermApp */ = {
 			isa = PBXGroup;
 			children = (
+				49C1B6B3246260C000D54F6F /* Terminal */,
 				49C216C4245D102600280B6A /* Keys */,
-				49C216C3245D101200280B6A /* Host */,
+				49C216C3245D101200280B6A /* Hosts */,
 				49B2473F245D09A50075F01B /* UIs */,
 				4967BA05245A85E200A9D2A6 /* SwCrypt */,
 				4901167524553789002C1F85 /* AppDelegate.swift */,
@@ -118,18 +144,36 @@
 		49B2473F245D09A50075F01B /* UIs */ = {
 			isa = PBXGroup;
 			children = (
-				49EED55F245D0A0B00A8794E /* AddButton.swift */,
+				49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */,
+				49EED55F245D0A0B00A8794E /* STButton.swift */,
 			);
 			path = UIs;
 			sourceTree = "<group>";
 		};
-		49C216C3245D101200280B6A /* Host */ = {
+		49C1B6B3246260C000D54F6F /* Terminal */ = {
+			isa = PBXGroup;
+			children = (
+				49C1B6B4246260DC00D54F6F /* TerminalViewController.swift */,
+				49C1B6B62462611F00D54F6F /* SshTerminalView.swift */,
+			);
+			path = Terminal;
+			sourceTree = "<group>";
+		};
+		49C1B6B8246263F100D54F6F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				49C1B6B9246263F100D54F6F /* SwiftSH.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		49C216C3245D101200280B6A /* Hosts */ = {
 			isa = PBXGroup;
 			children = (
 				49011689245540F2002C1F85 /* HostEditView.swift */,
 				4901168F245607F7002C1F85 /* Hosts.swift */,
 			);
-			path = Host;
+			path = Hosts;
 			sourceTree = "<group>";
 		};
 		49C216C4245D102600280B6A /* Keys */ = {
@@ -138,7 +182,6 @@
 				4967BA03245A7AF300A9D2A6 /* Keys.swift */,
 				4901168B24554A51002C1F85 /* AddKeyManually.swift */,
 				4901168D2456058B002C1F85 /* KeyManagementView.swift */,
-				49F02ADE24610D7A00CFEB50 /* AddKeyFromFile.swift */,
 			);
 			path = Keys;
 			sourceTree = "<group>";
@@ -153,12 +196,16 @@
 				4901166E24553789002C1F85 /* Sources */,
 				4901166F24553789002C1F85 /* Frameworks */,
 				4901167024553789002C1F85 /* Resources */,
+				49C1B6BC246263F100D54F6F /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = SwiftTermApp;
+			packageProductDependencies = (
+				49C1B6AE24625C7D00D54F6F /* SwiftTerm */,
+			);
 			productName = testMasterDetail;
 			productReference = 4901167224553789002C1F85 /* SwiftTermApp.app */;
 			productType = "com.apple.product-type.application";
@@ -187,6 +234,9 @@
 				Base,
 			);
 			mainGroup = 4901166924553789002C1F85;
+			packageReferences = (
+				49C1B6AD24625C7D00D54F6F /* XCRemoteSwiftPackageReference "SwiftTerm" */,
+			);
 			productRefGroup = 4901167324553789002C1F85 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -215,8 +265,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				4901168A245540F2002C1F85 /* HostEditView.swift in Sources */,
-				49EED560245D0A0B00A8794E /* AddButton.swift in Sources */,
+				49C1B6B5246260DC00D54F6F /* TerminalViewController.swift in Sources */,
+				49EED560245D0A0B00A8794E /* STButton.swift in Sources */,
 				4967BA04245A7AF300A9D2A6 /* Keys.swift in Sources */,
+				49C1B6B72462611F00D54F6F /* SshTerminalView.swift in Sources */,
 				49011692245622C6002C1F85 /* DataStore.swift in Sources */,
 				4901168C24554A51002C1F85 /* AddKeyManually.swift in Sources */,
 				4901167624553789002C1F85 /* AppDelegate.swift in Sources */,
@@ -225,7 +277,7 @@
 				4967BA0224592D3600A9D2A6 /* SessionsView.swift in Sources */,
 				4901168E2456058B002C1F85 /* KeyManagementView.swift in Sources */,
 				4901167824553789002C1F85 /* SceneDelegate.swift in Sources */,
-				49F02ADF24610D7A00CFEB50 /* AddKeyFromFile.swift in Sources */,
+				49F02ADF24610D7A00CFEB50 /* STFilePicker.swift in Sources */,
 				49011690245607F7002C1F85 /* Hosts.swift in Sources */,
 				4901167A24553789002C1F85 /* Home.swift in Sources */,
 				4967BA07245A85F800A9D2A6 /* SwCrypt.swift in Sources */,
@@ -368,6 +420,10 @@
 				DEVELOPMENT_ASSET_PATHS = "\"SwiftTermApp/Preview Content\"";
 				DEVELOPMENT_TEAM = PJQC57N853;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SwiftSH.binaries",
+				);
 				INFOPLIST_FILE = SwiftTermApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -388,6 +444,10 @@
 				DEVELOPMENT_ASSET_PATHS = "\"SwiftTermApp/Preview Content\"";
 				DEVELOPMENT_TEAM = PJQC57N853;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SwiftSH.binaries",
+				);
 				INFOPLIST_FILE = SwiftTermApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -422,6 +482,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		49C1B6AD24625C7D00D54F6F /* XCRemoteSwiftPackageReference "SwiftTerm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/migueldeicaza/SwiftTerm.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		49C1B6AE24625C7D00D54F6F /* SwiftTerm */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49C1B6AD24625C7D00D54F6F /* XCRemoteSwiftPackageReference "SwiftTerm" */;
+			productName = SwiftTerm;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 4901166A24553789002C1F85 /* Project object */;
 }

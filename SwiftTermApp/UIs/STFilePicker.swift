@@ -41,7 +41,7 @@ final class FilePicker: NSObject, UIViewControllerRepresentable, UIDocumentPicke
     }
 }
 
-struct SshKeyFilePicker: View {
+struct STFilePicker: View {
     func saveKey (urls: [URL])
     {
         guard let url = urls.first else {

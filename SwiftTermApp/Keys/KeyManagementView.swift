@@ -157,7 +157,7 @@ struct LocalKeyButton: View {
     var body: some View {
         HStack {
             if false && SecureEnclave.isAvailable {
-                AddButton(text: "Create Local Key")
+                STButton(text: "Create Local Key", icon: "plus.circle")
             }
         }.onTapGesture {
             self.showGenerator = true
@@ -172,7 +172,7 @@ struct PasteKeyButton: View {
     @Binding var addKeyManuallyShown: Bool
     
     var body: some View {
-        AddButton (text: "Import Key from Clipboard")
+        STButton (text: "Create From Clipboard", icon: "plus.circle")
             .onTapGesture {
                 self.addKeyManuallyShown = true
         }
@@ -227,18 +227,21 @@ struct KeyManagementView: View {
     var body: some View {
         List {
             // LocalKeyButton ()
-            PasteKeyButton (addKeyManuallyShown: self.$addKeyManuallyShown)
+            STButton (text: "Create From Clipboard", icon: "plus.circle")
+                .onTapGesture {
+                    self.addKeyManuallyShown = true
+                }
                 .sheet (isPresented: self.$addKeyManuallyShown) {
                     AddKeyManually (addKeyManuallyShown: self.$addKeyManuallyShown)
                 }
-            AddButton (text: "Import Key from File")
+
+            STButton (text: "Import Key from File", icon: "folder.badge.plus")
                 .onTapGesture {
                     self.addFromFileShown = true
                 }
-            
-            .sheet (isPresented: self.$addFromFileShown, onDismiss: { self.addFromFileShown = false }) {
-                SshKeyFilePicker()
-            }
+                .sheet (isPresented: self.$addFromFileShown, onDismiss: { self.addFromFileShown = false }) {
+                    STFilePicker()
+                }
             ForEach(store.keys.indices, id: \.self){ idx in
                 KeyView (key: self.$store.keys [idx], action: self.action)
             }

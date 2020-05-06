@@ -27,6 +27,22 @@ struct AddKeyManually: View {
         addKeyManuallyShown = false
     }
     
+    // Tries to do something smart for adding the key by default
+    func setupKey ()
+    {
+        // Maybe the clipboard has a key
+        let clip = UIPasteboard.general
+        if clip.hasStrings {
+            if let value = clip.string {
+                if value.contains("BEGIN OPENSSH PRIVATE KEY") {
+                    key.privateKey = value
+                } else if value.starts(with: "ssh-rsa") || value.starts(with: "ssh-dss") || value.starts(with: "ecdsa-sha2-nistp256") || value.starts(with: "ssh-ed25519") {
+                    key.publicKey = value
+                }
+            }
+        }
+    }
+    
     var body: some View {
         NavigationView {
             
@@ -77,6 +93,8 @@ struct AddKeyManually: View {
                 leading:  Button ("Cancel") { self.addKeyManuallyShown = false },
                 trailing: Button("Save") { self.saveAndLeave() }
                     .disabled (disableSave))
+        }.onAppear {
+            self.setupKey ()
         }
     }
 }

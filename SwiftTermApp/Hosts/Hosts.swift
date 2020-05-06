@@ -13,7 +13,7 @@ struct HostSummaryView: View {
     @State var showingModal = false
     
     var body: some View {
-        NavigationLink (destination: Text ("Connecting....")) {
+        NavigationLink (destination: SwiftUITerminal(host: self.host)) {
             HStack {
             
                 Image (systemName: "desktopcomputer")
@@ -54,7 +54,7 @@ struct HostsView : View {
     
     var body: some View {
         List {
-            AddButton (text: "Add Host")
+            STButton (text: "Add Host", icon: "plus.circle")
                 .onTapGesture { self.showHostEdit = true }
 
             Section {

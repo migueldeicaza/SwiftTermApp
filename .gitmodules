@@ -1,0 +1,3 @@
+[submodule "SwiftSH.binaries"]
+	path = SwiftSH.binaries
+	url = https://github.com/migueldeicaza/SwiftSH.binaries.git

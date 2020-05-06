@@ -13,11 +13,13 @@ import UIKit
 class Connection: Codable, Identifiable {
     var host: Host
     var id = UUID ()
-    //var terminal: UIView
     
-    init ()
+    var terminalViewController: TerminalViewController!
+    
+    init (host: Host)
     {
-        host = Host()
+        self.host = host
+        terminalViewController = TerminalViewController(host: host)
     }
     
     required init (from: Decoder)
@@ -35,5 +37,5 @@ class Connections: ObservableObject {
     @Published var connections: [Connection] = [
     ]
     
-    static var shared: Connection = Connection()
+    static var shared: Connections = Connections()
 }
