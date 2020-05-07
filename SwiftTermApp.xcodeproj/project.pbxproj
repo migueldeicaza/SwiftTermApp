@@ -18,6 +18,7 @@
 		4901168E2456058B002C1F85 /* KeyManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901168D2456058B002C1F85 /* KeyManagementView.swift */; };
 		49011690245607F7002C1F85 /* Hosts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901168F245607F7002C1F85 /* Hosts.swift */; };
 		49011692245622C6002C1F85 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49011691245622C6002C1F85 /* DataStore.swift */; };
+		4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4911B3032463AD3E00816BAA /* GenerateKey.swift */; };
 		4967B9FC2459239700A9D2A6 /* Connections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967B9FB2459239700A9D2A6 /* Connections.swift */; };
 		4967B9FE24592D0B00A9D2A6 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967B9FD24592D0B00A9D2A6 /* SettingsView.swift */; };
 		4967BA0224592D3600A9D2A6 /* SessionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967BA0124592D3600A9D2A6 /* SessionsView.swift */; };
@@ -28,6 +29,7 @@
 		49C1B6B72462611F00D54F6F /* SshTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6B62462611F00D54F6F /* SshTerminalView.swift */; };
 		49C1B6BA246263F100D54F6F /* SwiftSH.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49C1B6B9246263F100D54F6F /* SwiftSH.framework */; };
 		49C1B6BB246263F100D54F6F /* SwiftSH.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 49C1B6B9246263F100D54F6F /* SwiftSH.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		49C1B6BE24637DD500D54F6F /* ButtonColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6BD24637DD500D54F6F /* ButtonColors.swift */; };
 		49EED560245D0A0B00A8794E /* STButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EED55F245D0A0B00A8794E /* STButton.swift */; };
 		49F02ADF24610D7A00CFEB50 /* STFilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */; };
 /* End PBXBuildFile section */
@@ -60,6 +62,7 @@
 		4901168D2456058B002C1F85 /* KeyManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyManagementView.swift; sourceTree = "<group>"; };
 		4901168F245607F7002C1F85 /* Hosts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hosts.swift; sourceTree = "<group>"; };
 		49011691245622C6002C1F85 /* DataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
+		4911B3032463AD3E00816BAA /* GenerateKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateKey.swift; sourceTree = "<group>"; };
 		4967B9FB2459239700A9D2A6 /* Connections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connections.swift; sourceTree = "<group>"; };
 		4967B9FD24592D0B00A9D2A6 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		4967BA0124592D3600A9D2A6 /* SessionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionsView.swift; sourceTree = "<group>"; };
@@ -68,6 +71,7 @@
 		49C1B6B4246260DC00D54F6F /* TerminalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalViewController.swift; sourceTree = "<group>"; };
 		49C1B6B62462611F00D54F6F /* SshTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SshTerminalView.swift; sourceTree = "<group>"; };
 		49C1B6B9246263F100D54F6F /* SwiftSH.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftSH.framework; path = SwiftSH.binaries/SwiftSH.framework; sourceTree = "<group>"; };
+		49C1B6BD24637DD500D54F6F /* ButtonColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonColors.swift; sourceTree = "<group>"; };
 		49EED55F245D0A0B00A8794E /* STButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STButton.swift; sourceTree = "<group>"; };
 		49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STFilePicker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -146,6 +150,7 @@
 			children = (
 				49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */,
 				49EED55F245D0A0B00A8794E /* STButton.swift */,
+				49C1B6BD24637DD500D54F6F /* ButtonColors.swift */,
 			);
 			path = UIs;
 			sourceTree = "<group>";
@@ -182,6 +187,7 @@
 				4967BA03245A7AF300A9D2A6 /* Keys.swift */,
 				4901168B24554A51002C1F85 /* AddKeyManually.swift */,
 				4901168D2456058B002C1F85 /* KeyManagementView.swift */,
+				4911B3032463AD3E00816BAA /* GenerateKey.swift */,
 			);
 			path = Keys;
 			sourceTree = "<group>";
@@ -265,6 +271,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4901168A245540F2002C1F85 /* HostEditView.swift in Sources */,
+				49C1B6BE24637DD500D54F6F /* ButtonColors.swift in Sources */,
 				49C1B6B5246260DC00D54F6F /* TerminalViewController.swift in Sources */,
 				49EED560245D0A0B00A8794E /* STButton.swift in Sources */,
 				4967BA04245A7AF300A9D2A6 /* Keys.swift in Sources */,
@@ -279,6 +286,7 @@
 				4901167824553789002C1F85 /* SceneDelegate.swift in Sources */,
 				49F02ADF24610D7A00CFEB50 /* STFilePicker.swift in Sources */,
 				49011690245607F7002C1F85 /* Hosts.swift in Sources */,
+				4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */,
 				4901167A24553789002C1F85 /* Home.swift in Sources */,
 				4967BA07245A85F800A9D2A6 /* SwCrypt.swift in Sources */,
 			);

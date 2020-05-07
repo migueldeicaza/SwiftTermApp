@@ -9,15 +9,31 @@
 
 import SwiftUI
 
-//
-// Implements adding a new Key from pasted data
-struct AddKeyManually: View {
+
+struct MultilineTextView: UIViewRepresentable {
+    @Binding var text: String
+
+    func makeUIView(context: Context) -> UITextView {
+        let view = UITextView()
+        view.isScrollEnabled = true
+        view.isEditable = true
+        view.isUserInteractionEnabled = true
+        view.font = UIFont.monospacedSystemFont(ofSize: 13, weight: .regular)
+        return view
+    }
+
+    func updateUIView(_ uiView: UITextView, context: Context) {
+        uiView.text = text
+    }
+}
+
+struct EditKey: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @Binding var addKeyManuallyShown: Bool
-    @State var key: Key = Key()
+    @Binding var key: Key
     @State var showingPassword = false
     
-    var disableSave: Bool {
+   var disableSave: Bool {
         key.name == "" || key.privateKey == ""
     }
     
@@ -45,7 +61,6 @@ struct AddKeyManually: View {
     
     var body: some View {
         NavigationView {
-            
             Form {
                 Section {
                     VStack {
@@ -60,16 +75,28 @@ struct AddKeyManually: View {
                             Text ("Private Key")
                             Spacer ()
                         }
-                        TextField ("Required", text: self.$key.privateKey)
-                            .autocapitalization(.none)
+                        HStack {
+                            //TextField ("Required", text: self.$key.privateKey)
+                            //    .autocapitalization(.none)
+                            //    .lineLimit(4)
+                            //    .frame(maxHeight: 80)
+                            MultilineTextView(text: self.$key.privateKey)
+                                .frame(height: 80)
+                            
+                            ContentsFromFile (target: self.$key.privateKey)
+                        }
                     }
                     VStack {
                         HStack {
                             Text ("Public Key")
                             Spacer ()
                         }
-                        TextField ("Optional", text: self.$key.publicKey)
-                            .autocapitalization(.none)
+                        HStack {
+                            TextField ("Optional", text: self.$key.publicKey)
+                                .autocapitalization(.none)
+                                .font(.system(.body, design: .monospaced))
+                            ContentsFromFile (target: self.$key.privateKey)
+                        }
                     }
                     HStack {
                         Text ("Passphrase")
@@ -98,11 +125,20 @@ struct AddKeyManually: View {
         }
     }
 }
-struct PasteKey_Previews: PreviewProvider {
+//
+// Implements adding a new Key from pasted data
+struct AddKeyManually: View {
+    @State var key: Key = Key(id: UUID()) // , privateKey: AddKeyManually.pkey)
+    @Binding var addKeyManuallyShown: Bool
     
+    var body: some View {
+        EditKey(addKeyManuallyShown: $addKeyManuallyShown, key: $key)
+    }
+}
+
+struct PasteKey_Previews: PreviewProvider {
+   
     static var previews: some View {
-        Text ("").sheet(isPresented: .constant (true)) {
-            AddKeyManually(addKeyManuallyShown: .constant(true))
-        }
+        AddKeyManually(addKeyManuallyShown: .constant(true))
     }
 }

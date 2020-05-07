@@ -26,13 +26,14 @@ public class SshTerminalView: TerminalView, TerminalViewDelegate {
     {
         sshQueue = DispatchQueue.global(qos: .background)
         self.host = host
+        
         if host.usePassword {
             authenticationChallenge = .byPassword(username: host.username, password: host.password)
         } else {
             if let sshKeyId = host.sshKey {
                 if let sshKey = DataStore.shared.keys.first(where: { $0.id == sshKeyId }) {
-                    authenticationChallenge = .byPublicKeyFromMemory(username: host.username,
-                                                                     password: host.password,
+                    authenticationChallenge = .byPublicKeyFromMemory(username: self.host.username,
+                                                                     password: sshKey.passphrase,
                                                                      publicKey: Data (sshKey.publicKey.utf8),
                                                                      privateKey: Data (sshKey.privateKey.utf8))
                 } else {
@@ -42,7 +43,7 @@ public class SshTerminalView: TerminalView, TerminalViewDelegate {
                 throw MyError.oops
             }
         }
-
+        print ("Got \(authenticationChallenge)")
         super.init (frame: frame)
         terminalDelegate = self
         do {

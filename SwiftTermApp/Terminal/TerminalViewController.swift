@@ -67,8 +67,6 @@ class TerminalViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        host.lastUsed = Date ()
-        DataStore.shared.saveState()
         
         // Do any additional setup after loading the view, typically from a nib.
         setupKeyboardMonitor()
@@ -97,6 +95,7 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
 
     func makeUIViewController(context: UIViewControllerRepresentableContext<SwiftUITerminal>) -> TerminalViewController {
         viewController = TerminalViewController (host: host)
+        DataStore.shared.used (host: host)
         return viewController
     }
     

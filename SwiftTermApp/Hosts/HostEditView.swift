@@ -11,10 +11,11 @@ import SwiftUI
 struct HostEditView: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @State var alertClash: Bool = false
-    @State var host: Host = Host()
+    @State var host: Host
     @Binding var showingModal: Bool
     @State var selectedKey = 0
     @State var originalAlias: String = ""
+    @State var keySelectorIsActive: Bool = false
     
     var disableSave: Bool {
         let alias = $host.alias.wrappedValue
@@ -27,6 +28,12 @@ struct HostEditView: View {
         self.host.lastUsed = Date()
         store.save (host: self.host)
         showingModal = false
+    }
+    
+    func assignKey (chosenKey: Key)
+    {
+        self.host.sshKey = chosenKey.id
+        keySelectorIsActive = false
     }
     
     var body: some View {
@@ -82,11 +89,10 @@ struct HostEditView: View {
                                         self.host.sshKey = nil
                                     }
                             } else {
-                                NavigationLink(destination: KeyManagementView(action: { chosenKey in
-                                    self.host.sshKey = chosenKey.id
-                                })) {
+                                NavigationLink(destination: KeyManagementView(action: assignKey),
+                                               isActive: self.$keySelectorIsActive) {
                                     Text ("")
-                                }
+                                }.isDetailLink (false)
                             }
                         }
                     }

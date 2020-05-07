@@ -10,8 +10,6 @@ import Foundation
 import SwiftUI
 
 struct STButton: View {
-    let highColor = Color(#colorLiteral(red: 0.007762347814, green: 0.4766914248, blue: 0.9985215068, alpha: 1))
-    let backgroundColor = Color(#colorLiteral(red: 0.9307063222, green: 0.945577085, blue: 0.9838711619, alpha: 1))
     var text: String
     let icon: String
 
@@ -19,17 +17,17 @@ struct STButton: View {
         HStack {
             Spacer()
             Image (systemName: icon)
-                .foregroundColor(highColor)
+                .foregroundColor(ButtonColors.highColor)
                 .font(Font.title.weight(.semibold))
             Text (self.text)
-                .foregroundColor(highColor)
+                .foregroundColor(ButtonColors.highColor)
                 .fontWeight(.bold)
             Spacer()
         }
         .padding ()
-        .background(backgroundColor)
+        .background(ButtonColors.backgroundColor)
         .cornerRadius(10)
-        .foregroundColor(highColor)
+        .foregroundColor(ButtonColors.highColor)
         .padding()
     }
 }

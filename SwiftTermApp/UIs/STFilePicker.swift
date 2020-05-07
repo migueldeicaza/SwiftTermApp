@@ -48,11 +48,47 @@ struct STFilePicker: View {
             return
         }
         if let privKey = try? String (contentsOf: url) {
-            let k = Key(type: "TODO: guess the key type", name: url.lastPathComponent, privateKey: privKey, publicKey: "", passphrase: "")
+            let k = Key(id: UUID(),type: "TODO: guess the key type", name: url.lastPathComponent, privateKey: privKey, publicKey: "", passphrase: "")
             DataStore.shared.save(key: k)
         }
     }
     var body: some View {
         FilePicker (callback: saveKey)
+    }
+}
+
+///
+/// A button that shows a file icon, and when selected, inserts the contents
+/// of the file into the target field
+///
+struct ContentsFromFile: View {
+    @Binding var target: String
+    @State var pickerShown = false
+    
+    func setTarget (urls: [URL])
+    {
+        guard let url = urls.first else {
+            return
+        }
+        if let contents = try? String (contentsOf: url) {
+            target = contents
+        }
+        pickerShown = false
+    }
+    
+    var body: some View {
+        Image (systemName: "folder")
+            .foregroundColor(ButtonColors.highColor)
+            .font(Font.headline.weight(.light))
+            .onTapGesture { self.pickerShown = true }
+            .sheet(isPresented: self.$pickerShown) {
+                FilePicker (callback: self.setTarget)
+            }
+    }
+}
+
+struct STFilePicker_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentsFromFile (target: .constant (""))
     }
 }

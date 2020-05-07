@@ -11,7 +11,7 @@ import Combine
 
 
 struct Key: Codable, Identifiable {
-    let id = UUID()
+    var id: UUID
     var type: String = ""
     var name: String = ""
     var privateKey: String = ""
@@ -33,23 +33,22 @@ struct Host: Codable, Identifiable {
     var sshKey: UUID?
     var style: String = ""
     var lastUsed: Date = Date.distantPast
-    
 }
 
 class DataStore: ObservableObject {
-    static let testKey1 = Key (type: "RSA/1024", name: "Legacy Key", privateKey: "", publicKey: "", passphrase: "")
-    static let testKey2 = Key (type: "RSA/4098", name: "2020 iPhone Key", privateKey: "", publicKey: "", passphrase: "")
+    static let testKey1 = Key (id: UUID(), type: "RSA/1024", name: "Dummy Legacy Key", privateKey: "", publicKey: "", passphrase: "")
+    static let testKey2 = Key (id: UUID(), type: "RSA/4098", name: "Dummy 2020 iPhone Key", privateKey: "", publicKey: "", passphrase: "")
     
     static let testUuid2 = UUID ()
     
     var defaults: UserDefaults?
     
     @Published var hosts: [Host] = [
-        Host(alias: "MacPro",         hostname: "mac.tirania.org", lastUsed: Date ()),
-        Host(alias: "Raspberri Pi",   hostname: "raspberry.tirania.org", lastUsed: Date ()),
-        Host(alias: "MacBook",        hostname: "road.tirania.org", usePassword: false, sshKey: DataStore.testKey1.id),
-        Host(alias: "Old Vax",        hostname: "oldvax.tirania.org",usePassword: false, sshKey: DataStore.testKey2.id),
-        Host(alias: "Old DECStation", hostname: "decstation.tirania.org"),
+       //Host(alias: "Dummy MacPro",         hostname: "mac.tirania.org", lastUsed: Date ()),
+       //Host(alias: "Dummy Raspberri Pi",   hostname: "raspberry.tirania.org", lastUsed: Date ()),
+       //Host(alias: "Dummy MacBook",        hostname: "road.tirania.org", usePassword: false, sshKey: DataStore.testKey1.id),
+       //Host(alias: "Dummy Old Vax",        hostname: "oldvax.tirania.org",usePassword: false, sshKey: DataStore.testKey2.id),
+       //Host(alias: "Dummy Old DECStation", hostname: "decstation.tirania.org"),
     ]
     
     @Published var keys: [Key] = [
@@ -104,6 +103,13 @@ class DataStore: ObservableObject {
         saveState ()
     }
 
+    func used (host: Host)
+    {
+        if let f = hosts.firstIndex(where: {$0.id == host.id}){
+            hosts [f].lastUsed = Date()
+            saveState()
+        }
+    }
     // Records the new host in the data store
     func save (key: Key)
     {
@@ -117,7 +123,9 @@ class DataStore: ObservableObject {
     }
     
     func hostHasValidKey (host: Host) -> Bool {
-        keys.contains { $0.id == host.sshKey }
+        
+        let c = keys.contains { $0.id == host.sshKey }
+        return c
     }
     
     // This for now returns the name, but if it is ambiguous, it could return a hash or something else
@@ -127,10 +135,18 @@ class DataStore: ObservableObject {
         }
         return "none"
     }
+    
     // Returns the most recent 3 values
-    func recentIndices () -> Range<Int>
+    func recentIndices () -> [Int]
     {
-        hosts.sorted(by: {a, b in a.lastUsed > b.lastUsed }).prefix(3).indices
+        var res: [Int] = []
+        let sorted = hosts.sorted(by: {a, b in a.lastUsed > b.lastUsed })
+        for x in sorted.prefix(3) {
+            if let idx = hosts.firstIndex(where: {$0.id == x.id }) {
+                res.append(idx)
+            }
+        }
+        return res
     }
     static var shared: DataStore = DataStore()
 }
