@@ -13,7 +13,13 @@ struct HostSummaryView: View {
     @State var showingModal = false
     
     var body: some View {
-        NavigationLink (destination: SwiftUITerminal(host: self.host)) {
+        NavigationLink (destination:
+            // Solution might be to use an external host UIViewController:
+            // https://gist.github.com/timothycosta/a43dfe25f1d8a37c71341a1ebaf82213
+            // https://stackoverflow.com/questions/56756318/swiftui-presentationbutton-with-modal-that-is-full-screen
+                SwiftUITerminal(host: self.host).edgesIgnoringSafeArea(.all)
+                    
+            ) {
             HStack {
             
                 Image (systemName: "desktopcomputer")

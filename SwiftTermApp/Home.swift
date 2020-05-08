@@ -23,14 +23,15 @@ struct ContentView: View {
             HomeView(dates: $dates)
                 .navigationBarTitle(Text("SwiftTerm"))
                 .navigationBarItems(
-                    leading: EditButton(),
-                    trailing: Button(
-                        action: {
-                            withAnimation { self.dates.insert(Date(), at: 0) }
-                        }
-                    ) {
-                        Image(systemName: "plus")
-                    }
+                    leading: EditButton()
+//,
+//                    trailing: Button(
+//                        action: {
+//                            withAnimation { self.dates.insert(Date(), at: 0) }
+//                        }
+//                    ) {
+//                        Image(systemName: "plus")
+//                    }
                 )
             DetailView()
         }.navigationViewStyle(DoubleColumnNavigationViewStyle())

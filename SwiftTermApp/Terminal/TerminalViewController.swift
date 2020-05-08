@@ -13,7 +13,7 @@ import SwiftTerm
 import SwiftUI
 
 class TerminalViewController: UIViewController {
-    var tv: TerminalView!
+    var tv: TerminalView?
     var host: Host
     
     init (host: Host)
@@ -56,13 +56,13 @@ class TerminalViewController: UIViewController {
         }
         let frame = frameValue.cgRectValue
         keyboardDelta = frame.height
-        tv.frame = makeFrame(keyboardDelta: frame.height)
+        tv?.frame = makeFrame(keyboardDelta: frame.height)
     }
     
     @objc private func keyboardWillHide(_ notification: NSNotification) {
         //let key = UIResponder.keyboardFrameBeginUserInfoKey
         keyboardDelta = 0
-        tv.frame = makeFrame(keyboardDelta: 0)
+        tv?.frame = makeFrame(keyboardDelta: 0)
     }
     
     override func viewDidLoad() {
@@ -70,15 +70,34 @@ class TerminalViewController: UIViewController {
         
         // Do any additional setup after loading the view, typically from a nib.
         setupKeyboardMonitor()
-        tv = try? SshTerminalView(frame: makeFrame (keyboardDelta: 0), host: host)
-        view.addSubview(tv)
+        do {
+            tv = try SshTerminalView(frame: makeFrame (keyboardDelta: 0), host: host)
+        } catch MyError.noValidKey(let msg) {
+            terminalViewCreationError (msg)
+        } catch {
+            terminalViewCreationError ("general")
+        }
+        if let t = tv {
+            view.addSubview(t)
         
-        tv.becomeFirstResponder()
-        tv.feed(text: "Welcome to SwiftTerm\n\n")
+            t.becomeFirstResponder()
+            t.feed(text: "Welcome to SwiftTerm\n\n")
+        }
+    }
+    
+    func terminalViewCreationError (_ msg: String)
+    {
+        let alert = UIAlertController(title: "Connection Problem", message: msg, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .default, handler: { _ in
+            NSLog("The \"OK\" alert occured.")
+        }))
+        DispatchQueue.main.async {
+            self.present(alert, animated: true, completion: nil)
+        }
     }
     
     override func viewWillLayoutSubviews() {
-        tv.frame = makeFrame (keyboardDelta: keyboardDelta)
+        tv?.frame = makeFrame (keyboardDelta: keyboardDelta)
     }
 }
 

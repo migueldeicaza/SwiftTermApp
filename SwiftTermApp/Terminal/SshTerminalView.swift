@@ -13,7 +13,8 @@ import SwiftTerm
 import SwiftSH
 
 enum MyError : Error {
-    case oops
+    case noValidKey(String)
+    case general
 }
 
 public class SshTerminalView: TerminalView, TerminalViewDelegate {
@@ -37,10 +38,10 @@ public class SshTerminalView: TerminalView, TerminalViewDelegate {
                                                                      publicKey: Data (sshKey.publicKey.utf8),
                                                                      privateKey: Data (sshKey.privateKey.utf8))
                 } else {
-                    throw MyError.oops
+                    throw MyError.noValidKey ("The host references an SSH key that is no longer set")
                 }
             } else {
-                throw MyError.oops
+                throw MyError.noValidKey ("The host does not have an SSH key associated")
             }
         }
         print ("Got \(authenticationChallenge)")
