@@ -9,7 +9,6 @@
 
 import SwiftUI
 
-
 struct MultilineTextView: UIViewRepresentable {
     @Binding var text: String
 
@@ -19,11 +18,27 @@ struct MultilineTextView: UIViewRepresentable {
         view.isEditable = true
         view.isUserInteractionEnabled = true
         view.font = UIFont.monospacedSystemFont(ofSize: 13, weight: .regular)
+        view.delegate = context.coordinator
         return view
     }
 
+    func makeCoordinator() -> Coordinator {
+        return Coordinator(self)
+    }
+    
     func updateUIView(_ uiView: UITextView, context: Context) {
         uiView.text = text
+    }
+    
+    class Coordinator: NSObject, UITextViewDelegate {
+        var parent: MultilineTextView
+        public init (_ parent: MultilineTextView) {
+            self.parent = parent
+        }
+        
+        func textViewDidChange(_ textView: UITextView) {
+            parent.text = textView.text
+        }
     }
 }
 
