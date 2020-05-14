@@ -19,7 +19,9 @@ class TerminalViewController: UIViewController {
     init (host: Host)
     {
         self.host = host
+        DataStore.shared.used (host: host)
         super.init(nibName: nil, bundle: nil)
+        Connections.add(connection: self)
     }
     
     required init?(coder: NSCoder) {
@@ -105,17 +107,24 @@ class TerminalViewController: UIViewController {
 final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocumentPickerDelegate {
     typealias UIViewControllerType = TerminalViewController
     var host: Host
-    init (host: Host)
+    var createNew: Bool
+    
+    init (host: Host, createNew: Bool)
     {
         self.host = host
+        self.createNew = createNew
     }
     
     var viewController: TerminalViewController!
 
     func makeUIViewController(context: UIViewControllerRepresentableContext<SwiftUITerminal>) -> TerminalViewController {
-        viewController = TerminalViewController (host: host)
-        DataStore.shared.used (host: host)
-        return viewController
+    
+        if !createNew {
+            if let v = Connections.lookupActive(host: host) {
+                return v
+            }
+        }
+        return TerminalViewController (host: host)
     }
     
     func updateUIViewController(_ uiViewController: TerminalViewController, context: UIViewControllerRepresentableContext<SwiftUITerminal>) {

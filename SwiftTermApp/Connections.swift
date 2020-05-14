@@ -10,32 +10,19 @@ import Foundation
 import Combine
 import UIKit
 
-class Connection: Codable, Identifiable {
-    var host: Host
-    var id = UUID ()
-    
-    var terminalViewController: TerminalViewController!
-    
-    init (host: Host)
-    {
-        self.host = host
-        terminalViewController = TerminalViewController(host: host)
-    }
-    
-    required init (from: Decoder)
-    {
-        host = Host()
-    }
-    
-    func encode (to: Encoder)
-    {
-        
-    }
-}
-
 class Connections: ObservableObject {
-    @Published var connections: [Connection] = [
+    @Published public var connections: [TerminalViewController] = [
     ]
     
-    static var shared: Connections = Connections()
+    public static var shared: Connections = Connections()
+    
+    public static func add (connection: TerminalViewController)
+    {
+        shared.connections.append(connection)
+    }
+    
+    public static func lookupActive (host: Host) -> TerminalViewController?
+    {
+        return shared.connections.first { $0.host.id == host.id }
+    }
 }

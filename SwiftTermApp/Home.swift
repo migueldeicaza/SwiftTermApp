@@ -34,12 +34,14 @@ struct ContentView: View {
 //                    }
                 )
             DetailView()
-        }.navigationViewStyle(DoubleColumnNavigationViewStyle())
+        }//.navigationViewStyle(DoubleColumnNavigationViewStyle())
     }
 }
 
 struct HomeView: View {
     @ObservedObject var store: DataStore = DataStore.shared
+    @ObservedObject var connections = Connections.shared
+    
     @Binding var dates: [Date]
 
     func sortDate (first: Host, second: Host) throws -> Bool
@@ -64,6 +66,12 @@ struct HomeView: View {
                     destination: SessionsView()
                 ) {
                     Text("Sessions")
+                    Spacer()
+                    Text ("\(connections.connections.count)")
+                        .padding(4)
+                        .background(Color(#colorLiteral(red: 0.921431005, green: 0.9214526415, blue: 0.9214410186, alpha: 1)))
+                        .cornerRadius(3)
+                        .foregroundColor(Color(#colorLiteral(red: 0.5741485357, green: 0.5741624236, blue: 0.574154973, alpha: 1)))
                 }
                 NavigationLink(
                     destination: KeyManagementView( )

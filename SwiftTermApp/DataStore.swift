@@ -9,17 +9,26 @@
 import Foundation
 import Combine
 
-
-struct Key: Codable, Identifiable {
+class Key: Codable, Identifiable {
     var id: UUID
     var type: String = ""
     var name: String = ""
     var privateKey: String = ""
     var publicKey: String = ""
     var passphrase: String = ""
+    
+    public init (id: UUID, type: String = "", name: String = "", privateKey: String = "", publicKey: String = "", passphrase: String = "")
+    {
+        self.id = id
+        self.type = type
+        self.name = name
+        self.privateKey = privateKey
+        self.publicKey = publicKey
+        self.passphrase = passphrase
+    }
 }
 
-struct Host: Codable, Identifiable {
+class Host: Codable, Identifiable {
     let id = UUID()
     var alias: String = ""
     var hostname: String = ""
@@ -28,6 +37,7 @@ struct Host: Codable, Identifiable {
     var usePassword: Bool = true
     var username: String = ""
     var password: String = ""
+    var hostKindGuess: String = ""
     
     // This is the UUID of the key registered with the app
     var sshKey: UUID?
@@ -127,7 +137,16 @@ class DataStore: ObservableObject {
         let c = keys.contains { $0.id == host.sshKey }
         return c
     }
-    
+
+    func updateGuess (for target: Host, to guess: String)
+    {
+        for i in 0..<hosts.count {
+            if hosts [i].id == target.id {
+                hosts [i].hostKindGuess = guess
+            }
+        }
+    }
+
     // This for now returns the name, but if it is ambiguous, it could return a hash or something else
     func getSshDisplayName (forHost: Host) -> String {
         if let k = keys.first(where: { $0.id == forHost.sshKey }) {

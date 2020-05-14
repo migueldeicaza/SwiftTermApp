@@ -17,11 +17,10 @@ struct HostSummaryView: View {
             // Solution might be to use an external host UIViewController:
             // https://gist.github.com/timothycosta/a43dfe25f1d8a37c71341a1ebaf82213
             // https://stackoverflow.com/questions/56756318/swiftui-presentationbutton-with-modal-that-is-full-screen
-                SwiftUITerminal(host: self.host).edgesIgnoringSafeArea(.all)
-                    
-            ) {
+            SwiftUITerminal(host: self.host, createNew: false)
+        ) {
             HStack {
-            
+                
                 Image (systemName: "desktopcomputer")
                 Text ("\(host.alias)")
                 Spacer ()
@@ -36,6 +35,19 @@ struct HostSummaryView: View {
             }.sheet(isPresented: $showingModal) {
                 HostEditView(host: self.host, showingModal: self.$showingModal)
             }
+            //.contextMenu {
+            //    NavigationLink(destination: Text("Hello")){
+            //        Text("New Connection")
+            //        Image(systemName: "plus.circle")
+            //    }
+            //
+            //    Button(action: {
+            //        // enable geolocation
+            //    }) {
+            //        Text("Close Connection")
+            //        Image(systemName: "minus.circle")
+            //    }
+            //}
         }
     }
 }

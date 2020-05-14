@@ -108,6 +108,9 @@ public class SshTerminalView: TerminalView, TerminalViewDelegate {
                 if let error = error {
                     self.feed(text: "[ERROR] \(error)\n")
                 } else {
+                    if let guess = self.guessRemote(remoteBanner: s.remoteBanner) {
+                        DataStore.shared.updateGuess (for: self.host, to: guess)
+                    }
                     let t = self.getTerminal()
                     s.setTerminalSize(width: UInt (t.cols), height: UInt (t.rows))
                 }
@@ -115,6 +118,25 @@ public class SshTerminalView: TerminalView, TerminalViewDelegate {
         }
     }
 
+    var remoteBannerToIcon : [String:String] = [
+        "Ubuntu":"ubuntu",
+        "Raspbian":"raspberry-pi",
+        "Fedora":"fedora",
+        "SSH-2.0-OpenSSH_8.1": "apple",
+        "Windows": "windows",
+    ]
+    
+    // Returns either the icon name to use or the empty string
+    func guessRemote (remoteBanner: String?) -> String?
+    {
+        if remoteBanner == nil {
+            return nil
+        }
+        if let kv = remoteBannerToIcon.first(where: { $0.key.localizedCaseInsensitiveContains(remoteBanner!) }) {
+            return kv.value
+        }
+        return ""
+    }
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
