@@ -27,7 +27,16 @@ struct HostEditView: View {
     {
         self.host.lastUsed = Date()
         store.save (host: self.host)
-        showingModal = false
+        
+        // Delaying the dismiss operation seems to prevent the SwiftUI crash:
+        // https://stackoverflow.com/questions/58404725/why-does-my-swiftui-app-crash-when-navigating-backwards-after-placing-a-navigat
+        //
+        // Note that it still seems to sometimes go back to the toplevel (???) and
+        // sometimes stay where we weref
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.showingModal = false
+        }
+        
     }
     
     func assignKey (chosenKey: Key)
@@ -63,13 +72,6 @@ struct HostEditView: View {
                     HStack {
                         Text ("Authentication")
                         Spacer ()
-                        Picker(selection: self.$host.usePassword, label: Text ("Auth")) {
-                            Text ("Password")
-                                .tag (true)
-                            Text ("SSH Key")
-                                .tag (false)
-                        }.pickerStyle(SegmentedPickerStyle())
-                            .frame(width: 200)
                     }
                     if self.$host.usePassword.wrappedValue {
                         HStack {
@@ -125,6 +127,9 @@ struct HostEditView: View {
                             self.saveAndLeave ()
                         })
             }
+                // This is needed to prevent a warning from UIKit about autolayout
+                //https://gist.github.com/migueldeicaza/ed0ba152159817e0c4a1fd429b596573
+            .disableAutocorrection(true)
         }.onAppear() {
             self.originalAlias = self.host.alias
         }

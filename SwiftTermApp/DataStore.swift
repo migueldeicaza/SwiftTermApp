@@ -28,7 +28,7 @@ class Key: Codable, Identifiable {
     }
 }
 
-class Host: Codable, Identifiable {
+struct Host: Codable, Identifiable {
     let id = UUID()
     var alias: String = ""
     var hostname: String = ""
@@ -46,8 +46,8 @@ class Host: Codable, Identifiable {
 }
 
 class DataStore: ObservableObject {
-    static let testKey1 = Key (id: UUID(), type: "RSA/1024", name: "Dummy Legacy Key", privateKey: "", publicKey: "", passphrase: "")
-    static let testKey2 = Key (id: UUID(), type: "RSA/4098", name: "Dummy 2020 iPhone Key", privateKey: "", publicKey: "", passphrase: "")
+    static let testKey1 = Key (id: UUID(), type: "RSA/1024", name: "Fake Legacy Key", privateKey: "", publicKey: "", passphrase: "")
+    static let testKey2 = Key (id: UUID(), type: "RSA/4098", name: "Fake 2020 iPhone Key", privateKey: "", publicKey: "", passphrase: "")
     
     static let testUuid2 = UUID ()
     

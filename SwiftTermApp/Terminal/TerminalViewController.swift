@@ -30,10 +30,12 @@ class TerminalViewController: UIViewController {
     
     func makeFrame (keyboardDelta: CGFloat) -> CGRect
     {
-        CGRect (x: view.safeAreaInsets.left,
-                y: view.safeAreaInsets.top,
-                width: view.frame.width - view.safeAreaInsets.left - view.safeAreaInsets.right,
-                height: view.frame.height - view.safeAreaInsets.bottom - view.safeAreaInsets.top - keyboardDelta)
+        print ("Making frame with \(keyboardDelta)")
+        return CGRect (
+            x: view.safeAreaInsets.left,
+            y: view.safeAreaInsets.top,
+            width: view.frame.width - view.safeAreaInsets.left - view.safeAreaInsets.right,
+            height: view.frame.height - view.safeAreaInsets.bottom - view.safeAreaInsets.top - keyboardDelta)
     }
     
     func setupKeyboardMonitor ()
@@ -97,14 +99,12 @@ class TerminalViewController: UIViewController {
             self.present(alert, animated: true, completion: nil)
         }
     }
-    
-    override func viewWillLayoutSubviews() {
-        tv?.frame = makeFrame (keyboardDelta: keyboardDelta)
-    }
 }
 
+typealias Controller = TerminalViewController
 
 final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocumentPickerDelegate {
+    
     typealias UIViewControllerType = TerminalViewController
     var host: Host
     var createNew: Bool
@@ -118,15 +118,15 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
     var viewController: TerminalViewController!
 
     func makeUIViewController(context: UIViewControllerRepresentableContext<SwiftUITerminal>) -> TerminalViewController {
-    
         if !createNew {
             if let v = Connections.lookupActive(host: host) {
-                return v
+               return v
             }
         }
         return TerminalViewController (host: host)
     }
     
     func updateUIViewController(_ uiViewController: TerminalViewController, context: UIViewControllerRepresentableContext<SwiftUITerminal>) {
+        print ("UpdateUIViewController")
     }
 }

@@ -54,6 +54,7 @@ struct HomeView: View {
             Section (header: Text ("Recent")) {
                 ForEach(self.store.recentIndices (), id: \.self) { idx in
                     HostSummaryView (host: self.$store.hosts [idx])
+                    //Text ("Test")
                 }
             }
             Section {
