@@ -25,14 +25,22 @@ struct SessionView: View {
     var uiImage: UIImage
     var name: String
     var summary: String
+    var live: TerminalViewController?
+    
     var body: some View {
         
         VStack {
+            #if false
             SessionImage (uiImage: uiImage)
                 .brightness(0.1)
             //.padding(10)
                 .background(Color.red)
             //.mask(RoundedRectangle(cornerRadius: 10))
+            #else
+            SwiftUITerminal(existing: live!)
+                .frame(width: 320, height: 240, alignment: .center)
+            
+            #endif
             HStack {
                 Image (systemName: "desktopcomputer")
                     .font (.system(size: 28))
@@ -64,7 +72,7 @@ struct ScreenOf: View {
     var body: some View {
         print ("running")
         return VStack {
-            SessionView (uiImage: tvc.screenshot, name: tvc.host.alias, summary: tvc.host.summary())
+            SessionView (uiImage: tvc.screenshot, name: tvc.host.alias, summary: tvc.host.summary(), live: tvc)
         }
     }
 }
@@ -80,7 +88,7 @@ struct SessionsView: View {
                 }
             } else {
                 SessionView (uiImage: UIImage (contentsOfFile: "/tmp/shot.png")!,
-                             name: "Linux Server", summary: "linux.azure.com")
+                             name: "Linux Server", summary: "linux.azure.com", live: nil)
             }
             Spacer ()
         }.navigationBarTitle(Text("Sessions"))

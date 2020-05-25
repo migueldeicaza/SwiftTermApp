@@ -12,6 +12,10 @@ import UIKit
 import SwiftTerm
 import SwiftUI
 
+///
+/// Implements the host for the TerminalView and takes care of the keyboard showing/hiding
+/// as well as screenshotting the current session, so it can be used elsewhere
+///
 class TerminalViewController: UIViewController {
     var tv: TerminalView?
     var host: Host
@@ -60,7 +64,7 @@ class TerminalViewController: UIViewController {
         }
         let frame = frameValue.cgRectValue
         keyboardDelta = frame.height
-        tv?.frame = makeFrame(keyboardDelta: frame.height)
+        tv?.frame = makeFrame(keyboardDelta: frame.height+(tv?.inputAccessoryView?.frame.height ?? 0))
     }
     
     @objc private func keyboardWillHide(_ notification: NSNotification) {
@@ -119,27 +123,45 @@ class TerminalViewController: UIViewController {
 
 typealias Controller = TerminalViewController
 
+//
+// This is the wrapper to use the TerminalViewController in Swift
+//
 final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocumentPickerDelegate {
     
     typealias UIViewControllerType = TerminalViewController
-    var host: Host
-    var createNew: Bool
+    enum Kind {
+        case host (host: Host, createNew: Bool)
+        case rehost (rehost: TerminalViewController)
+    }
     
+    var kind: Kind
+
     init (host: Host, createNew: Bool)
     {
-        self.host = host
-        self.createNew = createNew
+        kind = .host(host: host, createNew: createNew)
+    }
+    
+    init (existing: TerminalViewController)
+    {
+        kind = .rehost(rehost: existing)
     }
     
     var viewController: TerminalViewController!
 
     func makeUIViewController(context: UIViewControllerRepresentableContext<SwiftUITerminal>) -> TerminalViewController {
-        if !createNew {
-            if let v = Connections.lookupActive(host: host) {
-               return v
+        
+        switch kind {
+        case .host(host: let host, createNew: let createNew):
+            if !createNew {
+                if let v = Connections.lookupActive(host: host) {
+                   return v
+                }
             }
+            return TerminalViewController (host: host)
+        case .rehost(rehost: let tvc):
+            
+            return tvc
         }
-        return TerminalViewController (host: host)
     }
     
     func updateUIViewController(_ uiViewController: TerminalViewController, context: UIViewControllerRepresentableContext<SwiftUITerminal>) {
