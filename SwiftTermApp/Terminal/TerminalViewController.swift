@@ -55,6 +55,13 @@ class TerminalViewController: UIViewController {
             name: UIWindow.keyboardWillHideNotification,
             object: nil)
     }
+
+    var can: Bool = true
+    override var canBecomeFirstResponder: Bool {
+        get {
+            super.canBecomeFirstResponder && can
+        }
+    }
     
     var keyboardDelta: CGFloat = 0
     @objc private func keyboardWillShow(_ notification: NSNotification) {
@@ -62,8 +69,10 @@ class TerminalViewController: UIViewController {
         guard let frameValue = notification.userInfo?[key] as? NSValue else {
             return
         }
+        if !can {
+            return
+        }
         let frame = frameValue.cgRectValue
-        keyboardDelta = frame.height
         tv?.frame = makeFrame(keyboardDelta: frame.height+(tv?.inputAccessoryView?.frame.height ?? 0))
     }
     
@@ -154,12 +163,15 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
         case .host(host: let host, createNew: let createNew):
             if !createNew {
                 if let v = Connections.lookupActive(host: host) {
-                   return v
+                    v.tv?.frame = v.view.frame
+                    v.can = true
+                    return v
                 }
             }
             return TerminalViewController (host: host)
         case .rehost(rehost: let tvc):
-            
+            tvc.can = false
+            tvc.resignFirstResponder()
             return tvc
         }
     }

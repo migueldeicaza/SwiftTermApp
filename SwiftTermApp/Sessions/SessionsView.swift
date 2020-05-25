@@ -42,8 +42,10 @@ struct SessionView: View {
             
             #endif
             HStack {
-                Image (systemName: "desktopcomputer")
-                    .font (.system(size: 28))
+                getImage(for: live!.host)
+                    .colorInvert()
+//                Image (systemName: "desktopcomputer")
+//                    .font (.system(size: 28))
                 VStack (alignment: .leading, spacing: 4) {
                     HStack {
                         Text (name)

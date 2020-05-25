@@ -8,6 +8,21 @@
 
 import SwiftUI
 
+func getImage (for host: Host) -> some View
+{
+    if host.hostKindGuess == "" {
+        return Image (systemName: "desktopcomputer")
+        .scaledToFit()
+        .frame(width: 28, height: 28)
+    } else {
+        return Image (host.hostKindGuess)
+        .resizable()
+        .scaledToFit()
+        .frame(width: 28, height: 28)
+    }
+}
+
+
 struct HostSummaryView: View {
     @Binding var host: Host
     @State var showingModal = false
@@ -20,9 +35,10 @@ struct HostSummaryView: View {
             SwiftUITerminal(host: self.host, createNew: false)
         ) {
             HStack (spacing: 12){
-                Image (systemName: "desktopcomputer")
+                getImage (for: host)
                     .font (.system(size: 28))
                     .brightness(Connections.lookupActive(host: self.host) != nil ? 0 : 0.6)
+                    .colorMultiply(host.hostKindGuess == "" ? Color.black : Color.white)
                 VStack (alignment: .leading, spacing: 4) {
                     HStack {
                         Text ("\(host.alias)")
