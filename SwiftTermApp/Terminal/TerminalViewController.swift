@@ -99,6 +99,22 @@ class TerminalViewController: UIViewController {
             self.present(alert, animated: true, completion: nil)
         }
     }
+    
+    var screenshot: UIImage = UIImage (contentsOfFile: "/tmp/shot.png") ?? UIImage.init(systemName: "desktopcomputer")!
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        //screenshot = tv!.image ()
+
+        let renderer = UIGraphicsImageRenderer(size: tv!.bounds.size)
+        screenshot = renderer.image { ctx in
+            tv!.layer.render(in: ctx.cgContext)
+            //tv!.drawHierarchy(in: tv!.bounds, afterScreenUpdates: true)
+        }
+        if let data = screenshot.pngData() {
+            try? data.write(to: URL (fileURLWithPath: "/tmp/shot.png"))
+        }
+        super.viewWillDisappear(animated)
+    }
 }
 
 typealias Controller = TerminalViewController

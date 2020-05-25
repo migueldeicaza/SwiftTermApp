@@ -14,6 +14,9 @@ class Connections: ObservableObject {
     @Published public var connections: [TerminalViewController] = [
     ]
     
+    public func active () -> Bool {
+        return connections.count > 0
+    }
     public static var shared: Connections = Connections()
     
     public static func add (connection: TerminalViewController)

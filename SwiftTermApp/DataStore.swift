@@ -43,6 +43,10 @@ struct Host: Codable, Identifiable {
     var sshKey: UUID?
     var style: String = ""
     var lastUsed: Date = Date.distantPast
+    
+    func summary() -> String {
+        hostname + (style != "" ? ", \(style)" : "")
+    }
 }
 
 class DataStore: ObservableObject {
@@ -54,7 +58,7 @@ class DataStore: ObservableObject {
     var defaults: UserDefaults?
     
     @Published var hosts: [Host] = [
-       //Host(alias: "Dummy MacPro",         hostname: "mac.tirania.org", lastUsed: Date ()),
+       Host(alias: "Dummy MacPro",         hostname: "mac.tirania.org", lastUsed: Date ()),
        //Host(alias: "Dummy Raspberri Pi",   hostname: "raspberry.tirania.org", lastUsed: Date ()),
        //Host(alias: "Dummy MacBook",        hostname: "road.tirania.org", usePassword: false, sshKey: DataStore.testKey1.id),
        //Host(alias: "Dummy Old Vax",        hostname: "oldvax.tirania.org",usePassword: false, sshKey: DataStore.testKey2.id),

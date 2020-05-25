@@ -51,12 +51,15 @@ struct HomeView: View {
     
     var body: some View {
         List {
-            Section (header: Text ("Recent")) {
-                ForEach(self.store.recentIndices (), id: \.self) { idx in
-                    HostSummaryView (host: self.$store.hosts [idx])
-                    //Text ("Test")
+//            if Connections.shared.active() {
+//                ConnectionSummaryView ()
+//            } else {
+                Section (header: Text ("Recent")) {
+                    ForEach(self.store.recentIndices (), id: \.self) { idx in
+                        HostSummaryView (host: self.$store.hosts [idx])
+                    }
                 }
-            }
+            //}
             Section {
                 NavigationLink(
                     destination: HostsView()

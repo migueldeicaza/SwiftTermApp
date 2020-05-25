@@ -111,6 +111,7 @@
 		4901167424553789002C1F85 /* SwiftTermApp */ = {
 			isa = PBXGroup;
 			children = (
+				49F073E7247B6B5E00A83CDC /* Sessions */,
 				49C1B6B3246260C000D54F6F /* Terminal */,
 				49C216C4245D102600280B6A /* Keys */,
 				49C216C3245D101200280B6A /* Hosts */,
@@ -126,7 +127,6 @@
 				49011691245622C6002C1F85 /* DataStore.swift */,
 				4967B9FB2459239700A9D2A6 /* Connections.swift */,
 				4967B9FD24592D0B00A9D2A6 /* SettingsView.swift */,
-				4967BA0124592D3600A9D2A6 /* SessionsView.swift */,
 			);
 			path = SwiftTermApp;
 			sourceTree = "<group>";
@@ -193,6 +193,14 @@
 				4911B3032463AD3E00816BAA /* GenerateKey.swift */,
 			);
 			path = Keys;
+			sourceTree = "<group>";
+		};
+		49F073E7247B6B5E00A83CDC /* Sessions */ = {
+			isa = PBXGroup;
+			children = (
+				4967BA0124592D3600A9D2A6 /* SessionsView.swift */,
+			);
+			path = Sessions;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -436,11 +444,13 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/SwiftSH.binaries",
 				);
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/SwiftSH.binaries";
 				INFOPLIST_FILE = SwiftTermApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/SwiftSH.binaries";
 				PRODUCT_BUNDLE_IDENTIFIER = org.tirania.SwiftTermApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -460,11 +470,13 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/SwiftSH.binaries",
 				);
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/SwiftSH.binaries";
 				INFOPLIST_FILE = SwiftTermApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/SwiftSH.binaries";
 				PRODUCT_BUNDLE_IDENTIFIER = org.tirania.SwiftTermApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;

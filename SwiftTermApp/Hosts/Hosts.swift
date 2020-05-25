@@ -19,15 +19,25 @@ struct HostSummaryView: View {
             // https://stackoverflow.com/questions/56756318/swiftui-presentationbutton-with-modal-that-is-full-screen
             SwiftUITerminal(host: self.host, createNew: false)
         ) {
-            HStack {
-                
+            HStack (spacing: 12){
                 Image (systemName: "desktopcomputer")
-                Text ("\(host.alias)")
-                Spacer ()
+                    .font (.system(size: 28))
+                    .brightness(Connections.lookupActive(host: self.host) != nil ? 0 : 0.6)
+                VStack (alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text ("\(host.alias)")
+                            .bold()
+                        Spacer ()
+                    }
+                    Text (host.summary ())
+                        .brightness(0.4)
+                        .font(.footnote)
+                }
                 Button (action: {
                     print ("Hello")
                 }) {
                     Image (systemName: "ellipsis.circle")
+                        .font(.system(size: 24))
                 }
                 .onTapGesture {
                     self.showingModal = true
@@ -35,19 +45,19 @@ struct HostSummaryView: View {
             }.sheet(isPresented: $showingModal) {
                 HostEditView(host: self.host, showingModal: self.$showingModal)
             }
-            //.contextMenu {
-            //    NavigationLink(destination: Text("Hello")){
-            //        Text("New Connection")
-            //        Image(systemName: "plus.circle")
-            //    }
-            //
-            //    Button(action: {
-            //        // enable geolocation
-            //    }) {
-            //        Text("Close Connection")
-            //        Image(systemName: "minus.circle")
-            //    }
-            //}
+            .contextMenu {
+                NavigationLink(destination: SwiftUITerminal(host: self.host, createNew: true)){
+                    Text("New Connection")
+                    Image(systemName: "plus.circle")
+                }
+            
+                Button(action: {
+                    // enable geolocation
+                }) {
+                    Text("Close Connection")
+                    Image(systemName: "minus.circle")
+                }
+            }
         }
     }
 }
