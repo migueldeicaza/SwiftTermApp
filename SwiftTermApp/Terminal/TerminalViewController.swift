@@ -44,15 +44,20 @@ class TerminalViewController: UIViewController {
     
     func setupKeyboardMonitor ()
     {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(keyboardWillShow),
-            name: UIWindow.keyboardWillShowNotification,
-            object: nil)
+//        NotificationCenter.default.addObserver(
+//            self,
+//            selector: #selector(keyboardWillShow),
+//            name: UIWindow.keyboardWillShowNotification,
+//            object: nil)
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(keyboardWillHide),
             name: UIWindow.keyboardWillHideNotification,
+            object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardNotification(_:)),
+            name: UIWindow.keyboardWillChangeFrameNotification,
             object: nil)
     }
 
@@ -62,24 +67,55 @@ class TerminalViewController: UIViewController {
             super.canBecomeFirstResponder && can
         }
     }
-    
-    var keyboardDelta: CGFloat = 0
-    @objc private func keyboardWillShow(_ notification: NSNotification) {
-        let key = UIResponder.keyboardFrameBeginUserInfoKey
-        guard let frameValue = notification.userInfo?[key] as? NSValue else {
-            return
+
+    @objc
+    func keyboardNotification(_ notification: NSNotification) {
+        if let userInfo = notification.userInfo {
+            let endFrame = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue
+            let endFrameY = endFrame?.origin.y ?? 0
+            let duration:TimeInterval = (userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
+            let animationCurveRawNSN = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? NSNumber
+            let animationCurveRaw = animationCurveRawNSN?.uintValue ?? UIView.AnimationOptions.curveEaseInOut.rawValue
+            let animationCurve:UIView.AnimationOptions = UIView.AnimationOptions(rawValue: animationCurveRaw)
+//            if endFrameY >= UIScreen.main.bounds.size.height {
+//                self.keyboardHeightLayoutConstraint?.constant = 0.0
+//            } else {
+//                self.keyboardHeightLayoutConstraint?.constant = endFrame?.size.height ?? 0.0
+//            }
+            
+            let relative = view.convert(endFrame ?? CGRect.zero, from: view.window)
+            let inter = relative.intersection(tv!.frame)
+            if inter.height > 0 {
+                view.frame = makeFrame(keyboardDelta: inter.height)
+            }
+            
+            UIView.animate(withDuration: duration,
+                                       delay: TimeInterval(0),
+                                       options: animationCurve,
+                                       animations: {
+
+                                        self.view.layoutIfNeeded() },
+                                       completion: nil)
         }
-        if !can {
-            return
-        }
-        let frame = frameValue.cgRectValue
-        tv?.frame = makeFrame(keyboardDelta: frame.height+(tv?.inputAccessoryView?.frame.height ?? 0))
     }
+        
+    var keyboardDelta: CGFloat = 0
+//    @objc private func keyboardWillShow(_ notification: NSNotification) {
+//        let key = UIResponder.keyboardFrameBeginUserInfoKey
+//        guard let frameValue = notification.userInfo?[key] as? NSValue else {
+//            return
+//        }
+//        if !can {
+//            return
+//        }
+//        let frame = frameValue.cgRectValue
+//        tv?.frame = makeFrame(keyboardDelta: frame.height+(tv?.inputAccessoryView?.frame.height ?? 0))
+//    }
     
     @objc private func keyboardWillHide(_ notification: NSNotification) {
         //let key = UIResponder.keyboardFrameBeginUserInfoKey
         keyboardDelta = 0
-        tv?.frame = makeFrame(keyboardDelta: 0)
+        view.frame = makeFrame(keyboardDelta: 0)
     }
     
     override func viewDidLoad() {
@@ -95,6 +131,8 @@ class TerminalViewController: UIViewController {
             terminalViewCreationError ("general")
         }
         if let t = tv {
+            t.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            view.autoresizesSubviews = true
             view.addSubview(t)
         
             t.becomeFirstResponder()
@@ -115,9 +153,14 @@ class TerminalViewController: UIViewController {
     
     var screenshot: UIImage = UIImage (contentsOfFile: "/tmp/shot.png") ?? UIImage.init(systemName: "desktopcomputer")!
     
+    override func viewWillAppear(_ animated: Bool) {
+        print ("view WILL Appear")
+        super.viewWillAppear(true)
+    }
     override func viewWillDisappear(_ animated: Bool) {
         //screenshot = tv!.image ()
-
+        print ("view WILL DISAPPEAR")
+        
         let renderer = UIGraphicsImageRenderer(size: tv!.bounds.size)
         screenshot = renderer.image { ctx in
             tv!.layer.render(in: ctx.cgContext)
@@ -163,6 +206,7 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
         case .host(host: let host, createNew: let createNew):
             if !createNew {
                 if let v = Connections.lookupActive(host: host) {
+                    print ("Setting the frame to \(v.view.frame)")
                     v.tv?.frame = v.view.frame
                     v.can = true
                     return v
@@ -170,6 +214,7 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
             }
             return TerminalViewController (host: host)
         case .rehost(rehost: let tvc):
+            tvc.removeFromParent ()
             tvc.can = false
             tvc.resignFirstResponder()
             return tvc
@@ -177,6 +222,6 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
     }
     
     func updateUIViewController(_ uiViewController: TerminalViewController, context: UIViewControllerRepresentableContext<SwiftUITerminal>) {
-        print ("UpdateUIViewController")
+        
     }
 }

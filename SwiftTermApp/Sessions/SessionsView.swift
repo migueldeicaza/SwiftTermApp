@@ -22,25 +22,26 @@ struct SessionImage: View {
 }
 
 struct SessionView: View {
-    var uiImage: UIImage
+    var uiImage: UIImage?
     var name: String
     var summary: String
     var live: TerminalViewController?
-    
+
     var body: some View {
-        
         VStack {
-            #if false
-            SessionImage (uiImage: uiImage)
-                .brightness(0.1)
-            //.padding(10)
-                .background(Color.red)
-            //.mask(RoundedRectangle(cornerRadius: 10))
-            #else
-            SwiftUITerminal(existing: live!)
-                .frame(width: 320, height: 240, alignment: .center)
-            
-            #endif
+        
+            if uiImage != nil {
+                SessionImage (uiImage: uiImage!)
+                    .brightness(0.1)
+                    .background(Color.red)
+                    //.mask(RoundedRectangle(cornerRadius: 10))
+            } else {
+                ZStack {
+                    SwiftUITerminal(existing: live!)
+                        .frame(width: 320, height: 240, alignment: .center)
+                }
+            }
+        
             HStack {
                 getImage(for: live!.host)
                     .colorInvert()
@@ -57,15 +58,20 @@ struct SessionView: View {
                         .brightness(0.6)
                         .font(.footnote)
                 }
-                Image (systemName: "xmark.circle.fill")
-                    .foregroundColor(Color.black)
-                    .brightness(0.6)
-                    .font(.system(size: 30))
+                Button (action: { print ("Should Close Session")}) {
+                    Image (systemName: "xmark.circle.fill")
+                        .foregroundColor(Color.black)
+                        .brightness(0.6)
+                        .font(.system(size: 30))
+                }
             }
         }.padding (10)
             .background(Color.black)
             .mask(RoundedRectangle(cornerRadius: 10))
             .padding ([.leading, .trailing], 16)
+            .onTapGesture {
+                print ("Should activate this session")
+        }
     }
 }
 struct ScreenOf: View {
@@ -83,7 +89,7 @@ struct SessionsView: View {
     @ObservedObject var connections = Connections.shared
 
     var body: some View {
-        Group {
+        ScrollView {
             if connections.connections.count > 0 {
                 ForEach (connections.connections.indices) { idx in
                     ScreenOf (tvc: self.connections.connections [idx])
