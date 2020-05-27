@@ -16,18 +16,31 @@ import SwiftUI
 /// Implements the host for the TerminalView and takes care of the keyboard showing/hiding
 /// as well as screenshotting the current session, so it can be used elsewhere
 ///
+/// This can be constructed either with a Host, to trigger the connection workflow, or with a
+/// TerminalView to become the host for an existing view.
+///
 class TerminalViewController: UIViewController {
-    var tv: TerminalView?
+    // If this is nil, it will trigger the SSH workflow.
+    var terminalView: SshTerminalView?
     var host: Host
     
+    // This constructor is used to launch a new instance, and will trigger the SSH workflow
     init (host: Host)
     {
         self.host = host
         DataStore.shared.used (host: host)
         super.init(nibName: nil, bundle: nil)
-        Connections.add(connection: self)
     }
-    
+
+    // This consturctor is used to create a fresh TerminalViewController from an existing TerminalView
+    init (terminalView: SshTerminalView)
+    {
+        self.terminalView = terminalView
+        self.host = terminalView.host
+        DataStore.shared.used (host: host)
+        super.init(nibName: nil, bundle: nil)
+    }
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -42,13 +55,8 @@ class TerminalViewController: UIViewController {
             height: view.frame.height - view.safeAreaInsets.bottom - view.safeAreaInsets.top - keyboardDelta)
     }
     
-    func setupKeyboardMonitor ()
+    func addKeyboardMonitor ()
     {
-//        NotificationCenter.default.addObserver(
-//            self,
-//            selector: #selector(keyboardWillShow),
-//            name: UIWindow.keyboardWillShowNotification,
-//            object: nil)
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(keyboardWillHide),
@@ -60,7 +68,13 @@ class TerminalViewController: UIViewController {
             name: UIWindow.keyboardWillChangeFrameNotification,
             object: nil)
     }
-
+    
+    func removeKeyboardMonitor ()
+    {
+        NotificationCenter.default.removeObserver(self, name: UIWindow.keyboardWillHideNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIWindow.keyboardWillChangeFrameNotification, object: nil)
+    }
+    
     var can: Bool = true
     override var canBecomeFirstResponder: Bool {
         get {
@@ -72,7 +86,7 @@ class TerminalViewController: UIViewController {
     func keyboardNotification(_ notification: NSNotification) {
         if let userInfo = notification.userInfo {
             let endFrame = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue
-            let endFrameY = endFrame?.origin.y ?? 0
+            //let endFrameY = endFrame?.origin.y ?? 0
             let duration:TimeInterval = (userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
             let animationCurveRawNSN = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? NSNumber
             let animationCurveRaw = animationCurveRawNSN?.uintValue ?? UIView.AnimationOptions.curveEaseInOut.rawValue
@@ -84,7 +98,8 @@ class TerminalViewController: UIViewController {
 //            }
             
             let relative = view.convert(endFrame ?? CGRect.zero, from: view.window)
-            let inter = relative.intersection(tv!.frame)
+            
+            let inter = relative.intersection(terminalView!.frame)
             if inter.height > 0 {
                 view.frame = makeFrame(keyboardDelta: inter.height)
             }
@@ -100,17 +115,9 @@ class TerminalViewController: UIViewController {
     }
         
     var keyboardDelta: CGFloat = 0
-//    @objc private func keyboardWillShow(_ notification: NSNotification) {
-//        let key = UIResponder.keyboardFrameBeginUserInfoKey
-//        guard let frameValue = notification.userInfo?[key] as? NSValue else {
-//            return
-//        }
-//        if !can {
-//            return
-//        }
-//        let frame = frameValue.cgRectValue
-//        tv?.frame = makeFrame(keyboardDelta: frame.height+(tv?.inputAccessoryView?.frame.height ?? 0))
-//    }
+    @objc private func keyboardWillShow(_ notification: NSNotification) {
+        
+    }
     
     @objc private func keyboardWillHide(_ notification: NSNotification) {
         //let key = UIResponder.keyboardFrameBeginUserInfoKey
@@ -118,26 +125,39 @@ class TerminalViewController: UIViewController {
         view.frame = makeFrame(keyboardDelta: 0)
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        // Do any additional setup after loading the view, typically from a nib.
-        setupKeyboardMonitor()
+    func startConnection() -> SshTerminalView? {
         do {
-            tv = try SshTerminalView(frame: makeFrame (keyboardDelta: 0), host: host)
+            let tv = try SshTerminalView(frame: makeFrame (keyboardDelta: 0), host: host)
+            tv.feed(text: "Welcome to SwiftTerm\n\n")
+            return tv
         } catch MyError.noValidKey(let msg) {
             terminalViewCreationError (msg)
         } catch {
             terminalViewCreationError ("general")
         }
-        if let t = tv {
-            t.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            view.autoresizesSubviews = true
-            view.addSubview(t)
+        return nil
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
         
-            t.becomeFirstResponder()
-            t.feed(text: "Welcome to SwiftTerm\n\n")
+        // Do any additional setup after loading the view, typically from a nib.
+        addKeyboardMonitor()
+        if terminalView == nil {
+            terminalView = startConnection()
         }
+        guard let t = terminalView else {
+            return
+        }
+        // if it succeeded
+        self.terminalView = t
+        t.frame = view.frame
+        t.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.autoresizesSubviews = true
+        view.addSubview(t)
+    
+        t.becomeFirstResponder()
+        Connections.track(connection: t)
     }
     
     func terminalViewCreationError (_ msg: String)
@@ -150,25 +170,14 @@ class TerminalViewController: UIViewController {
             self.present(alert, animated: true, completion: nil)
         }
     }
-    
-    var screenshot: UIImage = UIImage (contentsOfFile: "/tmp/shot.png") ?? UIImage.init(systemName: "desktopcomputer")!
-    
+        
     override func viewWillAppear(_ animated: Bool) {
-        print ("view WILL Appear")
         super.viewWillAppear(true)
     }
+    
     override func viewWillDisappear(_ animated: Bool) {
-        //screenshot = tv!.image ()
-        print ("view WILL DISAPPEAR")
+        removeKeyboardMonitor()
         
-        let renderer = UIGraphicsImageRenderer(size: tv!.bounds.size)
-        screenshot = renderer.image { ctx in
-            tv!.layer.render(in: ctx.cgContext)
-            //tv!.drawHierarchy(in: tv!.bounds, afterScreenUpdates: true)
-        }
-        if let data = screenshot.pngData() {
-            try? data.write(to: URL (fileURLWithPath: "/tmp/shot.png"))
-        }
         super.viewWillDisappear(animated)
     }
 }
@@ -183,7 +192,7 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
     typealias UIViewControllerType = TerminalViewController
     enum Kind {
         case host (host: Host, createNew: Bool)
-        case rehost (rehost: TerminalViewController)
+        case rehost (rehost: SshTerminalView)
     }
     
     var kind: Kind
@@ -193,7 +202,7 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
         kind = .host(host: host, createNew: createNew)
     }
     
-    init (existing: TerminalViewController)
+    init (existing: SshTerminalView)
     {
         kind = .rehost(rehost: existing)
     }
@@ -206,18 +215,12 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
         case .host(host: let host, createNew: let createNew):
             if !createNew {
                 if let v = Connections.lookupActive(host: host) {
-                    print ("Setting the frame to \(v.view.frame)")
-                    v.tv?.frame = v.view.frame
-                    v.can = true
-                    return v
+                    return TerminalViewController(terminalView: v)
                 }
             }
             return TerminalViewController (host: host)
-        case .rehost(rehost: let tvc):
-            tvc.removeFromParent ()
-            tvc.can = false
-            tvc.resignFirstResponder()
-            return tvc
+        case .rehost(rehost: let terminalView):
+            return TerminalViewController(terminalView: terminalView)
         }
     }
     

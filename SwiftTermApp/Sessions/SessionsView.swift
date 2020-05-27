@@ -2,48 +2,28 @@
 //  SessionsView.swift
 //  SwiftTermApp
 //
+// Displays live sessions.
+//
 //  Created by Miguel de Icaza on 4/28/20.
 //  Copyright © 2020 Miguel de Icaza. All rights reserved.
 //
 
 import SwiftUI
 
-struct SessionImage: View {
-    var uiImage: UIImage
-    var body: some View {
-        Image (uiImage: uiImage)
-            .resizable()
-        .offset(x: 1, y: -116)
-            .aspectRatio(contentMode: .fill)
-            .frame(width: 320, height: 240, alignment: .center)
-            .border(Color.black)
-            .clipped()
-    }
-}
-
 struct SessionView: View {
-    var uiImage: UIImage?
     var name: String
     var summary: String
-    var live: TerminalViewController?
+    var terminalView: SshTerminalView
 
     var body: some View {
         VStack {
         
-            if uiImage != nil {
-                SessionImage (uiImage: uiImage!)
-                    .brightness(0.1)
-                    .background(Color.red)
-                    //.mask(RoundedRectangle(cornerRadius: 10))
-            } else {
-                ZStack {
-                    SwiftUITerminal(existing: live!)
-                        .frame(width: 320, height: 240, alignment: .center)
-                }
+            ZStack {
+                SwiftUITerminal(existing: terminalView)
+                    .frame(width: 320, height: 240, alignment: .center)
             }
-        
             HStack {
-                getImage(for: live!.host)
+                getImage(for: terminalView.host)
                     .colorInvert()
 //                Image (systemName: "desktopcomputer")
 //                    .font (.system(size: 28))
@@ -75,12 +55,12 @@ struct SessionView: View {
     }
 }
 struct ScreenOf: View {
-    var tvc: TerminalViewController
+    var terminalView: SshTerminalView
     
     var body: some View {
         print ("running")
         return VStack {
-            SessionView (uiImage: tvc.screenshot, name: tvc.host.alias, summary: tvc.host.summary(), live: tvc)
+            SessionView (name: terminalView.host.alias, summary: terminalView.host.summary(), terminalView: terminalView)
         }
     }
 }
@@ -92,11 +72,10 @@ struct SessionsView: View {
         ScrollView {
             if connections.connections.count > 0 {
                 ForEach (connections.connections.indices) { idx in
-                    ScreenOf (tvc: self.connections.connections [idx])
+                    ScreenOf (terminalView: self.connections.connections [idx])
                 }
             } else {
-                SessionView (uiImage: UIImage (contentsOfFile: "/tmp/shot.png")!,
-                             name: "Linux Server", summary: "linux.azure.com", live: nil)
+                Text ("No active sessions")
             }
             Spacer ()
         }.navigationBarTitle(Text("Sessions"))

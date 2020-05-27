@@ -22,6 +22,29 @@ func getImage (for host: Host) -> some View
     }
 }
 
+struct SwiftUITerminalWrapper: View {
+    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
+
+    var host: Host
+    var createNew: Bool
+    
+    var body: some View {
+        VStack {
+            HStack (alignment: .center) {
+                Spacer ().frame (maxWidth: 10)
+                Image (systemName: "lessthan")
+                Text ("Back")
+                    .font(.footnote)
+                Spacer ()
+            }.onTapGesture {
+                self.presentationMode.wrappedValue.dismiss()
+            }
+
+            SwiftUITerminal(host: host, createNew: createNew)
+        }
+        
+    }
+}
 
 struct HostSummaryView: View {
     @Binding var host: Host
@@ -32,7 +55,9 @@ struct HostSummaryView: View {
             // Solution might be to use an external host UIViewController:
             // https://gist.github.com/timothycosta/a43dfe25f1d8a37c71341a1ebaf82213
             // https://stackoverflow.com/questions/56756318/swiftui-presentationbutton-with-modal-that-is-full-screen
-            SwiftUITerminal(host: self.host, createNew: false)
+            SwiftUITerminalWrapper(host: self.host, createNew: false)
+                .navigationBarTitle("")
+                .navigationBarHidden(true)
         ) {
             HStack (spacing: 12){
                 getImage (for: host)
@@ -110,7 +135,7 @@ struct HostsView : View {
                 .environment(\.editMode, $editMode)
             }
         }
-        .listStyle(GroupedListStyle())
+        .listStyle(DefaultListStyle())
         .navigationBarTitle(Text("Hosts"))
         .navigationBarItems(trailing: HStack {
             Button (action: { self.showHostEdit = true }) {
@@ -121,7 +146,6 @@ struct HostsView : View {
         .sheet (isPresented: $showHostEdit) {
             HostEditView(host: Host(), showingModal: self.$showHostEdit)
         }
-        
     }
 }
 

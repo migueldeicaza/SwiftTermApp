@@ -9,9 +9,10 @@
 import Foundation
 import Combine
 import UIKit
+import SwiftTerm
 
 class Connections: ObservableObject {
-    @Published public var connections: [TerminalViewController] = [
+    @Published public var connections: [SshTerminalView] = [
     ]
     
     public func active () -> Bool {
@@ -19,12 +20,16 @@ class Connections: ObservableObject {
     }
     public static var shared: Connections = Connections()
     
-    public static func add (connection: TerminalViewController)
+    // Tracks the connection.
+    public static func track (connection: SshTerminalView)
     {
+        if shared.connections.contains(connection) {
+            return
+        }
         shared.connections.append(connection)
     }
     
-    public static func lookupActive (host: Host) -> TerminalViewController?
+    public static func lookupActive (host: Host) -> SshTerminalView?
     {
         return shared.connections.first { $0.host.id == host.id }
     }

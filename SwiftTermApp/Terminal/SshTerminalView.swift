@@ -121,10 +121,11 @@ public class SshTerminalView: TerminalView, TerminalViewDelegate {
     }
 
     var remoteBannerToIcon : [String:String] = [
-        "Ubuntu":"ubuntu",
-        "Raspbian":"raspberry-pi",
-        "Fedora":"fedora",
+        "SSH-2.0-OpenSSH_7.4p1 Raspbian-10+deb9u7":"raspberry-pi",
         "SSH-2.0-OpenSSH_8.1": "apple",
+
+        "Fedora":"fedora",
+        "Ubuntu":"ubuntu",
         "Windows": "windows",
     ]
     
