@@ -10,7 +10,7 @@ import Foundation
 import Combine
 import UIKit
 import SwiftTerm
-
+ 
 class Connections: ObservableObject {
     @Published public var connections: [SshTerminalView] = [
     ]
@@ -18,6 +18,14 @@ class Connections: ObservableObject {
     public func active () -> Bool {
         return connections.count > 0
     }
+    
+    public static func remove (_ terminal: SshTerminalView)
+    {
+        if let idx = shared.connections.firstIndex(of: terminal) {
+            shared.connections.remove (at: idx)
+        }
+    }
+    
     public static var shared: Connections = Connections()
     
     // Tracks the connection.
@@ -34,3 +42,4 @@ class Connections: ObservableObject {
         return shared.connections.first { $0.host.id == host.id }
     }
 }
+

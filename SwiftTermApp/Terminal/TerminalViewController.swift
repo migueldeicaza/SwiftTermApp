@@ -22,21 +22,32 @@ import SwiftUI
 class TerminalViewController: UIViewController {
     // If this is nil, it will trigger the SSH workflow.
     var terminalView: SshTerminalView?
+    var interactive: Bool
     var host: Host
-    
+    var serial: Int
+    static var Serial: Int = 0
+
     // This constructor is used to launch a new instance, and will trigger the SSH workflow
-    init (host: Host)
+    init (host: Host, interactive: Bool)
     {
+        serial = TerminalViewController.Serial
+        TerminalViewController.Serial += 1
         self.host = host
+        self.interactive = interactive
         DataStore.shared.used (host: host)
+        visible = false
         super.init(nibName: nil, bundle: nil)
     }
 
     // This consturctor is used to create a fresh TerminalViewController from an existing TerminalView
-    init (terminalView: SshTerminalView)
+    init (terminalView: SshTerminalView, interactive: Bool)
     {
+        serial = TerminalViewController.Serial
+        TerminalViewController.Serial += 1
         self.terminalView = terminalView
         self.host = terminalView.host
+        self.interactive = interactive
+        visible = false
         DataStore.shared.used (host: host)
         super.init(nibName: nil, bundle: nil)
     }
@@ -62,6 +73,7 @@ class TerminalViewController: UIViewController {
             selector: #selector(keyboardWillHide),
             name: UIWindow.keyboardWillHideNotification,
             object: nil)
+        
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(keyboardNotification(_:)),
@@ -75,13 +87,6 @@ class TerminalViewController: UIViewController {
         NotificationCenter.default.removeObserver(self, name: UIWindow.keyboardWillChangeFrameNotification, object: nil)
     }
     
-    var can: Bool = true
-    override var canBecomeFirstResponder: Bool {
-        get {
-            super.canBecomeFirstResponder && can
-        }
-    }
-
     @objc
     func keyboardNotification(_ notification: NSNotification) {
         if let userInfo = notification.userInfo {
@@ -91,19 +96,14 @@ class TerminalViewController: UIViewController {
             let animationCurveRawNSN = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? NSNumber
             let animationCurveRaw = animationCurveRawNSN?.uintValue ?? UIView.AnimationOptions.curveEaseInOut.rawValue
             let animationCurve:UIView.AnimationOptions = UIView.AnimationOptions(rawValue: animationCurveRaw)
-//            if endFrameY >= UIScreen.main.bounds.size.height {
-//                self.keyboardHeightLayoutConstraint?.constant = 0.0
-//            } else {
-//                self.keyboardHeightLayoutConstraint?.constant = endFrame?.size.height ?? 0.0
-//            }
-            
             let relative = view.convert(endFrame ?? CGRect.zero, from: view.window)
             
             let inter = relative.intersection(terminalView!.frame)
             if inter.height > 0 {
-                view.frame = makeFrame(keyboardDelta: inter.height)
+                keyboardDelta = inter.height
+                //view.frame = makeFrame(keyboardDelta: inter.height)
             }
-            
+            terminalView!.frame = makeFrame(keyboardDelta: inter.height)
             UIView.animate(withDuration: duration,
                                        delay: TimeInterval(0),
                                        options: animationCurve,
@@ -115,12 +115,8 @@ class TerminalViewController: UIViewController {
     }
         
     var keyboardDelta: CGFloat = 0
-    @objc private func keyboardWillShow(_ notification: NSNotification) {
-        
-    }
     
     @objc private func keyboardWillHide(_ notification: NSNotification) {
-        //let key = UIResponder.keyboardFrameBeginUserInfoKey
         keyboardDelta = 0
         view.frame = makeFrame(keyboardDelta: 0)
     }
@@ -137,12 +133,15 @@ class TerminalViewController: UIViewController {
         }
         return nil
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        if interactive {
+            addKeyboardMonitor()
+        }
+        
         // Do any additional setup after loading the view, typically from a nib.
-        addKeyboardMonitor()
         if terminalView == nil {
             terminalView = startConnection()
         }
@@ -152,14 +151,21 @@ class TerminalViewController: UIViewController {
         // if it succeeded
         self.terminalView = t
         t.frame = view.frame
-        t.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        view.autoresizesSubviews = true
         view.addSubview(t)
-    
-        t.becomeFirstResponder()
+        if interactive {
+            t.becomeFirstResponder()
+        } else {
+            let _ = t.resignFirstResponder()
+        }
         Connections.track(connection: t)
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        if !interactive {
+            terminalView!.frame = view.frame
+        }
+    }
     func terminalViewCreationError (_ msg: String)
     {
         let alert = UIAlertController(title: "Connection Problem", message: msg, preferredStyle: .alert)
@@ -171,13 +177,15 @@ class TerminalViewController: UIViewController {
         }
     }
         
+    var visible: Bool
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
+        visible = true
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         removeKeyboardMonitor()
-        
+        visible = false
         super.viewWillDisappear(animated)
     }
 }
@@ -188,7 +196,7 @@ typealias Controller = TerminalViewController
 // This is the wrapper to use the TerminalViewController in Swift
 //
 final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocumentPickerDelegate {
-    
+    var terminalView: SshTerminalView?
     typealias UIViewControllerType = TerminalViewController
     enum Kind {
         case host (host: Host, createNew: Bool)
@@ -196,15 +204,27 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
     }
     
     var kind: Kind
-
-    init (host: Host, createNew: Bool)
+    var interactive: Bool
+    
+    init (host: Host, createNew: Bool, interactive: Bool)
     {
         kind = .host(host: host, createNew: createNew)
+        self.interactive = interactive
     }
     
-    init (existing: SshTerminalView)
+    init (existing: SshTerminalView, interactive: Bool)
     {
+        self.terminalView = existing
         kind = .rehost(rehost: existing)
+        self.interactive = interactive
+        super.init ()
+    }
+
+    func rehost ()
+    {
+        if let tv = terminalView {
+            viewController.view.addSubview(tv)
+        }
     }
     
     var viewController: TerminalViewController!
@@ -215,16 +235,18 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
         case .host(host: let host, createNew: let createNew):
             if !createNew {
                 if let v = Connections.lookupActive(host: host) {
-                    return TerminalViewController(terminalView: v)
+                    viewController = TerminalViewController(terminalView: v, interactive: interactive)
+                    return viewController
                 }
             }
-            return TerminalViewController (host: host)
+            viewController = TerminalViewController (host: host, interactive: interactive)
+            return viewController
         case .rehost(rehost: let terminalView):
-            return TerminalViewController(terminalView: terminalView)
+            viewController = TerminalViewController(terminalView: terminalView, interactive: interactive)
+            return viewController
         }
     }
-    
+  
     func updateUIViewController(_ uiViewController: TerminalViewController, context: UIViewControllerRepresentableContext<SwiftUITerminal>) {
-        
     }
 }

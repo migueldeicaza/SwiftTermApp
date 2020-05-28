@@ -18,6 +18,7 @@ enum MyError : Error {
 }
 
 public class SshTerminalView: TerminalView, TerminalViewDelegate {
+    var id = UUID ()
     var host: Host
     var shell: SSHShell?
     var authenticationChallenge: AuthenticationChallenge
@@ -47,21 +48,17 @@ public class SshTerminalView: TerminalView, TerminalViewDelegate {
         print ("Got \(authenticationChallenge)")
         super.init (frame: frame)
         terminalDelegate = self
-        do {
-            shell = try? SSHShell(sshLibrary: Libssh2.self,
-                                  host: host.hostname,
-                                  port: UInt16 (host.port & 0xffff),
-                                  environment: [Environment(name: "LANG", variable: "en_US.UTF-8")],
-                                  terminal: "xterm-256color")
-            shell?.log.enabled = false
-            //shell?.log.level = .error
-            shell?.setCallbackQueue(queue: sshQueue)
-            sshQueue.async {
-                self.connect ()
-            }
-        } catch {
-            
-        }
+        shell = try? SSHShell(sshLibrary: Libssh2.self,
+                              host: host.hostname,
+                              port: UInt16 (host.port & 0xffff),
+                              environment: [Environment(name: "LANG", variable: "en_US.UTF-8")],
+                              terminal: "xterm-256color")
+        shell?.log.enabled = false
+        //shell?.log.level = .error
+        shell?.setCallbackQueue(queue: sshQueue)
+        sshQueue.async {
+            self.connect ()
+        }        
     }
   
     func connect()

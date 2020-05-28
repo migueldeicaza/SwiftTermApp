@@ -9,6 +9,7 @@
 import UIKit
 import SwiftUI
 import CryptoKit
+
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?

@@ -22,29 +22,10 @@ func getImage (for host: Host) -> some View
     }
 }
 
-struct SwiftUITerminalWrapper: View {
-    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
+// For full screen Solution might be to use an external host UIViewController:
+// https://gist.github.com/timothycosta/a43dfe25f1d8a37c71341a1ebaf82213
+// https://stackoverflow.com/questions/56756318/swiftui-presentationbutton-with-modal-that-is-full-screen
 
-    var host: Host
-    var createNew: Bool
-    
-    var body: some View {
-        VStack {
-            HStack (alignment: .center) {
-                Spacer ().frame (maxWidth: 10)
-                Image (systemName: "lessthan")
-                Text ("Back")
-                    .font(.footnote)
-                Spacer ()
-            }.onTapGesture {
-                self.presentationMode.wrappedValue.dismiss()
-            }
-
-            SwiftUITerminal(host: host, createNew: createNew)
-        }
-        
-    }
-}
 
 struct HostSummaryView: View {
     @Binding var host: Host
@@ -52,12 +33,8 @@ struct HostSummaryView: View {
     
     var body: some View {
         NavigationLink (destination:
-            // Solution might be to use an external host UIViewController:
-            // https://gist.github.com/timothycosta/a43dfe25f1d8a37c71341a1ebaf82213
-            // https://stackoverflow.com/questions/56756318/swiftui-presentationbutton-with-modal-that-is-full-screen
-            SwiftUITerminalWrapper(host: self.host, createNew: false)
-                .navigationBarTitle("")
-                .navigationBarHidden(true)
+            SwiftUITerminal(host: host, createNew: false, interactive: true)
+                .navigationBarTitle (Text (host.alias), displayMode: .inline)
         ) {
             HStack (spacing: 12){
                 getImage (for: host)
@@ -87,7 +64,7 @@ struct HostSummaryView: View {
                 HostEditView(host: self.host, showingModal: self.$showingModal)
             }
             .contextMenu {
-                NavigationLink(destination: SwiftUITerminal(host: self.host, createNew: true)){
+                NavigationLink(destination: SwiftUITerminal(host: self.host, createNew: true, interactive: true)){
                     Text("New Connection")
                     Image(systemName: "plus.circle")
                 }
