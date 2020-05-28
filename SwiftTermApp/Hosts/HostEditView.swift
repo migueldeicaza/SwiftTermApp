@@ -72,6 +72,13 @@ struct HostEditView: View {
                     HStack {
                         Text ("Authentication")
                         Spacer ()
+                        Picker(selection: self.$host.usePassword, label: Text ("Auth")) {
+                            Text ("Password")
+                                .tag (true)
+                            Text ("SSH Key")
+                                .tag (false)
+                        }.pickerStyle(SegmentedPickerStyle())
+                            .frame(width: 200)
                     }
                     if self.$host.usePassword.wrappedValue {
                         HStack {

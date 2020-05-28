@@ -152,7 +152,7 @@ public class SshTerminalView: TerminalView, TerminalViewDelegate {
     
     public func sizeChanged(source: TerminalView, newCols: Int, newRows: Int) {
         if let s = shell {
-            print ("SshTerminalView setting remote terminal to \(newCols)x\(newRows)")
+            //print ("SshTerminalView setting remote terminal to \(newCols)x\(newRows)")
             s.setTerminalSize(width: UInt (newCols), height: UInt (newRows))
         }
     }

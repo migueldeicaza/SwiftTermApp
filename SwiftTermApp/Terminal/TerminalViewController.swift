@@ -27,6 +27,15 @@ class TerminalViewController: UIViewController {
     var serial: Int
     static var Serial: Int = 0
 
+    // Because we are sharing the TerminalView, we do not want to
+    // mess with its size, unless we have it attached to this view
+    func isTerminalViewAttached () -> Bool {
+        if let t = terminalView {
+            return view.subviews.contains(t)
+        }
+        return false
+    }
+    
     // This constructor is used to launch a new instance, and will trigger the SSH workflow
     init (host: Host, interactive: Bool)
     {
@@ -58,7 +67,7 @@ class TerminalViewController: UIViewController {
     
     func makeFrame (keyboardDelta: CGFloat) -> CGRect
     {
-        print ("Making frame with \(keyboardDelta)")
+        //print ("Making frame with \(keyboardDelta)")
         return CGRect (
             x: view.safeAreaInsets.left,
             y: view.safeAreaInsets.top,
@@ -103,6 +112,8 @@ class TerminalViewController: UIViewController {
                 keyboardDelta = inter.height
                 //view.frame = makeFrame(keyboardDelta: inter.height)
             }
+            //print ("KEYBOARD NOTIFICATION: Forcing frame to \(makeFrame(keyboardDelta: inter.height)) with incoming \(view.frame)")
+            
             terminalView!.frame = makeFrame(keyboardDelta: inter.height)
             UIView.animate(withDuration: duration,
                                        delay: TimeInterval(0),
@@ -118,6 +129,7 @@ class TerminalViewController: UIViewController {
     
     @objc private func keyboardWillHide(_ notification: NSNotification) {
         keyboardDelta = 0
+        //print ("KEYBOARD WILL HIDE: Forcing frame to \(makeFrame(keyboardDelta: 0)) with incoming \(view.frame)")
         view.frame = makeFrame(keyboardDelta: 0)
     }
     
@@ -150,6 +162,7 @@ class TerminalViewController: UIViewController {
         }
         // if it succeeded
         self.terminalView = t
+        //print ("VIEW DID LOAD: Forcing frame to  \(view.frame)")
         t.frame = view.frame
         view.addSubview(t)
         if interactive {
@@ -162,7 +175,8 @@ class TerminalViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        if !interactive {
+        //print ("viewDidLayoutSubviews on Serial=\(serial)")
+        if !interactive && isTerminalViewAttached () {
             terminalView!.frame = view.frame
         }
     }
