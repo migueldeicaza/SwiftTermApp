@@ -119,11 +119,14 @@ public class SshTerminalView: TerminalView, TerminalViewDelegate {
 
     var remoteBannerToIcon : [String:String] = [
         "SSH-2.0-OpenSSH_7.4p1 Raspbian-10+deb9u7":"raspberry-pi",
-        "SSH-2.0-OpenSSH_8.1": "apple",
-
-        "Fedora":"fedora",
+        "SSH-2.0-OpenSSH_8.1": "apple", // 10.5
+        "SSH-2.0-OpenSSH_7.9": "apple", // 10.4
         "Ubuntu":"ubuntu",
+        "Debian":"debian",
+        "Fedora":"fedora",
         "Windows": "windows",
+        "Raspbian": "raspberri-pi",
+        "SSH-2.0-OpenSSH_7.9": "redhat",
     ]
     
     // Returns either the icon name to use or the empty string

@@ -12,7 +12,7 @@ struct PasteKeyButton: View {
     @Binding var addKeyManuallyShown: Bool
     
     var body: some View {
-        STButton (text: "Create From Clipboard", icon: "plus.circle")
+        STButton (text: "Create", icon: "plus.circle")
             .onTapGesture {
                 self.addKeyManuallyShown = true
         }
@@ -74,7 +74,7 @@ struct KeyManagementView: View {
     var body: some View {
         List {
             // LocalKeyButton ()
-            STButton (text: "Create From Clipboard", icon: "plus.circle")
+            STButton (text: "Create", icon: "plus.circle")
                 .onTapGesture {
                     self.addKeyManuallyShown = true
                 }
@@ -97,7 +97,7 @@ struct KeyManagementView: View {
             .environment(\.editMode, $editMode)
             .cornerRadius(10)
         }
-        .listStyle(GroupedListStyle())
+        .listStyle(DefaultListStyle())
         .navigationBarTitle("Keys")
         .navigationBarItems(trailing: HStack {
             Button (action: {

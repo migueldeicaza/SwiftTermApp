@@ -8,6 +8,22 @@
 
 import SwiftUI
 
+var platforms: [String:String] = [
+    "Default": "",
+    "Fedora Linux": "fedora",
+    "Linux": "linux",
+    "Raspbian": "raspberi-pi",
+    "Red Hat": "redhat",
+    "SUSE": "suse",
+    "Ubuntu": "ubuntu",
+    "Windows": "windows"
+]
+
+var platformsSorted: [String] {
+    get {
+        platforms.keys.sorted()
+    }
+}
 struct HostEditView: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @State var alertClash: Bool = false
@@ -16,6 +32,8 @@ struct HostEditView: View {
     @State var selectedKey = 0
     @State var originalAlias: String = ""
     @State var keySelectorIsActive: Bool = false
+    @State var showingPassword: Bool = false
+    @State var platformIndex: Int = 0
     
     var disableSave: Bool {
         let alias = $host.alias.wrappedValue
@@ -26,6 +44,7 @@ struct HostEditView: View {
     func saveAndLeave ()
     {
         self.host.lastUsed = Date()
+        self.host.hostKindGuess = platforms [platformsSorted [$platformIndex.wrappedValue]] ?? ""
         store.save (host: self.host)
         
         // Delaying the dismiss operation seems to prevent the SwiftUI crash:
@@ -83,8 +102,20 @@ struct HostEditView: View {
                     if self.$host.usePassword.wrappedValue {
                         HStack {
                             Text ("Password").modifier(PrimaryLabel())
-                            SecureField ("•••••••", text: self.$host.password)
-                                .multilineTextAlignment(.trailing)
+                            
+                            if showingPassword {
+                                TextField ("•••••••", text: self.$host.password)
+                                    .multilineTextAlignment(.trailing)
+                                    .autocapitalization(.none)
+                            } else {
+                                SecureField ("•••••••", text: self.$host.password)
+                                    .multilineTextAlignment(.trailing)
+                                    .autocapitalization(.none)
+                            }
+                            
+                            Button (action: { self.showingPassword.toggle () }, label: {
+                                Text (self.showingPassword ? "HIDE" : "SHOW").foregroundColor(Color (UIColor.link))
+                            })
                         }
                     } else {
                         HStack {
@@ -113,6 +144,20 @@ struct HostEditView: View {
                         TextField ("22", value: self.$host.port, formatter: NumberFormatter ())
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
+                    }
+                    HStack {
+                        Text ("Host Icon")
+                        Picker(selection: $platformIndex, label: Text ("")){
+                            ForEach(0..<platformsSorted.count) { idx in
+                                HStack {
+                                    Image(platforms [platformsSorted[idx]]!)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(maxWidth: 28)
+                                    Text (platformsSorted[idx])
+                                }
+                            }
+                        }
                     }
                     Text ("Encoding")
                 }
