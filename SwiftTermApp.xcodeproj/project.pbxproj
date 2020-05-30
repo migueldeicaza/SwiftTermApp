@@ -33,6 +33,7 @@
 		49C1B6BE24637DD500D54F6F /* ButtonColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6BD24637DD500D54F6F /* ButtonColors.swift */; };
 		49EED560245D0A0B00A8794E /* STButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EED55F245D0A0B00A8794E /* STButton.swift */; };
 		49F02ADF24610D7A00CFEB50 /* STFilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */; };
+		49F0740C2481B3ED00A83CDC /* ColorLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0740B2481B3ED00A83CDC /* ColorLoader.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -76,6 +77,7 @@
 		49C1B6BD24637DD500D54F6F /* ButtonColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonColors.swift; sourceTree = "<group>"; };
 		49EED55F245D0A0B00A8794E /* STButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STButton.swift; sourceTree = "<group>"; };
 		49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STFilePicker.swift; sourceTree = "<group>"; };
+		49F0740B2481B3ED00A83CDC /* ColorLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorLoader.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +113,7 @@
 		4901167424553789002C1F85 /* SwiftTermApp */ = {
 			isa = PBXGroup;
 			children = (
+				49F0740A2481B3D100A83CDC /* Settings */,
 				49F073E7247B6B5E00A83CDC /* Sessions */,
 				49C1B6B3246260C000D54F6F /* Terminal */,
 				49C216C4245D102600280B6A /* Keys */,
@@ -126,7 +129,6 @@
 				4901167D2455378A002C1F85 /* Preview Content */,
 				49011691245622C6002C1F85 /* DataStore.swift */,
 				4967B9FB2459239700A9D2A6 /* Connections.swift */,
-				4967B9FD24592D0B00A9D2A6 /* SettingsView.swift */,
 			);
 			path = SwiftTermApp;
 			sourceTree = "<group>";
@@ -201,6 +203,15 @@
 				4967BA0124592D3600A9D2A6 /* SessionsView.swift */,
 			);
 			path = Sessions;
+			sourceTree = "<group>";
+		};
+		49F0740A2481B3D100A83CDC /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				4967B9FD24592D0B00A9D2A6 /* SettingsView.swift */,
+				49F0740B2481B3ED00A83CDC /* ColorLoader.swift */,
+			);
+			path = Settings;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -299,6 +310,7 @@
 				49F02ADF24610D7A00CFEB50 /* STFilePicker.swift in Sources */,
 				49011690245607F7002C1F85 /* Hosts.swift in Sources */,
 				4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */,
+				49F0740C2481B3ED00A83CDC /* ColorLoader.swift in Sources */,
 				4901167A24553789002C1F85 /* Home.swift in Sources */,
 				4967BA07245A85F800A9D2A6 /* SwCrypt.swift in Sources */,
 			);
