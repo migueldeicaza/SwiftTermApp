@@ -11,14 +11,17 @@ import Foundation
 import UIKit
 import SwiftTerm
 import SwiftSH
+import AudioToolbox
 
 enum MyError : Error {
     case noValidKey(String)
     case general
 }
 
-public class SshTerminalView: TerminalView, TerminalViewDelegate {
-    var id = UUID ()
+///
+/// Extends the AppTerminalView with elements for the connection
+///
+public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
     var host: Host
     var shell: SSHShell?
     var authenticationChallenge: AuthenticationChallenge
@@ -126,7 +129,7 @@ public class SshTerminalView: TerminalView, TerminalViewDelegate {
         "Fedora":"fedora",
         "Windows": "windows",
         "Raspbian": "raspberri-pi",
-        "SSH-2.0-OpenSSH_7.9": "redhat",
+        //"SSH-2.0-OpenSSH_7.9": "redhat",
     ]
     
     // Returns either the icon name to use or the empty string
@@ -157,6 +160,20 @@ public class SshTerminalView: TerminalView, TerminalViewDelegate {
         if let s = shell {
             //print ("SshTerminalView setting remote terminal to \(newCols)x\(newRows)")
             s.setTerminalSize(width: UInt (newCols), height: UInt (newRows))
+        }
+    }
+    
+    public func bell (source: TerminalView)
+    {
+        switch settings.beepConfig {
+        case .beep:
+            // List of sounds: https://github.com/TUNER88/iOSSystemSoundsLibrary
+            AudioServicesPlaySystemSound(SystemSoundID(1104))
+        case .silent:
+            break
+        case .vibrate:
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.warning)
         }
     }
     

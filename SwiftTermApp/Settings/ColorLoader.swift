@@ -1,6 +1,6 @@
 //
 //  ColorLoader.swift
-//  SwiftTermApp
+//  Loads colors from the XRDB format and distributed by the iTerm2colorschemes.com site
 //
 //  Created by Miguel de Icaza on 5/29/20.
 //  Copyright © 2020 Miguel de Icaza. All rights reserved.
@@ -9,8 +9,8 @@
 import Foundation
 import SwiftTerm
 
-
-struct ThemeColor {
+struct ThemeColor: Hashable {
+    var name: String
     var ansi: [Color]
     var background: Color
     var foreground: Color
@@ -45,7 +45,7 @@ struct ThemeColor {
     
     // Returns a ThemeColor from an Xrdb string (this should contain the whole file)
     // xrdb is one of the simpler formats supported on the iTerm2 web site with themes
-    static func fromXrdb (txt: String) -> ThemeColor? {
+    static func fromXrdb (title: String, xrdb: String) -> ThemeColor? {
         var ansi: [Int:Color] = [:]
         var background: Color?
         var foreground: Color?
@@ -54,7 +54,7 @@ struct ThemeColor {
         var selectedText: Color?
         var selectionColor: Color?
         
-        for l in txt.split (separator: "\n") {
+        for l in xrdb.split (separator: "\n") {
             let elements = l.split (separator: " ")
             let color = parseColor (Array (elements [2]))
             switch elements [1]{
@@ -110,7 +110,8 @@ struct ThemeColor {
             if let bg = background, let fg = foreground, let ct = cursorText,
                 let cu = cursor, let st = selectedText, let sc = selectionColor {
                 
-                return ThemeColor (ansi: [Color] (ansi.keys.sorted().map { v in ansi [v]! }),
+                return ThemeColor (name: title,
+                                   ansi: [Color] (ansi.keys.sorted().map { v in ansi [v]! }),
                                    background: bg,
                                    foreground: fg,
                                    cursor: cu,

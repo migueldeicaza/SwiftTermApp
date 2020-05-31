@@ -44,7 +44,6 @@ class TerminalViewController: UIViewController {
         self.host = host
         self.interactive = interactive
         DataStore.shared.used (host: host)
-        visible = false
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -56,7 +55,6 @@ class TerminalViewController: UIViewController {
         self.terminalView = terminalView
         self.host = terminalView.host
         self.interactive = interactive
-        visible = false
         DataStore.shared.used (host: host)
         super.init(nibName: nil, bundle: nil)
     }
@@ -191,15 +189,8 @@ class TerminalViewController: UIViewController {
         }
     }
         
-    var visible: Bool
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(true)
-        visible = true
-    }
-    
     override func viewWillDisappear(_ animated: Bool) {
         removeKeyboardMonitor()
-        visible = false
         super.viewWillDisappear(animated)
     }
 }

@@ -8,6 +8,24 @@
 
 import SwiftUI
 import SwiftTerm
+
+// The application settings
+class Settings: ObservableObject {
+    @Published var keepOn: Bool = true {
+        didSet {
+            UIApplication.shared.isIdleTimerDisabled = keepOn
+        }
+    }
+    @Published var fontIdx: Int = 0
+    @Published var beepConfig: BeepKind = .vibrate
+    @Published var themeName: String = "Material"
+    @Published var fontName: String = "Courier"
+    @Published var fontSize: CGFloat = 10
+
+    init () {}
+}
+var settings = Settings()
+
 var fontNames: [String] = ["Courier", "Courier New", "Menlo"]
 
 enum BeepKind {
@@ -15,16 +33,6 @@ enum BeepKind {
     case beep
     case vibrate
 }
-
-class Settings: ObservableObject {
-    @Published var keepOn: Bool = true
-    @Published var fontIdx: Int = 0
-    @Published var beepConfig: BeepKind = .vibrate
-    
-    init () {}
-}
-
-var settings = Settings()
 
 // Converts a SwiftTerm.Color into a SwiftUI.Color
 func term2ui (_ stcolor: SwiftTerm.Color) -> SwiftUI.Color {
@@ -39,27 +47,31 @@ struct ColorSwatch: View {
     var body: some View {
         Rectangle ()
             .fill (term2ui (color))
-            .frame (width: 9, height: 9)
+            .frame (width: 11, height: 11)
             .shadow(radius: 1)
     }
 }
 
 
-struct ThemeSelector: View {
+struct ThemePreview: View {
     var themeColor: ThemeColor
-    var name: String
+    var selected: Bool = false
+    
     var body: some View {
         ZStack {
             Rectangle ()
                 .fill (term2ui(themeColor.background))
              
             VStack (spacing: 6){
-                HStack {
-                    Text (name)
+                HStack (alignment: .firstTextBaseline) {
+                    Text (themeColor.name)
+                        .allowsTightening(true)
+                        .minimumScaleFactor(0.7)
+                        .lineLimit(1)
                         .padding([.leading, .top], 4)
                         .foregroundColor(term2ui(themeColor.foreground))
                     Spacer ()
-                }
+                }.frame (height: 24)
                 HStack (spacing: 5){
                     ForEach (0..<7) { x in
                         ColorSwatch (color: self.themeColor.ansi [x])
@@ -73,9 +85,29 @@ struct ThemeSelector: View {
             }
         }
         .frame(width: 120, height: 70)
-        .border(Color.black)
+        .border(selected ? Color.black : Color.clear)
     }
 }
+
+struct FontSize: View {
+    @Binding var fontIdx: Int
+    var size: CGFloat
+    @Binding var currentSize: CGFloat
+    
+    var body: some View {
+        Text ("Aa")
+            .background(
+                RoundedRectangle (cornerRadius: 10, style: .continuous)
+                    .stroke(self.currentSize == size ? Color.accentColor : Color (#colorLiteral(red: 0.8039215803, green: 0.8039215803, blue: 0.8039215803, alpha: 1)), lineWidth: 2)
+                    .frame (width: 40, height: 40)
+                    //.border(Color.black, width: 1)
+                    .foregroundColor(Color.red))
+            .font (.custom(fontNames [fontIdx], size: size))
+        .padding()
+    
+    }
+}
+
 struct AppearanceSelector: View {
     var body: some View {
         Text ("Theme selector")
@@ -84,25 +116,47 @@ struct AppearanceSelector: View {
 
 struct SettingsView: View {
     @State var fontIdx = 0
+    @State var theme = themes [0]
     @ObservedObject var gset = settings
-    var tc = ThemeColor.fromXrdb (txt: material)!
-    var tc2 = ThemeColor.fromXrdb (txt: ocean)!
-    var tc3 = ThemeColor.fromXrdb (txt: adventureTime)!
+    @State var fontSize = settings.fontSize
+    
+    func fontName () -> String {
+        return fontNames [fontIdx]
+    }
+    
+    var fontSizes: [CGFloat] = [8, 10, 11, 12, 14, 18]
     
     var body: some View {
         NavigationView {
             Form {
-                HStack {
-                    ThemeSelector (themeColor: tc, name: "Material")
-                    ThemeSelector (themeColor: tc2, name: "Ocean")
-                    ThemeSelector (themeColor: tc3, name: "Adventure Time")
+                // Theme selector
+                ScrollView (.horizontal, showsIndicators: false) {
+                    HStack {
+                        ForEach (themes, id: \.self) { t in
+                            ThemePreview (themeColor: t)
+                                .padding(1)
+                                .border(self.theme == t ? Color.accentColor : Color.clear, width: 2)
+                                .onTapGesture {
+                                    self.theme = t
+                            }
+                        }
+                    }
                 }
-                NavigationLink("Appearance", destination: AppearanceSelector ())
-                Picker(selection: $gset.fontIdx, label: Text ("Font")) {
-                    ForEach (fontNames.indices) { idx in
-                        Text (fontNames [idx])
-                            .font(.custom(fontNames [idx], size: 17))
-                            .tag (idx)
+                
+                // Font size selector
+                HStack (alignment: .center){
+                    ForEach (fontSizes.indices) { idx in
+                        FontSize (fontIdx: self.$fontIdx, size: self.fontSizes [idx], currentSize: self.$fontSize)
+                            .onTapGesture {
+                                self.fontSize = self.fontSizes [idx]
+                        }
+                    }
+                }
+                Picker(selection: self.$fontIdx, label: Text ("Font")) {
+                    ForEach (fontNames, id: \.self) { fontName in
+                        Text (fontName)
+                            .font(.custom(fontName, size: 17))
+                            .tag (fontNames.firstIndex(of: fontName)!)
                     }
                 }
                 Toggle(isOn: $gset.keepOn) {
@@ -124,13 +178,20 @@ struct SettingsView_Previews: PreviewProvider {
     
     static var previews: some View {
         Group {
-            ThemeSelector(themeColor: ThemeColor.fromXrdb (txt: material)!, name: "Test")
-            SettingsView()
+            ThemePreview(themeColor: ThemeColor.fromXrdb (title: "Material", xrdb: themeMaterial)!)
+            SettingsView(fontIdx: 1, gset: settings)
         }
     }
 }
 
-let material = """
+let themes: [ThemeColor] = [
+    ThemeColor.fromXrdb (title: "Pro", xrdb: themePro)!,
+    ThemeColor.fromXrdb (title: "Material", xrdb: themeMaterial)!,
+    ThemeColor.fromXrdb (title: "Ocean", xrdb: themeOcean)!,
+    ThemeColor.fromXrdb (title: "Adventure Time", xrdb: themeAdventureTime)!
+]
+
+let themeMaterial = """
 #define Ansi_0_Color #212121
 #define Ansi_1_Color #b7141f
 #define Ansi_10_Color #7aba3a
@@ -156,7 +217,7 @@ let material = """
 #define Selection_Color #c2c2c2
 """
 
-let ocean = """
+let themeOcean = """
 #define Ansi_0_Color #000000
 #define Ansi_1_Color #990000
 #define Ansi_10_Color #00d900
@@ -183,7 +244,7 @@ let ocean = """
 
 """
 
-let adventureTime = """
+let themeAdventureTime = """
 #define Ansi_0_Color #050404
 #define Ansi_1_Color #bd0013
 #define Ansi_10_Color #9eff6e
@@ -207,4 +268,30 @@ let adventureTime = """
 #define Foreground_Color #f8dcc0
 #define Selected_Text_Color #f3d9c4
 #define Selection_Color #706b4e
+"""
+
+let themePro = """
+#define Ansi_0_Color #000000
+#define Ansi_1_Color #990000
+#define Ansi_10_Color #00d900
+#define Ansi_11_Color #e5e500
+#define Ansi_12_Color #0000ff
+#define Ansi_13_Color #e500e5
+#define Ansi_14_Color #00e5e5
+#define Ansi_15_Color #e5e5e5
+#define Ansi_2_Color #00a600
+#define Ansi_3_Color #999900
+#define Ansi_4_Color #2009db
+#define Ansi_5_Color #b200b2
+#define Ansi_6_Color #00a6b2
+#define Ansi_7_Color #bfbfbf
+#define Ansi_8_Color #666666
+#define Ansi_9_Color #e50000
+#define Background_Color #000000
+#define Bold_Color #ffffff
+#define Cursor_Color #4d4d4d
+#define Cursor_Text_Color #ffffff
+#define Foreground_Color #f2f2f2
+#define Selected_Text_Color #000000
+#define Selection_Color #414141
 """
