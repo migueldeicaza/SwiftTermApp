@@ -17,33 +17,9 @@ class Settings: ObservableObject {
         }
     }
     @Published var beepConfig: BeepKind = .vibrate
-
-    @Published var fontIdx: Int = 0
-    @Published var themeName: String = "Material" {
-        didSet {
-            print ("Set to \(themeName)")
-            objectWillChange.send ()
-        }
-    }
-    @Published var fontName: String = "Courier" {
-        didSet {
-            objectWillChange.send ()
-        }
-    }
-    @Published var fontSize: CGFloat = 10 {
-        didSet {
-            print ("Changing to \(fontSize)")
-            //objectWillChange.send ()
-        }
-    }
-
-    func getTheme () -> ThemeColor {
-        if let theme = themes.first(where: { $0.name == themeName }) {
-            print ("Returning \(theme.name)")
-            return theme
-        }
-        return themes [0]
-    }
+    @Published var themeName: String = "Material"
+    @Published var fontName: String = fontNames [0]
+    @Published var fontSize: CGFloat = 10
 
     init () { }
 }
@@ -153,14 +129,14 @@ struct ThemeSelector: View {
 }
 
 struct FontSelector: View {
-    @Binding var fontIdx: Int
+    @Binding var fontName: String
     
     var body: some View {
-        Picker(selection: $fontIdx, label: Text ("Font")) {
+        Picker(selection: $fontName, label: Text ("Font")) {
             ForEach (fontNames, id: \.self) { fontName in
                 Text (fontName)
                     .font(.custom(fontName, size: 17))
-                    .tag (fontNames.firstIndex(of: fontName)!)
+                    .tag (fontName)
             }
         }
     }
@@ -187,7 +163,7 @@ struct FontSizeSelector: View {
 
 struct SettingsViewCore: View {
     @Binding var themeName: String
-    @Binding var fontIdx: Int
+    @Binding var fontName: String
     @Binding var fontSize: CGFloat
     @Binding var keepOn: Bool
     @Binding var beepConfig: BeepKind
@@ -204,8 +180,8 @@ struct SettingsViewCore: View {
                         
                     }
                 }
-                FontSelector (fontIdx: $fontIdx)
-                FontSizeSelector (fontName: fontNames [fontIdx], fontSize: $fontSize)
+                FontSelector (fontName: $fontName)
+                FontSizeSelector (fontName: fontName, fontSize: $fontSize)
             }
             Section {
                 Toggle(isOn: $keepOn) {
@@ -227,7 +203,7 @@ struct SettingsView: View {
     
     var body: some View {
         SettingsViewCore (themeName: $gset.themeName,
-                       fontIdx: $gset.fontIdx,
+                       fontName: $gset.fontName,
                        fontSize: $gset.fontSize,
                        keepOn: $gset.keepOn,
                        beepConfig: $gset.beepConfig)
