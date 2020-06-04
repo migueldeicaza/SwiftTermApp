@@ -16,13 +16,36 @@ class Settings: ObservableObject {
             UIApplication.shared.isIdleTimerDisabled = keepOn
         }
     }
-    @Published var fontIdx: Int = 0
     @Published var beepConfig: BeepKind = .vibrate
-    @Published var themeName: String = "Material"
-    @Published var fontName: String = "Courier"
-    @Published var fontSize: CGFloat = 10
 
-    init () {}
+    @Published var fontIdx: Int = 0
+    @Published var themeName: String = "Material" {
+        didSet {
+            print ("Set to \(themeName)")
+            objectWillChange.send ()
+        }
+    }
+    @Published var fontName: String = "Courier" {
+        didSet {
+            objectWillChange.send ()
+        }
+    }
+    @Published var fontSize: CGFloat = 10 {
+        didSet {
+            print ("Changing to \(fontSize)")
+            //objectWillChange.send ()
+        }
+    }
+
+    func getTheme () -> ThemeColor {
+        if let theme = themes.first(where: { $0.name == themeName }) {
+            print ("Returning \(theme.name)")
+            return theme
+        }
+        return themes [0]
+    }
+
+    init () { }
 }
 var settings = Settings()
 
@@ -90,7 +113,7 @@ struct ThemePreview: View {
 }
 
 struct FontSize: View {
-    @Binding var fontIdx: Int
+    var fontName: String
     var size: CGFloat
     @Binding var currentSize: CGFloat
     
@@ -102,68 +125,94 @@ struct FontSize: View {
                     .frame (width: 40, height: 40)
                     //.border(Color.black, width: 1)
                     .foregroundColor(Color.red))
-            .font (.custom(fontNames [fontIdx], size: size))
+            .font (.custom(fontName, size: size))
         .padding()
     
     }
 }
 
-struct AppearanceSelector: View {
+struct ThemeSelector: View {
+    @Binding var themeName: String
+    var callback: (_ themeName: String) -> ()
+    
     var body: some View {
-        Text ("Theme selector")
+        ScrollView (.horizontal, showsIndicators: false) {
+            HStack {
+                ForEach (themes, id: \.self) { t in
+                    ThemePreview (themeColor: t)
+                        .padding(1)
+                        .border(self.themeName == t.name ? Color.accentColor : Color.clear, width: 2)
+                        .onTapGesture {
+                            self.themeName = t.name
+                            self.callback (t.name)
+                    }
+                }
+            }
+        }
     }
 }
 
-struct SettingsView: View {
-    @State var fontIdx = 0
-    @State var theme = themes [0]
-    @ObservedObject var gset = settings
-    @State var fontSize = settings.fontSize
-    
-    func fontName () -> String {
-        return fontNames [fontIdx]
-    }
-    
-    var fontSizes: [CGFloat] = [8, 10, 11, 12, 14, 18]
+struct FontSelector: View {
+    @Binding var fontIdx: Int
     
     var body: some View {
-        NavigationView {
-            Form {
-                // Theme selector
-                ScrollView (.horizontal, showsIndicators: false) {
-                    HStack {
-                        ForEach (themes, id: \.self) { t in
-                            ThemePreview (themeColor: t)
-                                .padding(1)
-                                .border(self.theme == t ? Color.accentColor : Color.clear, width: 2)
-                                .onTapGesture {
-                                    self.theme = t
-                            }
-                        }
-                    }
+        Picker(selection: $fontIdx, label: Text ("Font")) {
+            ForEach (fontNames, id: \.self) { fontName in
+                Text (fontName)
+                    .font(.custom(fontName, size: 17))
+                    .tag (fontNames.firstIndex(of: fontName)!)
+            }
+        }
+    }
+}
+
+struct FontSizeSelector: View {
+    var fontName: String
+    @Binding var fontSize: CGFloat
+    
+    var fontSizes: [CGFloat] = [8, 10, 11, 12, 14, 18]
+
+    var body: some View {
+        HStack (alignment: .center){
+            ForEach (fontSizes.indices) { idx in
+                FontSize (fontName: self.fontName, size: self.fontSizes [idx], currentSize: self.$fontSize)
+                    .onTapGesture {
+                        //self.fontSize = self.fontSizes [idx]
+                        self.fontSize = self.fontSizes [idx]
                 }
+            }
+        }
+    }
+}
+
+struct SettingsViewCore: View {
+    @Binding var themeName: String
+    @Binding var fontIdx: Int
+    @Binding var fontSize: CGFloat
+    @Binding var keepOn: Bool
+    @Binding var beepConfig: BeepKind
+    
+    var body: some View {
+        return Form {
+            Section (header: Text ("Appearance")){
                 
-                // Font size selector
-                HStack (alignment: .center){
-                    ForEach (fontSizes.indices) { idx in
-                        FontSize (fontIdx: self.$fontIdx, size: self.fontSizes [idx], currentSize: self.$fontSize)
-                            .onTapGesture {
-                                self.fontSize = self.fontSizes [idx]
-                        }
+                // Theme selector
+                VStack (alignment: .leading){
+                    Text ("Color Theme")
+                    ThemeSelector (themeName: $themeName) {
+                        settings.themeName = $0
+                        
                     }
                 }
-                Picker(selection: self.$fontIdx, label: Text ("Font")) {
-                    ForEach (fontNames, id: \.self) { fontName in
-                        Text (fontName)
-                            .font(.custom(fontName, size: 17))
-                            .tag (fontNames.firstIndex(of: fontName)!)
-                    }
-                }
-                Toggle(isOn: $gset.keepOn) {
+                FontSelector (fontIdx: $fontIdx)
+                FontSizeSelector (fontName: fontNames [fontIdx], fontSize: $fontSize)
+            }
+            Section {
+                Toggle(isOn: $keepOn) {
                     Text ("Keep Display On")
                 }
                 // Keyboard
-                Picker (selection: $gset.beepConfig, label: Text ("Beep")) {
+                Picker (selection: $beepConfig, label: Text ("Beep")) {
                     Text ("Silent").tag (BeepKind.silent)
                     Text ("Beep").tag (BeepKind.beep)
                     Text ("Vibrate").tag (BeepKind.vibrate)
@@ -173,13 +222,24 @@ struct SettingsView: View {
     }
 }
 
+struct SettingsView: View {
+    @ObservedObject var gset = settings
+    
+    var body: some View {
+        SettingsViewCore (themeName: $gset.themeName,
+                       fontIdx: $gset.fontIdx,
+                       fontSize: $gset.fontSize,
+                       keepOn: $gset.keepOn,
+                       beepConfig: $gset.beepConfig)
+    }
+}
 
 struct SettingsView_Previews: PreviewProvider {
     
     static var previews: some View {
         Group {
+            SettingsView()
             ThemePreview(themeColor: ThemeColor.fromXrdb (title: "Material", xrdb: themeMaterial)!)
-            SettingsView(fontIdx: 1, gset: settings)
         }
     }
 }

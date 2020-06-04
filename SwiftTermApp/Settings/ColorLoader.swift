@@ -9,7 +9,7 @@
 import Foundation
 import SwiftTerm
 
-struct ThemeColor: Hashable {
+struct ThemeColor: Hashable, Equatable {
     var name: String
     var ansi: [Color]
     var background: Color

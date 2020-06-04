@@ -16,23 +16,12 @@ private let dateFormatter: DateFormatter = {
 }()
 
 struct ContentView: View {
-    @State private var dates = [Date]()
-
+    @State var dates = [Date]()
+    
     var body: some View {
         NavigationView {
             HomeView(dates: $dates)
                 .navigationBarTitle(Text("SwiftTerm"))
-                .navigationBarItems(
-                    leading: EditButton()
-//,
-//                    trailing: Button(
-//                        action: {
-//                            withAnimation { self.dates.insert(Date(), at: 0) }
-//                        }
-//                    ) {
-//                        Image(systemName: "plus")
-//                    }
-                )
             DetailView()
         }//.navigationViewStyle(DoubleColumnNavigationViewStyle())
     }
