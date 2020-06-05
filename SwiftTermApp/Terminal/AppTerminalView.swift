@@ -12,12 +12,26 @@
 import Foundation
 import SwiftTerm
 import UIKit
+import Combine
 
 public class AppTerminalView: TerminalView {
     var id = UUID ()
+    var sizeChange: AnyCancellable?
+    var fontChange: AnyCancellable?
+    var themeChange: AnyCancellable?
     
     public override init (frame: CGRect) {
         super.init (frame: frame)
+        sizeChange = settings.$fontSize.sink { _ in self.updateFont () }
+        fontChange = settings.$fontName.sink { _ in self.updateFont () }
+        themeChange = settings.$themeName.sink { _ in self.applyTheme(theme: settings.getTheme()) }
+    }
+
+    func updateFont ()
+    {
+        if let uifont = UIFont (name: settings.fontName, size: settings.fontSize) {
+            font = uifont
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -32,13 +46,5 @@ public class AppTerminalView: TerminalView {
         t.backgroundColor = theme.background
         
         // TODO: selection and caret colors
-    }
-    
-    func setFont (name: String, size: CGFloat)
-    {
-        if let uifont = UIFont (name: name, size: size) {
-            // Need to change this so I can set the font directly
-            //options = TerminalView.Options (font: TerminalView.Options.Font (font: uifont))
-        }
     }
 }

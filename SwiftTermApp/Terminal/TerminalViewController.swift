@@ -160,7 +160,6 @@ class TerminalViewController: UIViewController {
         }
         // if it succeeded
         self.terminalView = t
-        //print ("VIEW DID LOAD: Forcing frame to  \(view.frame)")
         t.frame = view.frame
         view.addSubview(t)
         if interactive {

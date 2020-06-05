@@ -21,6 +21,13 @@ class Settings: ObservableObject {
     @Published var fontName: String = fontNames [0]
     @Published var fontSize: CGFloat = 10
 
+    func getTheme () -> ThemeColor
+    {
+        if let t = themes.first(where: { $0.name == themeName }) {
+            return t
+        }
+        return themes [0]
+    }
     init () { }
 }
 var settings = Settings()
