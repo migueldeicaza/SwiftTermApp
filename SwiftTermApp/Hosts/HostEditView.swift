@@ -8,22 +8,91 @@
 
 import SwiftUI
 
-var platforms: [String:String] = [
+var platformToIcon: [String:String] = [
     "Default": "",
-    "Fedora Linux": "fedora",
+    "Fedora": "fedora",
     "Linux": "linux",
-    "Raspbian": "raspberi-pi",
+    "Raspbian": "raspberry-pi",
     "Red Hat": "redhat",
     "SUSE": "suse",
     "Ubuntu": "ubuntu",
     "Windows": "windows"
 ]
 
+// Ordered in ideal sorting order
+var platformsIconKeys = [
+    "Default",
+    "Linux",
+    "Ubuntu",
+    "Mac",
+    "Windows",
+    "Raspbian",
+    "Red Hat",
+    "Fedora",
+    "SUSE"
+]
+
 var platformsSorted: [String] {
     get {
-        platforms.keys.sorted()
+        platformToIcon.keys.sorted()
     }
 }
+
+struct PlatformPreview: View {
+    var name: String
+    var icon: String?
+    var selected: Bool
+    
+    var body: some View {
+        VStack {
+            if icon == nil || icon == "" {
+                Image (systemName: "desktopcomputer")
+                    .resizable()
+                    .frame(width: 40, height: 40)
+            } else {
+                Image (self.icon!)
+                    .resizable()
+                    .frame(width: 40, height: 40)
+            }
+            Text (name)
+                .lineLimit(2)
+                .frame(width: 60, height: 20, alignment: .top)
+                .font(.footnote)
+        }
+    }
+}
+
+//extension View {
+//    @ViewBuilder func `if`<T>(_ condition: Bool, transform: (Self) -> T) -> some View where T : View {
+//        if condition {
+//            transform(self)
+//        } else {
+//            self
+//        }
+//    }
+//}
+
+struct PlatformSelector: View {
+    @Binding var platformName: String
+    var callback: (_ platformName: String) -> ()
+    
+    var body: some View {
+        ScrollView (.horizontal, showsIndicators: false) {
+            HStack {
+                ForEach (platformsIconKeys, id: \.self) { t in
+                    PlatformPreview (name: t, icon: platformToIcon [t], selected: self.platformName == platformToIcon[t])
+                        .padding([.top], 3)
+                        .background((self.platformName == platformToIcon[t] ? Color.accentColor : Color.clear).opacity(0.2))
+                        .onTapGesture {
+                            self.platformName = t
+                            self.callback (t)
+                        }
+                }
+            }
+        }
+    }
+}
+
 struct HostEditView: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @State var alertClash: Bool = false
@@ -34,6 +103,8 @@ struct HostEditView: View {
     @State var keySelectorIsActive: Bool = false
     @State var showingPassword: Bool = false
     @State var platformIndex: Int = 0
+    @State var themeName = ""
+    @State var platformName = ""
     
     var disableSave: Bool {
         let alias = $host.alias.wrappedValue
@@ -44,7 +115,7 @@ struct HostEditView: View {
     func saveAndLeave ()
     {
         self.host.lastUsed = Date()
-        self.host.hostKindGuess = platforms [platformsSorted [$platformIndex.wrappedValue]] ?? ""
+        self.host.hostKindGuess = platformToIcon [platformsSorted [$platformIndex.wrappedValue]] ?? ""
         store.save (host: self.host)
         
         // Delaying the dismiss operation seems to prevent the SwiftUI crash:
@@ -138,19 +209,14 @@ struct HostEditView: View {
                     }
                 }
                 
-                Section (header: Text ("Other Options")) {
-                    HStack {
-                        Text ("Port").modifier(PrimaryLabel())
-                        TextField ("22", value: self.$host.port, formatter: NumberFormatter ())
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.trailing)
-                    }
+                Section (header: Text ("Style")){
+                    PlatformSelector(platformName: $platformName) {x in }
                     HStack {
                         Text ("Host Icon")
                         Picker(selection: $platformIndex, label: Text ("")){
                             ForEach(0..<platformsSorted.count) { idx in
                                 HStack {
-                                    Image(platforms [platformsSorted[idx]]!)
+                                    Image(platformToIcon [platformsSorted[idx]]!)
                                         .resizable()
                                         .scaledToFit()
                                         .frame(maxWidth: 28)
@@ -159,6 +225,17 @@ struct HostEditView: View {
                             }
                         }
                     }
+                    
+                    ThemeSelector(themeName: self.$host.style, showDefault: true) { t in }
+                }
+                Section (header: Text ("Other Options")) {
+                    HStack {
+                        Text ("Port").modifier(PrimaryLabel())
+                        TextField ("22", value: self.$host.port, formatter: NumberFormatter ())
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                    }
+                   
                     Text ("Encoding")
                 }
             }
@@ -183,6 +260,8 @@ struct HostEditView: View {
                 //https://gist.github.com/migueldeicaza/ed0ba152159817e0c4a1fd429b596573
             .disableAutocorrection(true)
         }.onAppear() {
+            self.themeName = self.host.style
+            self.platformName = self.host.hostKindGuess
             self.originalAlias = self.host.alias
         }
     }

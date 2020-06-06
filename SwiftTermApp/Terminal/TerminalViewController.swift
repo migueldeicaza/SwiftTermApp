@@ -134,6 +134,11 @@ class TerminalViewController: UIViewController {
     func startConnection() -> SshTerminalView? {
         do {
             let tv = try SshTerminalView(frame: makeFrame (keyboardDelta: 0), host: host)
+            if host.style == "" {
+                tv.applyTheme (theme: settings.getTheme())
+            } else {
+                tv.applyTheme(theme: settings.getTheme(themeName: host.style))
+            }
             tv.feed(text: "Welcome to SwiftTerm\n\n")
             return tv
         } catch MyError.noValidKey(let msg) {

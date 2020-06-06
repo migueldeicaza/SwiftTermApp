@@ -11,34 +11,61 @@ import SwiftTerm
 
 // The application settings
 class Settings: ObservableObject {
+    var defaults = UserDefaults (suiteName: "SwiftTermApp")
+    
     @Published var keepOn: Bool = true {
         didSet {
             UIApplication.shared.isIdleTimerDisabled = keepOn
+            defaults?.set (keepOn, forKey: "keepOn")
         }
     }
-    @Published var beepConfig: BeepKind = .vibrate
-    @Published var themeName: String = "Material"
-    @Published var fontName: String = fontNames [0]
-    @Published var fontSize: CGFloat = 10
+    @Published var beepConfig: BeepKind = .vibrate {
+        didSet {
+            defaults?.set (beepConfig.rawValue, forKey: "beepConfig")
+        }
+    }
+    @Published var themeName: String = "Pro" {
+        didSet {
+            defaults?.set (themeName, forKey: "theme")
+        }
+    }
+    @Published var fontName: String = fontNames [0] {
+        didSet {
+            defaults?.set (fontName, forKey: "fontName")
+        }
+    }
+    @Published var fontSize: CGFloat = 10 {
+        didSet {
+            defaults?.set (fontSize, forKey: "fontSize")
+        }
+    }
 
-    func getTheme () -> ThemeColor
+    func getTheme (themeName: String? = nil) -> ThemeColor
     {
-        if let t = themes.first(where: { $0.name == themeName }) {
+        if let t = themes.first(where: { $0.name == themeName ?? self.themeName }) {
             return t
         }
         return themes [0]
     }
-    init () { }
+    
+    init () {
+        keepOn = defaults?.bool(forKey: "keepOn") ?? true
+        beepConfig = BeepKind (rawValue: defaults?.string(forKey: "beepConfig") ?? "vibrate") ?? .vibrate
+        themeName = defaults?.string (forKey: "theme") ?? "Pro"
+        fontName = defaults?.string (forKey: "fontName") ?? "Courier"
+        fontSize = CGFloat (defaults?.double(forKey: "fontSize") ?? 11)
+    }
 }
 var settings = Settings()
 
 var fontNames: [String] = ["Courier", "Courier New", "Menlo"]
 
-enum BeepKind {
+enum BeepKind: String {
     case silent
     case beep
     case vibrate
 }
+
 
 // Converts a SwiftTerm.Color into a SwiftUI.Color
 func term2ui (_ stcolor: SwiftTerm.Color) -> SwiftUI.Color {
@@ -61,6 +88,7 @@ struct ColorSwatch: View {
 
 struct ThemePreview: View {
     var themeColor: ThemeColor
+    var title: String? = nil
     var selected: Bool = false
     
     var body: some View {
@@ -70,7 +98,7 @@ struct ThemePreview: View {
              
             VStack (spacing: 6){
                 HStack (alignment: .firstTextBaseline) {
-                    Text (themeColor.name)
+                    Text (title ?? themeColor.name)
                         .allowsTightening(true)
                         .minimumScaleFactor(0.7)
                         .lineLimit(1)
@@ -116,11 +144,21 @@ struct FontSize: View {
 
 struct ThemeSelector: View {
     @Binding var themeName: String
+    @State var showDefault = false
     var callback: (_ themeName: String) -> ()
     
     var body: some View {
         ScrollView (.horizontal, showsIndicators: false) {
             HStack {
+                if showDefault {
+                    ThemePreview (themeColor: settings.getTheme(), title: "Default")
+                        .padding(1)
+                        .border(self.themeName == "" ? Color.accentColor : Color.clear, width: 2)
+                        .onTapGesture {
+                            self.themeName = ""
+                            self.callback ("")
+                    }
+                }
                 ForEach (themes, id: \.self) { t in
                     ThemePreview (themeColor: t)
                         .padding(1)
@@ -228,10 +266,11 @@ struct SettingsView_Previews: PreviewProvider {
 }
 
 let themes: [ThemeColor] = [
-    ThemeColor.fromXrdb (title: "Pro", xrdb: themePro)!,
+    ThemeColor.fromXrdb (title: "Adventure Time", xrdb: themeAdventureTime)!,
+    ThemeColor.fromXrdb (title: "Django", xrdb: themeDjango)!,
     ThemeColor.fromXrdb (title: "Material", xrdb: themeMaterial)!,
     ThemeColor.fromXrdb (title: "Ocean", xrdb: themeOcean)!,
-    ThemeColor.fromXrdb (title: "Adventure Time", xrdb: themeAdventureTime)!
+    ThemeColor.fromXrdb (title: "Pro", xrdb: themePro)!,
 ]
 
 let themeMaterial = """
@@ -337,4 +376,30 @@ let themePro = """
 #define Foreground_Color #f2f2f2
 #define Selected_Text_Color #000000
 #define Selection_Color #414141
+"""
+
+let themeDjango = """
+#define Ansi_0_Color #000000
+#define Ansi_1_Color #fd6209
+#define Ansi_10_Color #73da70
+#define Ansi_11_Color #ffff94
+#define Ansi_12_Color #568264
+#define Ansi_13_Color #ffffff
+#define Ansi_14_Color #cfffd1
+#define Ansi_15_Color #ffffff
+#define Ansi_2_Color #41a83e
+#define Ansi_3_Color #ffe862
+#define Ansi_4_Color #245032
+#define Ansi_5_Color #f8f8f8
+#define Ansi_6_Color #9df39f
+#define Ansi_7_Color #ffffff
+#define Ansi_8_Color #323232
+#define Ansi_9_Color #ff943b
+#define Background_Color #0b2f20
+#define Bold_Color #f8f8f8
+#define Cursor_Color #336442
+#define Cursor_Text_Color #f8f8f8
+#define Foreground_Color #f8f8f8
+#define Selected_Text_Color #f8f8f8
+#define Selection_Color #245032
 """

@@ -32,6 +32,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
         sshQueue = DispatchQueue.global(qos: .background)
         self.host = host
         
+        
         if host.usePassword {
             authenticationChallenge = .byPassword(username: host.username, password: host.password)
         } else {
@@ -49,7 +50,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
             }
         }
         print ("Got \(authenticationChallenge)")
-        super.init (frame: frame)
+        super.init (frame: frame, useSharedTheme: host.style == "")
         terminalDelegate = self
         shell = try? SSHShell(sshLibrary: Libssh2.self,
                               host: host.hostname,

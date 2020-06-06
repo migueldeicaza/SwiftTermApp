@@ -16,21 +16,54 @@ import Combine
 
 public class AppTerminalView: TerminalView {
     var id = UUID ()
+    var useSharedTheme: Bool
+    var userOverrideSize = false
     var sizeChange: AnyCancellable?
     var fontChange: AnyCancellable?
     var themeChange: AnyCancellable?
     
-    public override init (frame: CGRect) {
+    public init (frame: CGRect, useSharedTheme: Bool) {
+        self.useSharedTheme = useSharedTheme
         super.init (frame: frame)
-        sizeChange = settings.$fontSize.sink { _ in self.updateFont () }
+        sizeChange = settings.$fontSize.sink { _ in
+            if !self.userOverrideSize {
+                self.updateFont ()
+                
+            }
+            
+        }
         fontChange = settings.$fontName.sink { _ in self.updateFont () }
-        themeChange = settings.$themeName.sink { _ in self.applyTheme(theme: settings.getTheme()) }
+        themeChange = settings.$themeName.sink { _ in
+            if useSharedTheme {
+                self.applyTheme(theme: settings.getTheme())
+                
+            }
+        }
+        
+        addGestureRecognizer(UIPinchGestureRecognizer (target: self, action: #selector(pinchHandler)))
     }
 
     func updateFont ()
     {
         if let uifont = UIFont (name: settings.fontName, size: settings.fontSize) {
             font = uifont
+        }
+    }
+    
+    @objc
+    func pinchHandler (_ gestureRecognizer: UIPinchGestureRecognizer) {
+        if gestureRecognizer.state == .began || gestureRecognizer.state == .changed {
+            
+            let new = font.pointSize * gestureRecognizer.scale
+            gestureRecognizer.scale = 1.0
+            
+            if new < 5 || new > 72 {
+                return
+            }
+            if let uifont = UIFont (name: settings.fontName, size: new) {
+                userOverrideSize = true
+                font = uifont
+            }
         }
     }
     

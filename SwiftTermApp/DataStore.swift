@@ -38,6 +38,8 @@ struct Host: Codable, Identifiable {
     var username: String = ""
     var password: String = ""
     var hostKindGuess: String = ""
+    var environmentVariables: [String] = []
+    var startupScripts: [String] = []
     
     // This is the UUID of the key registered with the app
     var sshKey: UUID?
@@ -74,7 +76,6 @@ class DataStore: ObservableObject {
     
     init ()
     {
-        defaults = UserDefaults (suiteName: "SwiftTermApp")
         let decoder = JSONDecoder ()
         if let d = defaults {
             if let data = d.data(forKey: hostsArrayKey) {
