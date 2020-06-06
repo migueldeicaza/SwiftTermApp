@@ -76,6 +76,7 @@ class DataStore: ObservableObject {
     
     init ()
     {
+        defaults = UserDefaults (suiteName: "SwiftTermApp")
         let decoder = JSONDecoder ()
         if let d = defaults {
             if let data = d.data(forKey: hostsArrayKey) {

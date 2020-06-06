@@ -8,35 +8,30 @@
 
 import SwiftUI
 
-var platformToIcon: [String:String] = [
-    "Default": "",
-    "Fedora": "fedora",
-    "Linux": "linux",
-    "Raspbian": "raspberry-pi",
-    "Red Hat": "redhat",
-    "SUSE": "suse",
-    "Ubuntu": "ubuntu",
-    "Windows": "windows"
+var platformToHuman: [String:String] = [
+    "": "Generic",
+    "fedora": "Fedora",
+    "linux": "Linux",
+    "raspberry-pi": "Raspbian",
+    "redhat": "Red Hat",
+    "suse": "SUSE",
+    "ubuntu": "Ubuntu",
+    "windows": "Windows",
+    "apple": "Mac"
 ]
 
 // Ordered in ideal sorting order
-var platformsIconKeys = [
-    "Default",
-    "Linux",
-    "Ubuntu",
-    "Mac",
-    "Windows",
-    "Raspbian",
-    "Red Hat",
-    "Fedora",
-    "SUSE"
+var manualOrderPlatformList = [
+    "",
+    "linux",
+    "ubuntu",
+    "apple",
+    "windows",
+    "raspberry-pi",
+    "redhat",
+    "fedora",
+    "suse"
 ]
-
-var platformsSorted: [String] {
-    get {
-        platformToIcon.keys.sorted()
-    }
-}
 
 struct PlatformPreview: View {
     var name: String
@@ -62,16 +57,6 @@ struct PlatformPreview: View {
     }
 }
 
-//extension View {
-//    @ViewBuilder func `if`<T>(_ condition: Bool, transform: (Self) -> T) -> some View where T : View {
-//        if condition {
-//            transform(self)
-//        } else {
-//            self
-//        }
-//    }
-//}
-
 struct PlatformSelector: View {
     @Binding var platformName: String
     var callback: (_ platformName: String) -> ()
@@ -79,10 +64,10 @@ struct PlatformSelector: View {
     var body: some View {
         ScrollView (.horizontal, showsIndicators: false) {
             HStack {
-                ForEach (platformsIconKeys, id: \.self) { t in
-                    PlatformPreview (name: t, icon: platformToIcon [t], selected: self.platformName == platformToIcon[t])
+                ForEach (manualOrderPlatformList, id: \.self) { t in
+                    PlatformPreview (name: platformToHuman [t] ?? "BUG", icon: t, selected: self.platformName == t)
                         .padding([.top], 3)
-                        .background((self.platformName == platformToIcon[t] ? Color.accentColor : Color.clear).opacity(0.2))
+                        .background((self.platformName == t ? Color.accentColor : Color.clear).opacity(0.2))
                         .onTapGesture {
                             self.platformName = t
                             self.callback (t)
@@ -93,6 +78,29 @@ struct PlatformSelector: View {
     }
 }
 
+//
+// This needs to use AnyViews, because I need to apply the optional
+// brightness to the asset images to show up in the same style as
+// the i
+struct PlatformSelectorIcon: View {
+    @Environment(\.colorScheme) var colorScheme
+    var platformName: String
+    
+    var body: some View {
+        if platformName == "" {
+            return AnyView (Image (systemName: "desktopcomputer")
+                .resizable()
+            .scaledToFit()
+            .frame(maxHeight: 20))
+        } else {
+            return AnyView (Image(platformName)
+                .resizable()
+            .scaledToFit()
+                .frame(maxHeight: 24)
+                .brightness(colorScheme == .dark ? 0.6 : 0.5))
+        }
+    }
+}
 struct HostEditView: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @State var alertClash: Bool = false
@@ -102,7 +110,6 @@ struct HostEditView: View {
     @State var originalAlias: String = ""
     @State var keySelectorIsActive: Bool = false
     @State var showingPassword: Bool = false
-    @State var platformIndex: Int = 0
     @State var themeName = ""
     @State var platformName = ""
     
@@ -115,7 +122,7 @@ struct HostEditView: View {
     func saveAndLeave ()
     {
         self.host.lastUsed = Date()
-        self.host.hostKindGuess = platformToIcon [platformsSorted [$platformIndex.wrappedValue]] ?? ""
+        self.host.hostKindGuess = platformName
         store.save (host: self.host)
         
         // Delaying the dismiss operation seems to prevent the SwiftUI crash:
@@ -209,24 +216,21 @@ struct HostEditView: View {
                     }
                 }
                 
-                Section (header: Text ("Style")){
-                    PlatformSelector(platformName: $platformName) {x in }
+                Section (header: Text ("Appearance")){
+                    ThemeSelector(themeName: self.$host.style, showDefault: true) { t in }
+
+                    //PlatformSelector(platformName: $platformName) {x in }
                     HStack {
-                        Text ("Host Icon")
-                        Picker(selection: $platformIndex, label: Text ("")){
-                            ForEach(0..<platformsSorted.count) { idx in
+                        Picker(selection: $platformName, label: Text ("Host Icon")){
+                            ForEach(manualOrderPlatformList, id: \.self) { name in
                                 HStack {
-                                    Image(platformToIcon [platformsSorted[idx]]!)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(maxWidth: 28)
-                                    Text (platformsSorted[idx])
-                                }
+                                    PlatformSelectorIcon (platformName: name)
+                                    Text (platformToHuman [name] ?? "BUG" + name)
+                                }.tag (name)
                             }
                         }
                     }
                     
-                    ThemeSelector(themeName: self.$host.style, showDefault: true) { t in }
                 }
                 Section (header: Text ("Other Options")) {
                     HStack {
@@ -235,8 +239,6 @@ struct HostEditView: View {
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
                     }
-                   
-                    Text ("Encoding")
                 }
             }
             .navigationBarItems(

@@ -109,9 +109,11 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
                 if let error = error {
                     self.feed(text: "[ERROR] \(error)\n")
                 } else {
-                    if let guess = self.guessRemote(remoteBanner: s.remoteBanner) {
-                        DispatchQueue.main.async {
-                             DataStore.shared.updateGuess (for: self.host, to: guess)
+                    if self.host.hostKindGuess == "" {
+                        if let guess = self.guessRemote(remoteBanner: s.remoteBanner) {
+                            DispatchQueue.main.async {
+                                 DataStore.shared.updateGuess (for: self.host, to: guess)
+                            }
                         }
                     }
                     let t = self.getTerminal()
