@@ -39,6 +39,11 @@ class Settings: ObservableObject {
             defaults?.set (fontSize, forKey: "fontSize")
         }
     }
+    @Published var backgroundStyle: String = "" {
+        didSet {
+            defaults?.set (backgroundStyle, forKey: "backgroundStyle")
+        }
+    }
 
     func getTheme (themeName: String? = nil) -> ThemeColor
     {
@@ -54,8 +59,10 @@ class Settings: ObservableObject {
         themeName = defaults?.string (forKey: "theme") ?? "Pro"
         fontName = defaults?.string (forKey: "fontName") ?? "Courier"
         fontSize = CGFloat (defaults?.double(forKey: "fontSize") ?? 11)
+        backgroundStyle = defaults?.string (forKey: "backgroundStyle") ?? ""
     }
 }
+
 var settings = Settings()
 
 var fontNames: [String] = ["Courier", "Courier New", "Menlo"]
@@ -206,12 +213,67 @@ struct FontSizeSelector: View {
     }
 }
 
+var shaders = ["plasma_fragment_texture", "starnest_fragment_texture"]
+var shaderToHuman = [
+    "plasma_fragment_texture": "Plasma",
+    "starnest_fragment_texture": "Star Nest"
+]
+
+struct LiveBackgroundSelector: View {
+    @Binding var selected: String
+    
+    var body: some View {
+        HStack {
+            ForEach (shaders, id: \.self) { name in
+                
+                MetalView(shaderFunc: name)
+                    .frame(width: 120, height: 70)
+                .border (self.selected == name ? Color.accentColor : Color.clear, width: 2)
+                    .onTapGesture {
+                        self.selected = name
+                    }
+                .overlay (
+                    Text (shaderToHuman [name] ?? name)
+                        .shadow(color: Color.red, radius: 10, x: 5, y: 5)
+                        .foregroundColor(Color.white)
+                        
+                    .padding(8)
+                    , alignment: .topLeading)
+            }
+        }
+    }
+}
+
+struct BackgroundSelector: View {
+    @Binding var backgroundStyle: String
+    @State var backgroundKind: Int = 0
+
+    var body: some View {
+        HStack {
+            VStack {
+                HStack {
+                    Text ("Background")
+                    Picker(selection: $backgroundKind, label: Text ("Background Style")){
+                        Text ("Solid").tag (0)
+                        Text ("Live").tag (1)
+                    }.pickerStyle (SegmentedPickerStyle ())
+                }
+                if backgroundKind == 1 {
+                    LiveBackgroundSelector (selected: $backgroundStyle)
+                }
+            }
+        }.onAppear {
+            self.backgroundKind = self.backgroundStyle == "" ? 0 : 1
+        }
+    }
+}
 struct SettingsViewCore: View {
     @Binding var themeName: String
     @Binding var fontName: String
     @Binding var fontSize: CGFloat
     @Binding var keepOn: Bool
     @Binding var beepConfig: BeepKind
+    @Binding var backgroundStyle: String
     
     var body: some View {
         return Form {
@@ -227,6 +289,8 @@ struct SettingsViewCore: View {
                 }
                 FontSelector (fontName: $fontName)
                 FontSizeSelector (fontName: fontName, fontSize: $fontSize)
+                BackgroundSelector (backgroundStyle: $backgroundStyle)
+                
             }
             Section {
                 Toggle(isOn: $keepOn) {
@@ -251,7 +315,8 @@ struct SettingsView: View {
                        fontName: $gset.fontName,
                        fontSize: $gset.fontSize,
                        keepOn: $gset.keepOn,
-                       beepConfig: $gset.beepConfig)
+                       beepConfig: $gset.beepConfig,
+                       backgroundStyle: $gset.backgroundStyle)
     }
 }
 

@@ -71,12 +71,22 @@ public class AppTerminalView: TerminalView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    func makeUIColor (_ color: Color) -> UIColor
+    {
+        UIColor (red: CGFloat (color.red) / 65535.0,
+                 green: CGFloat (color.green) / 65535.0,
+                 blue: CGFloat (color.blue) / 65535.0,
+                 alpha: 1.0)
+    }
+    
     func applyTheme (theme: ThemeColor)
     {
         installColors(theme.ansi)
         let t = getTerminal()
         t.foregroundColor = theme.foreground
         t.backgroundColor = theme.background
+        self.selectedTextBackgroundColor = makeUIColor (theme.selectionColor)
+        self.caretColor = makeUIColor (theme.cursor)
         
         // TODO: selection and caret colors
     }

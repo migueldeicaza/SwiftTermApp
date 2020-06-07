@@ -101,6 +101,24 @@ struct PlatformSelectorIcon: View {
         }
     }
 }
+
+struct HostIconSelector: View {
+    @Binding var platformName: String
+    
+    var body: some View {
+        HStack {
+            Picker(selection: $platformName, label: Text ("Host Icon")){
+                ForEach(manualOrderPlatformList, id: \.self) { name in
+                    HStack {
+                        PlatformSelectorIcon (platformName: name)
+                        Text (platformToHuman [name] ?? "BUG" + name)
+                    }.tag (name)
+                }
+            }
+        }
+    }
+}
+
 struct HostEditView: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @State var alertClash: Bool = false
@@ -218,18 +236,10 @@ struct HostEditView: View {
                 
                 Section (header: Text ("Appearance")){
                     ThemeSelector(themeName: self.$host.style, showDefault: true) { t in }
-
+                    BackgroundSelector (backgroundStyle: self.$host.background)
+                    
                     //PlatformSelector(platformName: $platformName) {x in }
-                    HStack {
-                        Picker(selection: $platformName, label: Text ("Host Icon")){
-                            ForEach(manualOrderPlatformList, id: \.self) { name in
-                                HStack {
-                                    PlatformSelectorIcon (platformName: name)
-                                    Text (platformToHuman [name] ?? "BUG" + name)
-                                }.tag (name)
-                            }
-                        }
-                    }
+                    HostIconSelector (platformName: $platformName)
                     
                 }
                 Section (header: Text ("Other Options")) {

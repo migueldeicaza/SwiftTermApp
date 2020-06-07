@@ -19,6 +19,11 @@
 		49011690245607F7002C1F85 /* Hosts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901168F245607F7002C1F85 /* Hosts.swift */; };
 		49011692245622C6002C1F85 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49011691245622C6002C1F85 /* DataStore.swift */; };
 		4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4911B3032463AD3E00816BAA /* GenerateKey.swift */; };
+		49584D83248C3BEA0081D015 /* MetalHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49584D82248C3BEA0081D015 /* MetalHost.swift */; };
+		49584D85248C3C500081D015 /* ShadersBase.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49584D84248C3C500081D015 /* ShadersBase.metal */; };
+		49584D87248C3C7F0081D015 /* PlasmaGlobe.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49584D86248C3C7F0081D015 /* PlasmaGlobe.metal */; };
+		49584D89248C3D570081D015 /* StarNest.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49584D88248C3D570081D015 /* StarNest.metal */; };
+		49584D8C248C41620081D015 /* MetalSwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49584D8B248C41620081D015 /* MetalSwiftUI.swift */; };
 		4967B9FC2459239700A9D2A6 /* Connections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967B9FB2459239700A9D2A6 /* Connections.swift */; };
 		4967B9FE24592D0B00A9D2A6 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967B9FD24592D0B00A9D2A6 /* SettingsView.swift */; };
 		4967BA0224592D3600A9D2A6 /* SessionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967BA0124592D3600A9D2A6 /* SessionsView.swift */; };
@@ -66,6 +71,12 @@
 		4901168F245607F7002C1F85 /* Hosts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hosts.swift; sourceTree = "<group>"; };
 		49011691245622C6002C1F85 /* DataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
 		4911B3032463AD3E00816BAA /* GenerateKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateKey.swift; sourceTree = "<group>"; };
+		49584D82248C3BEA0081D015 /* MetalHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalHost.swift; sourceTree = "<group>"; };
+		49584D84248C3C500081D015 /* ShadersBase.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ShadersBase.metal; sourceTree = "<group>"; };
+		49584D86248C3C7F0081D015 /* PlasmaGlobe.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = PlasmaGlobe.metal; sourceTree = "<group>"; };
+		49584D88248C3D570081D015 /* StarNest.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = StarNest.metal; sourceTree = "<group>"; };
+		49584D8A248C40270081D015 /* SwiftTermShaders.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SwiftTermShaders.h; sourceTree = "<group>"; };
+		49584D8B248C41620081D015 /* MetalSwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalSwiftUI.swift; sourceTree = "<group>"; };
 		4967B9FB2459239700A9D2A6 /* Connections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connections.swift; sourceTree = "<group>"; };
 		4967B9FD24592D0B00A9D2A6 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		4967BA0124592D3600A9D2A6 /* SessionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionsView.swift; sourceTree = "<group>"; };
@@ -115,6 +126,7 @@
 		4901167424553789002C1F85 /* SwiftTermApp */ = {
 			isa = PBXGroup;
 			children = (
+				49584D81248C3BD80081D015 /* Metal */,
 				49F0740A2481B3D100A83CDC /* Settings */,
 				49F073E7247B6B5E00A83CDC /* Sessions */,
 				49C1B6B3246260C000D54F6F /* Terminal */,
@@ -141,6 +153,19 @@
 				4901167E2455378A002C1F85 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		49584D81248C3BD80081D015 /* Metal */ = {
+			isa = PBXGroup;
+			children = (
+				49584D82248C3BEA0081D015 /* MetalHost.swift */,
+				49584D84248C3C500081D015 /* ShadersBase.metal */,
+				49584D86248C3C7F0081D015 /* PlasmaGlobe.metal */,
+				49584D88248C3D570081D015 /* StarNest.metal */,
+				49584D8A248C40270081D015 /* SwiftTermShaders.h */,
+				49584D8B248C41620081D015 /* MetalSwiftUI.swift */,
+			);
+			path = Metal;
 			sourceTree = "<group>";
 		};
 		4967BA05245A85E200A9D2A6 /* SwCrypt */ = {
@@ -295,11 +320,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49584D85248C3C500081D015 /* ShadersBase.metal in Sources */,
 				4901168A245540F2002C1F85 /* HostEditView.swift in Sources */,
+				49584D83248C3BEA0081D015 /* MetalHost.swift in Sources */,
 				49C1B6BE24637DD500D54F6F /* ButtonColors.swift in Sources */,
 				49C1B6B5246260DC00D54F6F /* TerminalViewController.swift in Sources */,
 				49EED560245D0A0B00A8794E /* STButton.swift in Sources */,
 				4967BA04245A7AF300A9D2A6 /* Keys.swift in Sources */,
+				49584D89248C3D570081D015 /* StarNest.metal in Sources */,
 				49C1B6B72462611F00D54F6F /* SshTerminalView.swift in Sources */,
 				49011692245622C6002C1F85 /* DataStore.swift in Sources */,
 				4901168C24554A51002C1F85 /* AddKeyManually.swift in Sources */,
@@ -310,6 +338,8 @@
 				4973B42C24650B440087D978 /* UIViewController+SwiftUI.swift in Sources */,
 				4901168E2456058B002C1F85 /* KeyManagementView.swift in Sources */,
 				4901167824553789002C1F85 /* SceneDelegate.swift in Sources */,
+				49584D87248C3C7F0081D015 /* PlasmaGlobe.metal in Sources */,
+				49584D8C248C41620081D015 /* MetalSwiftUI.swift in Sources */,
 				49F02ADF24610D7A00CFEB50 /* STFilePicker.swift in Sources */,
 				49011690245607F7002C1F85 /* Hosts.swift in Sources */,
 				4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */,

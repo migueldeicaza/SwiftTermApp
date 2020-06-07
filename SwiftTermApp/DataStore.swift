@@ -44,6 +44,7 @@ struct Host: Codable, Identifiable {
     // This is the UUID of the key registered with the app
     var sshKey: UUID?
     var style: String = ""
+    var background: String = ""
     var lastUsed: Date = Date.distantPast
     
     func summary() -> String {
