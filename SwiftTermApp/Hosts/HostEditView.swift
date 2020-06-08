@@ -236,7 +236,7 @@ struct HostEditView: View {
                 
                 Section (header: Text ("Appearance")){
                     ThemeSelector(themeName: self.$host.style, showDefault: true) { t in }
-                    BackgroundSelector (backgroundStyle: self.$host.background)
+                    BackgroundSelector (backgroundStyle: self.$host.background, showDefault: true)
                     
                     //PlatformSelector(platformName: $platformName) {x in }
                     HostIconSelector (platformName: $platformName)

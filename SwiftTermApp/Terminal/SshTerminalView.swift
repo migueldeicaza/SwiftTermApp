@@ -49,8 +49,11 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
                 throw MyError.noValidKey ("The host does not have an SSH key associated")
             }
         }
-        print ("Got \(authenticationChallenge)")
-        super.init (frame: frame, useSharedTheme: host.style == "")
+        let useDefaultBackground = host.background == "default"
+        super.init (frame: frame, useSharedTheme: host.style == "", useDefaultBackground: useDefaultBackground)
+        if !useDefaultBackground {
+            updateBackground(background: host.background)
+        }
         terminalDelegate = self
         shell = try? SSHShell(sshLibrary: Libssh2.self,
                               host: host.hostname,

@@ -21,8 +21,11 @@ public class AppTerminalView: TerminalView {
     var sizeChange: AnyCancellable?
     var fontChange: AnyCancellable?
     var themeChange: AnyCancellable?
+    var backgroundChange: AnyCancellable?
+    var metalHost: MetalHost?
+    var metalLayer: CAMetalLayer?
     
-    public init (frame: CGRect, useSharedTheme: Bool) {
+    public init (frame: CGRect, useSharedTheme: Bool, useDefaultBackground: Bool) {
         self.useSharedTheme = useSharedTheme
         super.init (frame: frame)
         sizeChange = settings.$fontSize.sink { _ in
@@ -39,10 +42,45 @@ public class AppTerminalView: TerminalView {
                 
             }
         }
+        if useDefaultBackground {
+            backgroundChange = settings.$backgroundStyle.sink { _ in self.updateBackground (background: settings.backgroundStyle) }
+        }
         
         addGestureRecognizer(UIPinchGestureRecognizer (target: self, action: #selector(pinchHandler)))
     }
 
+    override public func didMoveToWindow() {
+        if let mh = metalHost {
+            mh.didMoveToWindow(view: self)
+        }
+    }
+    
+    func updateBackground (background: String)
+    {
+        // solid
+        if background == "" {
+            if let m = metalHost {
+                m.stopRunning()
+                metalLayer = nil
+            }
+        } else {
+            if metalLayer == nil {
+                metalLayer = CAMetalLayer ()
+                metalLayer?.opacity = 0.4
+                metalHost = MetalHost (target: metalLayer!, fragmentName: background)
+                //layer.insertSublayer(metalLayer!, at: 0)
+            }
+        }
+    }
+    
+    public override var frame: CGRect {
+        didSet {
+            if let ml = metalLayer {
+                ml.frame = frame
+            }
+        }
+    }
+    
     func updateFont ()
     {
         if let uifont = UIFont (name: settings.fontName, size: settings.fontSize) {

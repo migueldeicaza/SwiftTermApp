@@ -247,23 +247,32 @@ struct LiveBackgroundSelector: View {
 struct BackgroundSelector: View {
     @Binding var backgroundStyle: String
     @State var backgroundKind: Int = 0
-
+    @State var showDefault: Bool = false
+    
     var body: some View {
         HStack {
             VStack {
                 HStack {
                     Text ("Background")
+                    Spacer ()
                     Picker(selection: $backgroundKind, label: Text ("Background Style")){
-                        Text ("Solid").tag (0)
-                        Text ("Live").tag (1)
+                        if showDefault {
+                            Text ("Default").tag (1)
+                        }
+                        Text ("Solid").tag (1)
+                        Text ("Live").tag (2)
                     }.pickerStyle (SegmentedPickerStyle ())
                 }
-                if backgroundKind == 1 {
+                if backgroundKind == 2 {
                     LiveBackgroundSelector (selected: $backgroundStyle)
                 }
             }
         }.onAppear {
-            self.backgroundKind = self.backgroundStyle == "" ? 0 : 1
+            if self.backgroundStyle == "default" {
+                self.backgroundKind = self.showDefault ? 0 : 1
+            } else {
+                self.backgroundKind = self.backgroundStyle == "" ? 1 : 2
+            }
         }
     }
 }
@@ -332,12 +341,134 @@ struct SettingsView_Previews: PreviewProvider {
 
 let themes: [ThemeColor] = [
     ThemeColor.fromXrdb (title: "Adventure Time", xrdb: themeAdventureTime)!,
+    ThemeColor.fromXrdb (title: "Dark", xrdb: themeBuiltinDark)!,
     ThemeColor.fromXrdb (title: "Django", xrdb: themeDjango)!,
+    ThemeColor.fromXrdb (title: "Light", xrdb: themeBuiltinLight)!,
     ThemeColor.fromXrdb (title: "Material", xrdb: themeMaterial)!,
     ThemeColor.fromXrdb (title: "Ocean", xrdb: themeOcean)!,
+    ThemeColor.fromXrdb (title: "Solarized Dark", xrdb: themeSolarizedDark)!,
+    ThemeColor.fromXrdb (title: "Solarized Light", xrdb: themeSolarizedLight)!,
+    ThemeColor.fromXrdb (title: "Tango Dark", xrdb: themeTangoDark)!,
+    ThemeColor.fromXrdb (title: "Tango Light", xrdb: themeTangoLight)!,
     ThemeColor.fromXrdb (title: "Pro", xrdb: themePro)!,
 ]
 
+let themeBuiltinDark = """
+#define Ansi_0_Color #000000
+#define Ansi_1_Color #bb0000
+#define Ansi_10_Color #55ff55
+#define Ansi_11_Color #ffff55
+#define Ansi_12_Color #5555ff
+#define Ansi_13_Color #ff55ff
+#define Ansi_14_Color #55ffff
+#define Ansi_15_Color #ffffff
+#define Ansi_2_Color #00bb00
+#define Ansi_3_Color #bbbb00
+#define Ansi_4_Color #0000bb
+#define Ansi_5_Color #bb00bb
+#define Ansi_6_Color #00bbbb
+#define Ansi_7_Color #bbbbbb
+#define Ansi_8_Color #555555
+#define Ansi_9_Color #ff5555
+#define Background_Color #000000
+#define Badge_Color #ff0000
+#define Bold_Color #ffffff
+#define Cursor_Color #bbbbbb
+#define Cursor_Guide_Color #a6e8ff
+#define Cursor_Text_Color #ffffff
+#define Foreground_Color #bbbbbb
+#define Link_Color #0645ad
+#define Selected_Text_Color #000000
+#define Selection_Color #b5d5ff
+"""
+
+let themeBuiltinLight = """
+#define Ansi_0_Color #000000
+#define Ansi_1_Color #bb0000
+#define Ansi_10_Color #55ff55
+#define Ansi_11_Color #ffff55
+#define Ansi_12_Color #5555ff
+#define Ansi_13_Color #ff55ff
+#define Ansi_14_Color #55ffff
+#define Ansi_15_Color #ffffff
+#define Ansi_2_Color #00bb00
+#define Ansi_3_Color #bbbb00
+#define Ansi_4_Color #0000bb
+#define Ansi_5_Color #bb00bb
+#define Ansi_6_Color #00bbbb
+#define Ansi_7_Color #bbbbbb
+#define Ansi_8_Color #555555
+#define Ansi_9_Color #ff5555
+#define Background_Color #ffffff
+#define Badge_Color #ff0000
+#define Bold_Color #000000
+#define Cursor_Color #000000
+#define Cursor_Guide_Color #a6e8ff
+#define Cursor_Text_Color #ffffff
+#define Foreground_Color #000000
+#define Link_Color #0645ad
+#define Selected_Text_Color #000000
+#define Selection_Color #b5d5ff
+"""
+
+let themeSolarizedDark = """
+#define Ansi_0_Color #073642
+#define Ansi_1_Color #dc322f
+#define Ansi_10_Color #586e75
+#define Ansi_11_Color #657b83
+#define Ansi_12_Color #839496
+#define Ansi_13_Color #6c71c4
+#define Ansi_14_Color #93a1a1
+#define Ansi_15_Color #fdf6e3
+#define Ansi_2_Color #859900
+#define Ansi_3_Color #b58900
+#define Ansi_4_Color #268bd2
+#define Ansi_5_Color #d33682
+#define Ansi_6_Color #2aa198
+#define Ansi_7_Color #eee8d5
+#define Ansi_8_Color #002b36
+#define Ansi_9_Color #cb4b16
+#define Background_Color #002b36
+#define Badge_Color #ff2600
+#define Bold_Color #93a1a1
+#define Cursor_Color #839496
+#define Cursor_Guide_Color #b3ecff
+#define Cursor_Text_Color #073642
+#define Foreground_Color #839496
+#define Link_Color #005cbb
+#define Selected_Text_Color #93a1a1
+#define Selection_Color #073642
+"""
+
+let themeSolarizedLight = """
+#define Ansi_0_Color #073642
+#define Ansi_1_Color #dc322f
+#define Ansi_10_Color #586e75
+#define Ansi_11_Color #657b83
+#define Ansi_12_Color #839496
+#define Ansi_13_Color #6c71c4
+#define Ansi_14_Color #93a1a1
+#define Ansi_15_Color #fdf6e3
+#define Ansi_2_Color #859900
+#define Ansi_3_Color #b58900
+#define Ansi_4_Color #268bd2
+#define Ansi_5_Color #d33682
+#define Ansi_6_Color #2aa198
+#define Ansi_7_Color #eee8d5
+#define Ansi_8_Color #002b36
+#define Ansi_9_Color #cb4b16
+#define Background_Color #fdf6e3
+#define Badge_Color #ff2600
+#define Bold_Color #586e75
+#define Cursor_Color #657b83
+#define Cursor_Guide_Color #b3ecff
+#define Cursor_Text_Color #eee8d5
+#define Foreground_Color #657b83
+#define Link_Color #005cbb
+#define Selected_Text_Color #586e75
+#define Selection_Color #eee8d5
+
+"""
 let themeMaterial = """
 #define Ansi_0_Color #212121
 #define Ansi_1_Color #b7141f
@@ -467,4 +598,63 @@ let themeDjango = """
 #define Foreground_Color #f8f8f8
 #define Selected_Text_Color #f8f8f8
 #define Selection_Color #245032
+"""
+
+let themeTangoDark = """
+#define Ansi_0_Color #000000
+#define Ansi_1_Color #cc0000
+#define Ansi_10_Color #8ae234
+#define Ansi_11_Color #fce94f
+#define Ansi_12_Color #729fcf
+#define Ansi_13_Color #ad7fa8
+#define Ansi_14_Color #34e2e2
+#define Ansi_15_Color #eeeeec
+#define Ansi_2_Color #4e9a06
+#define Ansi_3_Color #c4a000
+#define Ansi_4_Color #3465a4
+#define Ansi_5_Color #75507b
+#define Ansi_6_Color #06989a
+#define Ansi_7_Color #d3d7cf
+#define Ansi_8_Color #555753
+#define Ansi_9_Color #ef2929
+#define Background_Color #000000
+#define Badge_Color #ff0000
+#define Bold_Color #ffffff
+#define Cursor_Color #ffffff
+#define Cursor_Guide_Color #a6e8ff
+#define Cursor_Text_Color #000000
+#define Foreground_Color #ffffff
+#define Link_Color #0645ad
+#define Selected_Text_Color #000000
+#define Selection_Color #b5d5ff
+"""
+
+let themeTangoLight = """
+#define Ansi_0_Color #000000
+#define Ansi_1_Color #cc0000
+#define Ansi_10_Color #8ae234
+#define Ansi_11_Color #fce94f
+#define Ansi_12_Color #729fcf
+#define Ansi_13_Color #ad7fa8
+#define Ansi_14_Color #34e2e2
+#define Ansi_15_Color #eeeeec
+#define Ansi_2_Color #4e9a06
+#define Ansi_3_Color #c4a000
+#define Ansi_4_Color #3465a4
+#define Ansi_5_Color #75507b
+#define Ansi_6_Color #06989a
+#define Ansi_7_Color #d3d7cf
+#define Ansi_8_Color #555753
+#define Ansi_9_Color #ef2929
+#define Background_Color #ffffff
+#define Badge_Color #ff0000
+#define Bold_Color #000000
+#define Cursor_Color #000000
+#define Cursor_Guide_Color #a6e8ff
+#define Cursor_Text_Color #ffffff
+#define Foreground_Color #000000
+#define Link_Color #0645ad
+#define Selected_Text_Color #000000
+#define Selection_Color #b5d5ff
+
 """

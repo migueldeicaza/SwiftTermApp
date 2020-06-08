@@ -40,4 +40,11 @@ Plasma Globe by nimitz (twitter: @stormoid)
 
 Starcraddle by Pablo Roman Andrioli
 
+# Color Themes
+
+The Color themes come from iTerm2 Color Schemes Project:
+
+https://github.com/mbadolato/iTerm2-Color-Schemes/
+
+
 
