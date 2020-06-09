@@ -66,9 +66,9 @@ public class AppTerminalView: TerminalView {
         } else {
             if metalLayer == nil {
                 metalLayer = CAMetalLayer ()
-                metalLayer?.opacity = 0.4
+                //metalLayer?.opacity = 0.4
                 metalHost = MetalHost (target: metalLayer!, fragmentName: background)
-                //layer.insertSublayer(metalLayer!, at: 0)
+                backgroundColor = UIColor.clear
             }
         }
     }
@@ -76,7 +76,7 @@ public class AppTerminalView: TerminalView {
     public override var frame: CGRect {
         didSet {
             if let ml = metalLayer {
-                ml.frame = frame
+                ml.frame = bounds
             }
         }
     }
@@ -123,6 +123,9 @@ public class AppTerminalView: TerminalView {
         let t = getTerminal()
         t.foregroundColor = theme.foreground
         t.backgroundColor = theme.background
+        if metalLayer != nil {
+            nativeBackgroundColor = UIColor.clear
+        }
         self.selectedTextBackgroundColor = makeUIColor (theme.selectionColor)
         self.caretColor = makeUIColor (theme.cursor)
         

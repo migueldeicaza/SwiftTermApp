@@ -27,6 +27,34 @@ struct ContentView: View {
     }
 }
 
+struct QuickLaunch: View {
+    @State var quickCommand: String = ""
+    
+    func go () {
+        guard quickCommand.count > 0 else { return }
+        let sp1 = quickCommand.split (separator: ":")
+        let sp2 = sp1.split (separator: "@")
+//        let user, host: String
+//        if sp2.count == 1 {
+//            host = String (sp2 [0])
+//            user = ""
+//        } else {
+//            user = String (sp2 [0])
+//            host = String (sp2 [1])
+//        }
+        let port = sp1.count > 1 ? Int (String (sp1 [1])) ?? 22 : 22
+        
+    }
+    var body: some View {
+        HStack {
+            
+            TextField("user@hostname:22", text: $quickCommand)
+            Button(action: {}) {
+                Text ("Connect")
+            }
+        }
+    }
+}
 struct HomeView: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @ObservedObject var connections = Connections.shared
@@ -40,15 +68,13 @@ struct HomeView: View {
     
     var body: some View {
         List {
-//            if Connections.shared.active() {
-//                ConnectionSummaryView ()
-//            } else {
-                Section (header: Text ("Recent")) {
-                    ForEach(self.store.recentIndices (), id: \.self) { idx in
-                        HostSummaryView (host: self.$store.hosts [idx])
-                    }
+            QuickLaunch()
+            //ConnectionSummaryView()
+            Section (header: Text ("Recent")) {
+                ForEach(self.store.recentIndices (), id: \.self) { idx in
+                    HostSummaryView (host: self.$store.hosts [idx])
                 }
-            //}
+            }
             Section {
                 NavigationLink(
                     destination: HostsView()

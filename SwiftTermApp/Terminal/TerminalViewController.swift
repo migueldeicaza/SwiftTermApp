@@ -167,6 +167,9 @@ class TerminalViewController: UIViewController {
         self.terminalView = t
         t.frame = view.frame
         view.addSubview(t)
+        if let ml = t.metalLayer {
+            view.layer.insertSublayer(ml, at: 0)
+        }
         if interactive {
             t.becomeFirstResponder()
         } else {
