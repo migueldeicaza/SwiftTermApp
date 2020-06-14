@@ -27,15 +27,29 @@ func getImage (for host: Host) -> some View
 // https://stackoverflow.com/questions/56756318/swiftui-presentationbutton-with-modal-that-is-full-screen
 
 
+struct ConfigurableUITerminal: View {
+    @Binding var host: Host
+    @State var showConfig: Bool = false
+    
+    var body: some View {
+        SwiftUITerminal(host: host, createNew: false, interactive: true)
+            .navigationBarTitle (Text (host.alias), displayMode: .inline)
+            .navigationBarItems(trailing: Button (action: { self.showConfig = true }) { Text ("Poke")})
+            .sheet (isPresented: $showConfig) {
+                Form {
+                    ThemeSelector(themeName: self.$host.style, showDefault: true) { t in }
+                    BackgroundSelector (backgroundStyle: self.$host.background, showDefault: true)
+                }
+            }
+    }
+}
+
 struct HostSummaryView: View {
     @Binding var host: Host
     @State var showingModal = false
     
     var body: some View {
-        NavigationLink (destination:
-            SwiftUITerminal(host: host, createNew: false, interactive: true)
-                .navigationBarTitle (Text (host.alias), displayMode: .inline)
-        ) {
+        NavigationLink (destination: ConfigurableUITerminal(host: $host)) {
             HStack (spacing: 12){
                 getImage (for: host)
                     .font (.system(size: 28))

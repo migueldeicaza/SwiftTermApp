@@ -32,6 +32,7 @@
 		4973B42C24650B440087D978 /* UIViewController+SwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973B42B24650B440087D978 /* UIViewController+SwiftUI.swift */; };
 		49A0A2BE2491C792002593F7 /* LazyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2BD2491C792002593F7 /* LazyView.swift */; };
 		49A0A2C02491CDC4002593F7 /* InteractiveLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2BF2491CDC4002593F7 /* InteractiveLogin.swift */; };
+		49A0A2C2249298BF002593F7 /* DigitalBrain.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2C1249298BF002593F7 /* DigitalBrain.metal */; };
 		49C1B6AF24625C7D00D54F6F /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 49C1B6AE24625C7D00D54F6F /* SwiftTerm */; };
 		49C1B6B5246260DC00D54F6F /* TerminalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6B4246260DC00D54F6F /* TerminalViewController.swift */; };
 		49C1B6B72462611F00D54F6F /* SshTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6B62462611F00D54F6F /* SshTerminalView.swift */; };
@@ -87,6 +88,7 @@
 		4973B42B24650B440087D978 /* UIViewController+SwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+SwiftUI.swift"; sourceTree = "<group>"; };
 		49A0A2BD2491C792002593F7 /* LazyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LazyView.swift; sourceTree = "<group>"; };
 		49A0A2BF2491CDC4002593F7 /* InteractiveLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveLogin.swift; sourceTree = "<group>"; };
+		49A0A2C1249298BF002593F7 /* DigitalBrain.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = DigitalBrain.metal; sourceTree = "<group>"; };
 		49C1B6B4246260DC00D54F6F /* TerminalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalViewController.swift; sourceTree = "<group>"; };
 		49C1B6B62462611F00D54F6F /* SshTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SshTerminalView.swift; sourceTree = "<group>"; };
 		49C1B6B9246263F100D54F6F /* SwiftSH.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftSH.framework; path = SwiftSH.binaries/SwiftSH.framework; sourceTree = "<group>"; };
@@ -168,6 +170,7 @@
 				49584D88248C3D570081D015 /* StarNest.metal */,
 				49584D8A248C40270081D015 /* SwiftTermShaders.h */,
 				49584D8B248C41620081D015 /* MetalSwiftUI.swift */,
+				49A0A2C1249298BF002593F7 /* DigitalBrain.metal */,
 			);
 			path = Metal;
 			sourceTree = "<group>";
@@ -343,6 +346,7 @@
 				4967BA0224592D3600A9D2A6 /* SessionsView.swift in Sources */,
 				4973B42C24650B440087D978 /* UIViewController+SwiftUI.swift in Sources */,
 				4901168E2456058B002C1F85 /* KeyManagementView.swift in Sources */,
+				49A0A2C2249298BF002593F7 /* DigitalBrain.metal in Sources */,
 				4901167824553789002C1F85 /* SceneDelegate.swift in Sources */,
 				49584D87248C3C7F0081D015 /* PlasmaGlobe.metal in Sources */,
 				49584D8C248C41620081D015 /* MetalSwiftUI.swift in Sources */,

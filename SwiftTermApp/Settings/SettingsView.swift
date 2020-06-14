@@ -213,10 +213,11 @@ struct FontSizeSelector: View {
     }
 }
 
-var shaders = ["plasma_fragment_texture", "starnest_fragment_texture"]
+var shaders = ["digitalbrain_fragment_texture", "plasma_fragment_texture", "starnest_fragment_texture"]
 var shaderToHuman = [
     "plasma_fragment_texture": "Plasma",
-    "starnest_fragment_texture": "Star Nest"
+    "starnest_fragment_texture": "Star Nest",
+    "digitalbrain_fragment_texture": "Digital Brain"
 ]
 
 struct LiveBackgroundSelector: View {

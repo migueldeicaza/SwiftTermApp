@@ -61,8 +61,7 @@ struct MetalSwiftUI_Previews: PreviewProvider {
             Text ("Top")
             HStack {
                 Text ("Hello")
-                MetalView (shaderFunc: "plasma_fragment_texture")
-                .frame(width: 200, height: 100)
+                MetalView (shaderFunc: "digitalbrain_fragment_texture")
                 Text ("World")
             }
             Text ("Bottom")

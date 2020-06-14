@@ -262,3 +262,4 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
     func updateUIViewController(_ uiViewController: TerminalViewController, context: UIViewControllerRepresentableContext<SwiftUITerminal>) {
     }
 }
+
