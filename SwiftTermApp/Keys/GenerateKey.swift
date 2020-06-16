@@ -8,6 +8,7 @@
 
 import SwiftUI
 import CryptoKit
+import Security
 
 //
 // This dialog can be used to create new SSH keys, and can either be
@@ -15,7 +16,7 @@ import CryptoKit
 // ones with an optional passphrase
 //
 struct GenerateKey: View {
-    @State var keyStyle:Int = 1
+    @State var keyStyle:Int = 0
     @State var keyBits:Int = 1
     @State var title = "SwiftTerm key on \(UIDevice.current.name)"
     @Binding var showGenerator: Bool
@@ -31,7 +32,7 @@ struct GenerateKey: View {
     // Callback invoked with the desired key, it should generate the key
     // and add it to the keychain - this might be the secure enclave, or
     // a regular location for devices that do not have it.
-    var generateKey: (_ type: KeyType, _ comment: String, _ passphrase: String)->()
+    var generateKey: (_ type: KeyType, _ comment: String, _ passphrase: String)->String
     
     func haveKey (_ keyName: String) -> Bool
     {
@@ -44,10 +45,11 @@ struct GenerateKey: View {
         return false
     }
     
+    @State var generated = ""
     func callGenerateKey ()
     {
         let v: KeyType = keyStyle == 0 ? .ed25519 : .rsa(keyBits == 0 ? 1024 : keyBits == 1 ? 2048 : 4096)
-        generateKey(v, title, passphrase)
+        generated = generateKey(v, title, passphrase)
     }
     
     var body: some View {
@@ -91,6 +93,13 @@ struct GenerateKey: View {
                             .font(.subheadline)
                     }
                 }
+                Section {
+                    HStack {
+                        Text ("Generated Key")
+                        TextField ("", text: self.$generated)
+                            .font(.subheadline)
+                    }
+                }
             }.listStyle(GroupedListStyle ())
                 .environment(\.horizontalSizeClass, .regular)
                 .navigationBarItems(
@@ -98,7 +107,7 @@ struct GenerateKey: View {
                         self.showGenerator = false
                     },
                     trailing: Button("Save") {
-                        if true || self.haveKey(self.keyName) {
+                        if false || self.haveKey(self.keyName) {
                             self.showAlert = true
                         } else {
                             self.callGenerateKey()
@@ -122,41 +131,54 @@ struct GenerateKey: View {
 //
 struct LocalKeyButton: View {
     @State var showGenerator = false
-    let keyTag = "SE.ST.PK"
+    let keyTag = "keyTag"
     
-    func generateSecureEnclaveKey (_ type: KeyType, _ comment: String, _ passphrase: String)->()
+    func generateSecureEnclaveKey (_ type: KeyType, _ comment: String, _ passphrase: String)-> String
     {
-        //        switch type {
-        //        case .ed25519:
-        //            let access =
-        //            SecAccessControlCreateWithFlags(kCFAllocatorDefault,
-        //                                            kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
-        //                                            .privateKeyUsage,
-        //                                            nil)!   // Ignore error
-        //
-        //            let attributes: [String: Any] = [
-        //                kSecAttrKeyType as String:            kSecAttrKeyTypeEC,
-        //                kSecAttrKeySizeInBits as String:      256,
-        //                kSecAttrTokenID as String:            kSecAttrTokenIDSecureEnclave,
-        //                kSecPrivateKeyAttrs as String: [
-        //                    kSecAttrIsPermanent as String:     true,
-        //                    kSecAttrApplicationTag as String:  keyTag,
-        //                    kSecAttrAccessControl as String:   access
-        //                ]
-        //            ]
-        //
-        //        case .rsa(let bits):
-        //            if let (priv, pub) = try? CC.RSA.generateKeyPair(2048) {
-        //
-        //            }
-        //            break
-        //        }
+        switch type {
+        case .ed25519:
+            let access =
+            SecAccessControlCreateWithFlags(
+                kCFAllocatorDefault,
+                kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
+                .privateKeyUsage,
+                nil)!   // Ignore error
+
+            "foo".data(using: .utf8)
+            let attributes: [String: Any] = [
+                kSecAttrKeyType as String:            kSecAttrKeyTypeECSECPrimeRandom,
+                kSecAttrKeySizeInBits as String:      256,
+                kSecAttrTokenID as String:            kSecAttrTokenIDSecureEnclave,
+                kSecPrivateKeyAttrs as String: [
+                    kSecAttrIsPermanent as String:     true,
+                    kSecAttrApplicationTag as String:
+                        "foo".data(using: .utf8)! as CFData,
+                    kSecAttrAccessControl as String:   access
+                ]
+            ]
+            var error: Unmanaged<CFError>? = nil
+            guard let privateKey = SecKeyCreateRandomKey(attributes as CFDictionary, &error) else {
+                print ("Oops: \(error)")
+                return "Error"
+            }
+            let publicKey = SecKeyCopyPublicKey  (privateKey)
+            let externalRepresentation = SecKeyCopyExternalRepresentation(publicKey!, &error)
+            // The first byte is 4 according to the spec, we can skip that.
+            
+            return "Got \(privateKey)"
+        case .rsa(let bits):
+            if let (priv, pub) = try? CC.RSA.generateKeyPair(2048) {
+
+            }
+            break
+        }
+        return "DEFAULT"
     }
     
     
     var body: some View {
         HStack {
-            if false && SecureEnclave.isAvailable {
+            if SecureEnclave.isAvailable {
                 STButton(text: "Create Local Key", icon: "plus.circle")
             }
         }.onTapGesture {
@@ -170,6 +192,6 @@ struct LocalKeyButton: View {
 
 struct GenerateKey_Previews: PreviewProvider {
     static var previews: some View {
-        GenerateKey(showGenerator: .constant(true), generateKey: { x, a, b in })
+        GenerateKey(showGenerator: .constant(true), generateKey: { x, a, b in "" })
     }
 }

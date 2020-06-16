@@ -73,7 +73,7 @@ struct KeyManagementView: View {
 
     var body: some View {
         List {
-            // LocalKeyButton ()
+            LocalKeyButton ()
             STButton (text: "Create", icon: "plus.circle")
                 .onTapGesture {
                     self.addKeyManuallyShown = true
@@ -108,7 +108,7 @@ struct KeyManagementView: View {
             EditButton()
         }
         .sheet(isPresented: self.$newKeyShown) {
-            GenerateKey(showGenerator: self.$newKeyShown, generateKey: { a, b, c in } )
+            GenerateKey(showGenerator: self.$newKeyShown, generateKey: { a, b, c in "" } )
         }
         
         )
@@ -118,7 +118,7 @@ struct KeyManagementView: View {
 struct KeyManagementView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            GenerateKey(showGenerator: .constant(true), generateKey: { a, b, c in })
+            GenerateKey(showGenerator: .constant(true), generateKey: { a, b, c in "" })
             KeyManagementView()
         }
     }
