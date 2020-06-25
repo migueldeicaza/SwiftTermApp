@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		4901167624553789002C1F85 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901167524553789002C1F85 /* AppDelegate.swift */; };
-		4901167824553789002C1F85 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901167724553789002C1F85 /* SceneDelegate.swift */; };
 		4901167A24553789002C1F85 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901167924553789002C1F85 /* Home.swift */; };
 		4901167C2455378A002C1F85 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4901167B2455378A002C1F85 /* Assets.xcassets */; };
 		4901167F2455378A002C1F85 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4901167E2455378A002C1F85 /* Preview Assets.xcassets */; };
@@ -62,7 +61,6 @@
 /* Begin PBXFileReference section */
 		4901167224553789002C1F85 /* SwiftTermApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftTermApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4901167524553789002C1F85 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		4901167724553789002C1F85 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		4901167924553789002C1F85 /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
 		4901167B2455378A002C1F85 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4901167E2455378A002C1F85 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -141,7 +139,6 @@
 				49B2473F245D09A50075F01B /* UIs */,
 				4967BA05245A85E200A9D2A6 /* SwCrypt */,
 				4901167524553789002C1F85 /* AppDelegate.swift */,
-				4901167724553789002C1F85 /* SceneDelegate.swift */,
 				4901167924553789002C1F85 /* Home.swift */,
 				4901167B2455378A002C1F85 /* Assets.xcassets */,
 				490116802455378A002C1F85 /* LaunchScreen.storyboard */,
@@ -347,7 +344,6 @@
 				4973B42C24650B440087D978 /* UIViewController+SwiftUI.swift in Sources */,
 				4901168E2456058B002C1F85 /* KeyManagementView.swift in Sources */,
 				49A0A2C2249298BF002593F7 /* DigitalBrain.metal in Sources */,
-				4901167824553789002C1F85 /* SceneDelegate.swift in Sources */,
 				49584D87248C3C7F0081D015 /* PlasmaGlobe.metal in Sources */,
 				49584D8C248C41620081D015 /* MetalSwiftUI.swift in Sources */,
 				49A0A2BE2491C792002593F7 /* LazyView.swift in Sources */,
