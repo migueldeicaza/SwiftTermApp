@@ -58,7 +58,9 @@ class Settings: ObservableObject {
         beepConfig = BeepKind (rawValue: defaults?.string(forKey: "beepConfig") ?? "vibrate") ?? .vibrate
         themeName = defaults?.string (forKey: "theme") ?? "Pro"
         fontName = defaults?.string (forKey: "fontName") ?? "Courier"
-        fontSize = CGFloat (defaults?.double(forKey: "fontSize") ?? 11)
+        let fsize = defaults?.double(forKey: "fontSize") ?? 11
+        
+        fontSize = CGFloat (fsize == 0.0 ? 11.0 : max (5.0, fsize))
         backgroundStyle = defaults?.string (forKey: "backgroundStyle") ?? ""
     }
 }

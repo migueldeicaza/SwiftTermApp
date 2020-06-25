@@ -9,39 +9,6 @@
 
 import SwiftUI
 
-struct MultilineTextView: UIViewRepresentable {
-    @Binding var text: String
-
-    func makeUIView(context: Context) -> UITextView {
-        let view = UITextView()
-        view.isScrollEnabled = true
-        view.isEditable = true
-        view.isUserInteractionEnabled = true
-        view.font = UIFont.monospacedSystemFont(ofSize: 13, weight: .regular)
-        view.delegate = context.coordinator
-        return view
-    }
-
-    func makeCoordinator() -> Coordinator {
-        return Coordinator(self)
-    }
-    
-    func updateUIView(_ uiView: UITextView, context: Context) {
-        uiView.text = text
-    }
-    
-    class Coordinator: NSObject, UITextViewDelegate {
-        var parent: MultilineTextView
-        public init (_ parent: MultilineTextView) {
-            self.parent = parent
-        }
-        
-        func textViewDidChange(_ textView: UITextView) {
-            parent.text = textView.text
-        }
-    }
-}
-
 struct EditKey: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @Binding var addKeyManuallyShown: Bool
@@ -91,12 +58,10 @@ struct EditKey: View {
                             Spacer ()
                         }
                         HStack {
-                            //TextField ("Required", text: self.$key.privateKey)
-                            //    .autocapitalization(.none)
-                            //    .lineLimit(4)
-                            //    .frame(maxHeight: 80)
-                            MultilineTextView(text: self.$key.privateKey)
+                            TextEditor(text: self.$key.privateKey)
                                 .frame(height: 80)
+                                .lineLimit(4)
+                                .autocapitalization(.none)
                             
                             ContentsFromFile (target: self.$key.privateKey)
                         }
