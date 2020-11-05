@@ -179,7 +179,7 @@ struct LocalKeyButton: View {
     var body: some View {
         HStack {
             if SecureEnclave.isAvailable {
-                STButton(text: "Create Local Key", icon: "plus.circle")
+                STButton(text: "Create Enclave Key", icon: "plus.circle")
             }
         }.onTapGesture {
             self.showGenerator = true

@@ -73,22 +73,24 @@ struct KeyManagementView: View {
 
     var body: some View {
         List {
-            LocalKeyButton ()
-            STButton (text: "Create", icon: "plus.circle")
-                .onTapGesture {
-                    self.addKeyManuallyShown = true
-                }
-                .sheet (isPresented: self.$addKeyManuallyShown) {
-                    AddKeyManually (addKeyManuallyShown: self.$addKeyManuallyShown)
-                }
+            VStack {
+                LocalKeyButton ()
+                STButton (text: "Create Key", icon: "plus.circle")
+                    .onTapGesture {
+                        self.addKeyManuallyShown = true
+                    }
+                    .sheet (isPresented: self.$addKeyManuallyShown) {
+                        AddKeyManually (addKeyManuallyShown: self.$addKeyManuallyShown)
+                    }
 
-            STButton (text: "Import Key from File", icon: "folder.badge.plus")
-                .onTapGesture {
-                    self.addFromFileShown = true
-                }
-                .sheet (isPresented: self.$addFromFileShown, onDismiss: { self.addFromFileShown = false }) {
-                    STFilePicker()
-                }
+                STButton (text: "Import Key from File", icon: "folder.badge.plus")
+                    .onTapGesture {
+                        self.addFromFileShown = true
+                    }
+                    .sheet (isPresented: self.$addFromFileShown, onDismiss: { self.addFromFileShown = false }) {
+                        STFilePicker()
+                    }
+            }
             ForEach(store.keys.indices, id: \.self){ idx in
                 KeyView (key: self.$store.keys [idx], action: self.action)
             }

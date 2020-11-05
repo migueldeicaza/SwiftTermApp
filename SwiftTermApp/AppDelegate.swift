@@ -9,11 +9,34 @@
 import UIKit
 import SwiftUI
 
+
+struct TerminalCommands: Commands {
+    // To use this, read: https://developer.apple.com/forums/thread/651748
+    // @FocusedBinding(\.selectedTerminal) var selectedTerminal: Terminal?
+    
+    
+    var body: some Commands {
+        CommandMenu ("Title") {
+            Section {
+                Button ("Soft Reset", action: {}).keyboardShortcut(KeyEquivalent("r"), modifiers: [/*@START_MENU_TOKEN@*/.command/*@END_MENU_TOKEN@*/, .option])
+                Button ("Hard Reset", action: {}).keyboardShortcut(KeyEquivalent("r"), modifiers: [/*@START_MENU_TOKEN@*/.command/*@END_MENU_TOKEN@*/, .option, .control])
+            }
+        }
+    }
+}
+
 @main
 struct SampleApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+        }.commands {
+            TerminalCommands ()
         }
+        #if os(macOS)
+        Settings {
+            Text ("These are the macOS settings")
+        }
+        #endif
     }
 }

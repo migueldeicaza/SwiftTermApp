@@ -113,31 +113,31 @@ struct HomeView: View {
             }
             Section {
                 NavigationLink(
-                    destination: HostsView()
-                ) {
-                    Text("Hosts")
-                }
+                    destination: HostsView(),
+                    label: {
+                        Label("Hosts", systemImage: "desktopcomputer")
+                    })
                 NavigationLink(
-                    destination: SessionsView()
-                ) {
-                    Text("Sessions")
-                    Spacer()
-                    Text ("\(connections.connections.count)")
-                        .padding(4)
-                        .background(Color(#colorLiteral(red: 0.921431005, green: 0.9214526415, blue: 0.9214410186, alpha: 1)))
-                        .cornerRadius(3)
-                        .foregroundColor(Color(#colorLiteral(red: 0.5741485357, green: 0.5741624236, blue: 0.574154973, alpha: 1)))
-                }
+                    destination: SessionsView(),
+                    label: {
+                        Label("Sessions", systemImage: "terminal")
+                        Spacer ()
+                        Text ("\(connections.connections.count)")
+                            .padding(4)
+                            .background(Color(#colorLiteral(red: 0.921431005, green: 0.9214526415, blue: 0.9214410186, alpha: 1)))
+                            .cornerRadius(3)
+                            .foregroundColor(Color(#colorLiteral(red: 0.5741485357, green: 0.5741624236, blue: 0.574154973, alpha: 1)))
+                    })
                 NavigationLink(
-                    destination: KeyManagementView( )
-                ) {
-                    Text("Keys")
-                }
+                    destination: KeyManagementView( ),
+                    label: {
+                        Label("Keys", systemImage: "key")
+                    })
                 NavigationLink(
-                    destination: SettingsView()
-                ) {
-                    Text("Settings")
-                }
+                    destination: SettingsView(),
+                    label: {
+                        Label("Settings", systemImage: "gear")
+                    })
             }
         }.listStyle(GroupedListStyle())
     }

@@ -15,7 +15,7 @@ struct STButton: View {
 
     var body: some View {
         HStack {
-            Spacer()
+//            Spacer()
             Image (systemName: icon)
                 .foregroundColor(ButtonColors.highColor)
                 .font(Font.title.weight(.semibold))
@@ -32,3 +32,9 @@ struct STButton: View {
     }
 }
 
+
+struct STButton_Previews: PreviewProvider {
+    static var previews: some View {
+        STButton(text: "Hello", icon: "gear")
+    }
+}
