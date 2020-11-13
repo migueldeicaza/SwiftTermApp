@@ -193,7 +193,7 @@ struct HostEditView: View {
                             Text ("SSH Key")
                                 .tag (false)
                         }.pickerStyle(SegmentedPickerStyle())
-                            .frame(width: 200)
+                            .frame(width: 160)
                     }
                     if self.$host.usePassword.wrappedValue {
                         HStack {
@@ -210,7 +210,8 @@ struct HostEditView: View {
                             }
                             
                             Button (action: { self.showingPassword.toggle () }, label: {
-                                Text (self.showingPassword ? "HIDE" : "SHOW").foregroundColor(Color (UIColor.link))
+                                Image(systemName: self.showingPassword ? "eye.slash" : "eye")
+                                    
                             })
                         }
                     } else {
@@ -251,6 +252,7 @@ struct HostEditView: View {
                     }
                 }
             }
+            .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(
                 leading:  Button ("Cancel") {
                     self.showingModal.toggle()

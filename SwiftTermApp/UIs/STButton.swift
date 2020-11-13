@@ -15,7 +15,7 @@ struct STButton: View {
 
     var body: some View {
         HStack {
-//            Spacer()
+            Spacer()
             Image (systemName: icon)
                 .foregroundColor(ButtonColors.highColor)
                 .font(Font.title.weight(.semibold))
@@ -24,9 +24,9 @@ struct STButton: View {
                 .fontWeight(.bold)
             Spacer()
         }
-        .padding ()
+        .padding (10)
         .background(ButtonColors.backgroundColor)
-        .cornerRadius(10)
+        .cornerRadius(12)
         .foregroundColor(ButtonColors.highColor)
         .padding()
     }

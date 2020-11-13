@@ -11,5 +11,5 @@ import SwiftUI
 
 struct ButtonColors {
     static let highColor = Color(#colorLiteral(red: 0.007762347814, green: 0.4766914248, blue: 0.9985215068, alpha: 1))
-    static let backgroundColor = Color(#colorLiteral(red: 0.9307063222, green: 0.945577085, blue: 0.9838711619, alpha: 1))
+    static let backgroundColor = Color(#colorLiteral(red: 0.8980392157, green: 0.9137254902, blue: 0.968627451, alpha: 1))
 }
