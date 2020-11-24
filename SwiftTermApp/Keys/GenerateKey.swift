@@ -144,7 +144,7 @@ struct LocalKeyButton: View {
                 .privateKeyUsage,
                 nil)!   // Ignore error
 
-            "foo".data(using: .utf8)
+            //"foo".data(using: .utf8)
             let attributes: [String: Any] = [
                 kSecAttrKeyType as String:            kSecAttrKeyTypeECSECPrimeRandom,
                 kSecAttrKeySizeInBits as String:      256,
@@ -158,17 +158,17 @@ struct LocalKeyButton: View {
             ]
             var error: Unmanaged<CFError>? = nil
             guard let privateKey = SecKeyCreateRandomKey(attributes as CFDictionary, &error) else {
-                print ("Oops: \(error)")
+                print ("Oops: \(error.debugDescription)")
                 return "Error"
             }
             let publicKey = SecKeyCopyPublicKey  (privateKey)
             let externalRepresentation = SecKeyCopyExternalRepresentation(publicKey!, &error)
             // The first byte is 4 according to the spec, we can skip that.
             
-            return "Got \(privateKey)"
+            return "Got \(privateKey) and external: \(externalRepresentation.debugDescription)"
         case .rsa(let bits):
             if let (priv, pub) = try? CC.RSA.generateKeyPair(2048) {
-
+                print ("\(priv) \(pub) \(bits)")
             }
             break
         }
