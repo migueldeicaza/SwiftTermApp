@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 final class FilePicker: NSObject, UIViewControllerRepresentable, UIDocumentPickerDelegate {
     typealias UIViewControllerType = UIDocumentPickerViewController
@@ -18,7 +19,7 @@ final class FilePicker: NSObject, UIViewControllerRepresentable, UIDocumentPicke
     }
     
     lazy var viewController : UIDocumentPickerViewController = {
-        let vc = UIDocumentPickerViewController (documentTypes: ["public.data"], in: .open)
+        let vc = UIDocumentPickerViewController (forOpeningContentTypes: [UTType.data], asCopy: true)
         vc.allowsMultipleSelection = false
         vc.shouldShowFileExtensions = true
         return vc
