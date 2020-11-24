@@ -24,7 +24,7 @@ enum MyError : Error {
 public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
     var host: Host
     var shell: SSHShell?
-    var authenticationChallenge: AuthenticationChallenge
+    var authenticationChallenge: AuthenticationChallenge!
     var sshQueue: DispatchQueue
     
     init (frame: CGRect, host: Host) throws
@@ -32,9 +32,15 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
         sshQueue = DispatchQueue.global(qos: .background)
         self.host = host
         
+        let useDefaultBackground = host.background == "default"
+        super.init (frame: frame, useSharedTheme: host.style == "", useDefaultBackground: useDefaultBackground)
         
         if host.usePassword {
-            authenticationChallenge = .byPassword(username: host.username, password: host.password)
+            if host.password == "" {
+                authenticationChallenge = .byKeyboardInteractive(username: host.username, callback: passwordPrompt )
+            } else {
+                authenticationChallenge = .byPassword(username: host.username, password: host.password)
+            }
         } else {
             if let sshKeyId = host.sshKey {
                 if let sshKey = DataStore.shared.keys.first(where: { $0.id == sshKeyId }) {
@@ -49,8 +55,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
                 throw MyError.noValidKey ("The host does not have an SSH key associated")
             }
         }
-        let useDefaultBackground = host.background == "default"
-        super.init (frame: frame, useSharedTheme: host.style == "", useDefaultBackground: useDefaultBackground)
+
         if !useDefaultBackground {
             updateBackground(background: host.background)
         }
@@ -68,6 +73,48 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
         }        
     }
   
+    func getParentViewController () -> UIViewController? {
+       var parentResponder: UIResponder? = self
+       while parentResponder != nil {
+           parentResponder = parentResponder?.next
+           if let viewController = parentResponder as? UIViewController {
+               return viewController
+           }
+       }
+       return nil
+    }
+    
+    var promptedPassword: String = ""
+    var passwordTextField: UITextField?
+    
+    func passwordPrompt (challenge: String) -> String {
+        //return "Granizado2!"
+        guard let vc = getParentViewController() else {
+            return ""
+        }
+
+        let semaphore = DispatchSemaphore(value: 0)
+        
+        DispatchQueue.main.async {
+            let alertController = UIAlertController(title: "Authetication challenge", message: challenge, preferredStyle: .alert)
+            alertController.addTextField { [unowned self] (textField) in
+                textField.placeholder = challenge
+                textField.isSecureTextEntry = true
+                self.passwordTextField = textField
+            }
+            alertController.addAction(UIAlertAction(title: "OK", style: .default) { [unowned self] _ in
+                if let tf = self.passwordTextField {
+                    self.promptedPassword = tf.text ?? ""
+                }
+                semaphore.signal()
+                
+            })
+            vc.present(alertController, animated: true, completion: nil)
+        }
+        let _ = semaphore.wait(timeout: DispatchTime.distantFuture)
+        return promptedPassword
+    }
+    
     func connect()
     {
         if let s = shell {
@@ -191,6 +238,4 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
             }
         }
     }
-    
-
 }
