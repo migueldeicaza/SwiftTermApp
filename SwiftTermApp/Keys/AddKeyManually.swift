@@ -91,7 +91,8 @@ struct EditKey: View {
                         }
                         
                         Button (action: { self.showingPassword.toggle () }, label: {
-                            Text (self.showingPassword ? "HIDE" : "SHOW").foregroundColor(Color (UIColor.link))
+                            Image(systemName: self.showingPassword ? "eye.slash" : "eye")
+                        
                         })
                     }
                 }
