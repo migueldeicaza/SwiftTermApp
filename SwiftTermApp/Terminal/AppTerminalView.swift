@@ -14,28 +14,47 @@ import SwiftTerm
 import UIKit
 import Combine
 
+/**
+ * AppTerminalView is the subclass of TerminalView that provides the integration
+ * into SwiftTermApp, it monitors the global `settings` for changes and
+ * applies that to the terminal and also handles the Metal changes for the
+ * Live backgrounds.
+ *
+ * Additionally, it has the "pinch" handler for changing the font size.
+ *
+ * The `SshTerminalView` is a subclass that adds other capabilities
+ */
 public class AppTerminalView: TerminalView {
     var id = UUID ()
+    
+    /// If set, it will monitor for theme changes in `settings` and apply those, otherwise it leaves them as-is (so
     var useSharedTheme: Bool
+    
+    /// This variable is turned on when the user has manually changed the size by pinching, and it used
+    /// to ignore global changes after the user triggered the pinch change.
     var userOverrideSize = false
+    
+    // These are the handlers used to track changes on the global `settings` variables
     var sizeChange: AnyCancellable?
     var fontChange: AnyCancellable?
     var themeChange: AnyCancellable?
     var backgroundChange: AnyCancellable?
+    
+    /// If set, it means that we are using Metal for our background
     var metalHost: MetalHost?
+    
+    /// 
     var metalLayer: CAMetalLayer?
     
     public init (frame: CGRect, useSharedTheme: Bool, useDefaultBackground: Bool) {
         self.useSharedTheme = useSharedTheme
         super.init (frame: frame)
-        sizeChange = settings.$fontSize.sink { _ in
+        sizeChange = settings.$fontSize.sink { newSize in
             if !self.userOverrideSize {
-                self.updateFont ()
-                
+                self.updateFont (newSize: newSize)
             }
-            
         }
-        fontChange = settings.$fontName.sink { _ in self.updateFont () }
+        fontChange = settings.$fontName.sink { _ in self.updateFont (newSize: settings.fontSize) }
         themeChange = settings.$themeName.sink { _ in
             if useSharedTheme {
                 self.applyTheme(theme: settings.getTheme())
@@ -81,9 +100,9 @@ public class AppTerminalView: TerminalView {
         }
     }
     
-    func updateFont ()
+    func updateFont (newSize: CGFloat)
     {
-        if let uifont = UIFont (name: settings.fontName, size: settings.fontSize) {
+        if let uifont = UIFont (name: settings.fontName, size: newSize) {
             font = uifont
         }
     }
