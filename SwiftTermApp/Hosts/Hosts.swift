@@ -78,13 +78,13 @@ struct HostSummaryView: View {
                 HostEditView(host: self.host, showingModal: self.$showingModal)
             }
             .contextMenu {
-                NavigationLink(destination: SwiftUITerminal(host: self.host, createNew: true, interactive: true)){
+                NavigationLink(destination: Text ("Hello") /* SwiftUITerminal(host: self.host, createNew: true, interactive: true) */){
                     Text("New Connection")
                     Image(systemName: "plus.circle")
                 }
-            
+
                 Button(action: {
-                    // enable geolocation
+                    print ("wussup")
                 }) {
                     Text("Close Connection")
                     Image(systemName: "minus.circle")
@@ -128,12 +128,7 @@ struct HostsView : View {
         }
         .listStyle(DefaultListStyle())
         .navigationBarTitle(Text("Hosts"))
-        .navigationBarItems(trailing: HStack {
-            Button (action: { self.showHostEdit = true }) {
-                Image (systemName: "plus")
-            }
-            EditButton()
-        })
+        .navigationBarItems(trailing: EditButton())
         .sheet (isPresented: $showHostEdit) {
             HostEditView(host: Host(), showingModal: self.$showHostEdit)
         }
