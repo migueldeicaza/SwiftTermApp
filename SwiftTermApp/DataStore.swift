@@ -29,7 +29,7 @@ class Key: Codable, Identifiable {
 }
 
 struct Host: Codable, Identifiable {
-    let id = UUID()
+    var id = UUID()
     var alias: String = ""
     var hostname: String = ""
     var backspaceAsControlH: Bool = false
@@ -61,7 +61,7 @@ class DataStore: ObservableObject {
     var defaults: UserDefaults?
     
     @Published var hosts: [Host] = [
-       Host(alias: "Dummy MacPro",         hostname: "mac.tirania.org", lastUsed: Date ()),
+       Host(alias: "Dummy MacPro",         hostname: "192.168.86.74", lastUsed: Date ()),
        //Host(alias: "Dummy Raspberri Pi",   hostname: "raspberry.tirania.org", lastUsed: Date ()),
        //Host(alias: "Dummy MacBook",        hostname: "road.tirania.org", usePassword: false, sshKey: DataStore.testKey1.id),
        //Host(alias: "Dummy Old Vax",        hostname: "oldvax.tirania.org",usePassword: false, sshKey: DataStore.testKey2.id),
