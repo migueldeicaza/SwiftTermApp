@@ -93,7 +93,11 @@ public class AppTerminalView: TerminalView {
     }
     
     public override var frame: CGRect {
-        didSet {
+        get {
+            return super.frame
+        }
+        set {
+            super.frame = newValue
             if let ml = metalLayer {
                 ml.frame = bounds
             }

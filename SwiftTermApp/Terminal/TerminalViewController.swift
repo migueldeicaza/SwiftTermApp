@@ -63,77 +63,9 @@ class TerminalViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func makeFrame (keyboardDelta: CGFloat, fn: String = #function, line: Int = #line) -> CGRect
-    {
-        return CGRect (
-            x: view.safeAreaInsets.left,
-            y: view.safeAreaInsets.top,
-            width: view.frame.width - view.safeAreaInsets.left - view.safeAreaInsets.right,
-            height: view.frame.height - view.safeAreaInsets.top - keyboardDelta)
-    }
-    
-    func addKeyboardMonitor ()
-    {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(keyboardWillHide),
-            name: UIWindow.keyboardWillHideNotification,
-            object: nil)
-        
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(keyboardNotification(_:)),
-            name: UIWindow.keyboardWillChangeFrameNotification,
-            object: nil)
-    }
-    
-    func removeKeyboardMonitor ()
-    {
-        NotificationCenter.default.removeObserver(self, name: UIWindow.keyboardWillHideNotification, object: nil)
-        NotificationCenter.default.removeObserver(self, name: UIWindow.keyboardWillShowNotification, object: nil)
-    }
-    
-    @objc
-    func keyboardNotification(_ notification: NSNotification) {
-        if let userInfo = notification.userInfo {
-            let endFrame = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue
-            //let endFrameY = endFrame?.origin.y ?? 0
-            let duration:TimeInterval = (userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
-            let animationCurveRawNSN = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? NSNumber
-            let animationCurveRaw = animationCurveRawNSN?.uintValue ?? UIView.AnimationOptions.curveEaseInOut.rawValue
-            let animationCurve:UIView.AnimationOptions = UIView.AnimationOptions(rawValue: animationCurveRaw)
-            
-            let relative = view.convert(endFrame ?? CGRect.zero, from: view.window)
-            
-            let inter = relative.intersection(terminalView!.frame)
-            if inter.height > 0 {
-                keyboardDelta = inter.height
-                //view.frame = makeFrame(keyboardDelta: inter.height)
-            }
-            //print ("KEYBOARD NOTIFICATION: Forcing frame to \(makeFrame(keyboardDelta: inter.height)) with incoming \(view.frame)")
-            
-            terminalView!.frame = makeFrame(keyboardDelta: inter.height)
-            UIView.animate(withDuration: duration,
-                                       delay: TimeInterval(0),
-                                       options: animationCurve,
-                                       animations: {
-
-                                        self.view.layoutIfNeeded() },
-                                       completion: nil)
-        }
-    }
-        
-    var keyboardDelta: CGFloat = 0
-    
-    @objc private func keyboardWillHide(_ notification: NSNotification) {
-        keyboardDelta = 0
-        //print ("KEYBOARD WILL HIDE: Forcing frame to \(makeFrame(keyboardDelta: 0)) with incoming \(view.frame)")
-        view.frame = makeFrame(keyboardDelta: 0)
-    }
-    
     func startConnection() -> SshTerminalView? {
         do {
-            let tv = try SshTerminalView(frame: makeFrame (keyboardDelta: 0), host: host)
+            let tv = try SshTerminalView(frame: view.frame, host: host)
             if host.style == "" {
                 tv.applyTheme (theme: settings.getTheme())
             } else {
@@ -152,10 +84,6 @@ class TerminalViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if interactive {
-            addKeyboardMonitor()
-        }
-        
         // Do any additional setup after loading the view, typically from a nib.
         if terminalView == nil {
             terminalView = startConnection()
@@ -165,8 +93,10 @@ class TerminalViewController: UIViewController {
         }
         // if it succeeded
         self.terminalView = t
-        t.frame = view.frame
+        t.translatesAutoresizingMaskIntoConstraints = true
+        t.autoresizingMask = [.flexibleHeight, .flexibleWidth]
         view.addSubview(t)
+        
         if let ml = t.metalLayer {
             view.layer.insertSublayer(ml, at: 0)
         }
@@ -180,7 +110,6 @@ class TerminalViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        //print ("viewDidLayoutSubviews on Serial=\(serial)")
         if !interactive && isTerminalViewAttached () {
             terminalView!.frame = view.frame
         }
@@ -197,7 +126,6 @@ class TerminalViewController: UIViewController {
     }
         
     override func viewWillDisappear(_ animated: Bool) {
-        removeKeyboardMonitor()
         super.viewWillDisappear(animated)
     }
 }
