@@ -63,14 +63,13 @@ class TerminalViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func makeFrame (keyboardDelta: CGFloat) -> CGRect
+    func makeFrame (keyboardDelta: CGFloat, fn: String = #function, line: Int = #line) -> CGRect
     {
-        //print ("Making frame with \(keyboardDelta)")
         return CGRect (
             x: view.safeAreaInsets.left,
             y: view.safeAreaInsets.top,
             width: view.frame.width - view.safeAreaInsets.left - view.safeAreaInsets.right,
-            height: view.frame.height - view.safeAreaInsets.bottom - view.safeAreaInsets.top - keyboardDelta)
+            height: view.frame.height - view.safeAreaInsets.top - keyboardDelta)
     }
     
     func addKeyboardMonitor ()
@@ -91,7 +90,7 @@ class TerminalViewController: UIViewController {
     func removeKeyboardMonitor ()
     {
         NotificationCenter.default.removeObserver(self, name: UIWindow.keyboardWillHideNotification, object: nil)
-        NotificationCenter.default.removeObserver(self, name: UIWindow.keyboardWillChangeFrameNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIWindow.keyboardWillShowNotification, object: nil)
     }
     
     @objc
@@ -103,6 +102,7 @@ class TerminalViewController: UIViewController {
             let animationCurveRawNSN = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? NSNumber
             let animationCurveRaw = animationCurveRawNSN?.uintValue ?? UIView.AnimationOptions.curveEaseInOut.rawValue
             let animationCurve:UIView.AnimationOptions = UIView.AnimationOptions(rawValue: animationCurveRaw)
+            
             let relative = view.convert(endFrame ?? CGRect.zero, from: view.window)
             
             let inter = relative.intersection(terminalView!.frame)

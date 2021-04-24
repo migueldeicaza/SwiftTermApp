@@ -22,10 +22,14 @@ enum MyError : Error {
 /// Extends the AppTerminalView with elements for the connection
 ///
 public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
+    /// The current directory as reported by the remote host.
+    public var currentDirectory: String? = nil
+    
     var host: Host
     var shell: SSHShell?
     var authenticationChallenge: AuthenticationChallenge!
     var sshQueue: DispatchQueue
+    
     
     init (frame: CGRect, host: Host) throws
     {
@@ -237,5 +241,9 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
                 print ("Error sending \(e)")
             }
         }
+    }
+    
+    public func hostCurrentDirectoryUpdate(source: TerminalView, directory: String?) {
+        currentDirectory = directory
     }
 }
