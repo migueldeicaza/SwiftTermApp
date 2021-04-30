@@ -93,6 +93,7 @@ class TerminalViewController: UIViewController {
         }
         // if it succeeded
         self.terminalView = t
+        t.frame = view.frame
         t.translatesAutoresizingMaskIntoConstraints = true
         t.autoresizingMask = [.flexibleHeight, .flexibleWidth]
         view.addSubview(t)
