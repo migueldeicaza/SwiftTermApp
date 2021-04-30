@@ -31,10 +31,22 @@ struct ConfigurableUITerminal: View {
     @Binding var host: Host
     @State var showConfig: Bool = false
     
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+    
     var body: some View {
         SwiftUITerminal(host: host, createNew: false, interactive: true)
             .navigationBarTitle (Text (host.alias), displayMode: .inline)
-            .navigationBarItems(trailing: Button (action: { self.showConfig = true }) { Text ("Poke")})
+            .navigationBarItems(
+                trailing: HStack {
+                    Button (action: { self.showConfig = true }) {
+                        Image(systemName: "gearshape")
+                    }
+                    Button (action: { self.hideKeyboard() }) {
+                        Image(systemName: "keyboard")
+                    }
+                })
             .sheet (isPresented: $showConfig) {
                 Form {
                     ThemeSelector(themeName: self.$host.style, showDefault: true) { t in }
