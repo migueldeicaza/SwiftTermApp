@@ -139,6 +139,7 @@ typealias Controller = TerminalViewController
 final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocumentPickerDelegate {
     var terminalView: SshTerminalView?
     typealias UIViewControllerType = TerminalViewController
+    
     enum Kind {
         case host (host: Host, createNew: Bool)
         case rehost (rehost: SshTerminalView)

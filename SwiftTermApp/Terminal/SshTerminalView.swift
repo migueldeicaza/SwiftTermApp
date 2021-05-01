@@ -72,6 +72,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
         shell?.log.enabled = false
         //shell?.log.level = .error
         shell?.setCallbackQueue(queue: sshQueue)
+
         sshQueue.async {
             self.connect ()
         }        

@@ -43,6 +43,8 @@ public class AppTerminalView: TerminalView {
     /// If set, it means that we are using Metal for our background
     var metalHost: MetalHost?
     
+    var keyboardTapRecognizer: UITapGestureRecognizer!
+    
     /// 
     var metalLayer: CAMetalLayer?
     
@@ -66,8 +68,21 @@ public class AppTerminalView: TerminalView {
         }
         
         addGestureRecognizer(UIPinchGestureRecognizer (target: self, action: #selector(pinchHandler)))
+        keyboardTapRecognizer = UITapGestureRecognizer (target: self, action: #selector (activate))
     }
 
+    override public func resignFirstResponder() -> Bool {
+        addGestureRecognizer(keyboardTapRecognizer)
+        return super.resignFirstResponder()
+    }
+    
+    @objc
+    func activate ()
+    {
+        becomeFirstResponder()
+        removeGestureRecognizer(keyboardTapRecognizer)
+    }
+    
     override public func didMoveToWindow() {
         if let mh = metalHost {
             mh.didMoveToWindow(view: self)
@@ -98,8 +113,9 @@ public class AppTerminalView: TerminalView {
         }
         set {
             super.frame = newValue
+            
             if let ml = metalLayer {
-                ml.frame = bounds
+                ml.frame = newValue
             }
         }
     }
