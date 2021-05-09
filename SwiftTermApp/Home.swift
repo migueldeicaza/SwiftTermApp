@@ -113,6 +113,12 @@ struct HomeView: View {
             }
             Section {
                 NavigationLink(
+                    destination: LocalNetworkView(),
+                    label: {
+                        Label("Local Network", systemImage: "network")
+                    })
+
+                NavigationLink(
                     destination: HostsView(),
                     label: {
                         Label("Hosts", systemImage: "desktopcomputer")

@@ -18,6 +18,7 @@
 		49011690245607F7002C1F85 /* Hosts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901168F245607F7002C1F85 /* Hosts.swift */; };
 		49011692245622C6002C1F85 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49011691245622C6002C1F85 /* DataStore.swift */; };
 		4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4911B3032463AD3E00816BAA /* GenerateKey.swift */; };
+		491BCB3F2644CE980030ECBA /* LocalNetworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 491BCB3E2644CE980030ECBA /* LocalNetworkView.swift */; };
 		4937B1642553AA40009375D3 /* SwiftSH.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 499AEF7A254D0CE3004E5D23 /* SwiftSH.xcframework */; };
 		4937B1652553AA40009375D3 /* SwiftSH.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 499AEF7A254D0CE3004E5D23 /* SwiftSH.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		49584D83248C3BEA0081D015 /* MetalHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49584D82248C3BEA0081D015 /* MetalHost.swift */; };
@@ -72,6 +73,7 @@
 		4901168F245607F7002C1F85 /* Hosts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hosts.swift; sourceTree = "<group>"; };
 		49011691245622C6002C1F85 /* DataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
 		4911B3032463AD3E00816BAA /* GenerateKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateKey.swift; sourceTree = "<group>"; };
+		491BCB3E2644CE980030ECBA /* LocalNetworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNetworkView.swift; sourceTree = "<group>"; };
 		49584D82248C3BEA0081D015 /* MetalHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalHost.swift; sourceTree = "<group>"; };
 		49584D84248C3C500081D015 /* ShadersBase.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ShadersBase.metal; sourceTree = "<group>"; };
 		49584D86248C3C7F0081D015 /* PlasmaGlobe.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = PlasmaGlobe.metal; sourceTree = "<group>"; };
@@ -148,6 +150,7 @@
 				4901167D2455378A002C1F85 /* Preview Content */,
 				49011691245622C6002C1F85 /* DataStore.swift */,
 				4967B9FB2459239700A9D2A6 /* Connections.swift */,
+				491BCB3E2644CE980030ECBA /* LocalNetworkView.swift */,
 			);
 			path = SwiftTermApp;
 			sourceTree = "<group>";
@@ -359,6 +362,7 @@
 				49F0740C2481B3ED00A83CDC /* ColorLoader.swift in Sources */,
 				4901167A24553789002C1F85 /* Home.swift in Sources */,
 				4967BA07245A85F800A9D2A6 /* SwCrypt.swift in Sources */,
+				491BCB3F2644CE980030ECBA /* LocalNetworkView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

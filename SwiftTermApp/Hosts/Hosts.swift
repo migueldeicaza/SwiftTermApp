@@ -8,12 +8,18 @@
 
 import SwiftUI
 
+func getDefaultImage () -> some View {
+    return Image (systemName: "desktopcomputer")
+    .scaledToFit()
+    .frame(width: 28, height: 28)
+}
+
 func getImage (for host: Host) -> some View
 {
     if host.hostKindGuess == "" {
         return Image (systemName: "desktopcomputer")
-        .scaledToFit()
-        .frame(width: 28, height: 28)
+            .scaledToFit()
+            .frame(width: 28, height: 28)
     } else {
         return Image (host.hostKindGuess)
         .resizable()
