@@ -35,6 +35,7 @@ public class MetalHost {
     var renderPipeline: MTLRenderPipelineState
     var startTime, time, deltaTime: CFTimeInterval
     var uniformsBuffer: MTLBuffer
+    var fragmentName: String
     
     /// These are the Shadertoy-like uniforms
     struct Uniforms {
@@ -58,6 +59,7 @@ public class MetalHost {
     public init? (target: CAMetalLayer, fragmentName: String)
     {
         self.target = target
+        self.fragmentName = fragmentName
         guard let device = MTLCreateSystemDefaultDevice() else {
             return nil
         }

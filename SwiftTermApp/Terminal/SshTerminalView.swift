@@ -25,19 +25,16 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
     /// The current directory as reported by the remote host.
     public var currentDirectory: String? = nil
     
-    var host: Host
     var shell: SSHShell?
     var authenticationChallenge: AuthenticationChallenge!
     var sshQueue: DispatchQueue
     
     
-    init (frame: CGRect, host: Host) throws
+    override init (frame: CGRect, host: Host) throws
     {
         sshQueue = DispatchQueue.global(qos: .background)
-        self.host = host
         
-        let useDefaultBackground = host.background == "default"
-        super.init (frame: frame, useSharedTheme: host.style == "", useDefaultBackground: useDefaultBackground)
+        try super.init (frame: frame, host: host)
         
         if host.usePassword {
             if host.password == "" {
@@ -69,8 +66,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
                               port: UInt16 (host.port & 0xffff),
                               environment: [Environment(name: "LANG", variable: "en_US.UTF-8")],
                               terminal: "xterm-256color")
-        shell?.log.enabled = false
-        //shell?.log.level = .error
+        shell?.log.enabled = true
+        shell?.log.level = .debug
         shell?.setCallbackQueue(queue: sshQueue)
 
         sshQueue.async {

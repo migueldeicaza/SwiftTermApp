@@ -26,9 +26,7 @@ import Combine
  */
 public class AppTerminalView: TerminalView {
     var id = UUID ()
-    
-    /// If set, it will monitor for theme changes in `settings` and apply those, otherwise it leaves them as-is (so
-    var useSharedTheme: Bool
+    var host: Host
     
     /// This variable is turned on when the user has manually changed the size by pinching, and it used
     /// to ignore global changes after the user triggered the pinch change.
@@ -39,6 +37,7 @@ public class AppTerminalView: TerminalView {
     var fontChange: AnyCancellable?
     var themeChange: AnyCancellable?
     var backgroundChange: AnyCancellable?
+    var hostChange: AnyCancellable?
     
     /// If set, it means that we are using Metal for our background
     var metalHost: MetalHost?
@@ -48,9 +47,15 @@ public class AppTerminalView: TerminalView {
     /// 
     var metalLayer: CAMetalLayer?
     
-    public init (frame: CGRect, useSharedTheme: Bool, useDefaultBackground: Bool) {
-        self.useSharedTheme = useSharedTheme
+    /// If set, it will monitor for theme changes in `settings` and apply those, otherwise it leaves them as-is (so
+    var useSharedTheme: Bool { host.style == "" }
+    var useDefaultBackground: Bool { host.background == "default" }
+    
+    init (frame: CGRect, host: Host) throws {
+        self.host = host
         super.init (frame: frame)
+        
+        // Changes that take place by global settings
         sizeChange = settings.$fontSize.sink { newSize in
             if !self.userOverrideSize {
                 self.updateFont (newSize: newSize)
@@ -58,15 +63,26 @@ public class AppTerminalView: TerminalView {
         }
         fontChange = settings.$fontName.sink { _ in self.updateFont (newSize: settings.fontSize) }
         themeChange = settings.$themeName.sink { _ in
-            if useSharedTheme {
+            if self.useSharedTheme {
                 self.applyTheme(theme: settings.getTheme())
-                
             }
         }
-        if useDefaultBackground {
-            backgroundChange = settings.$backgroundStyle.sink { _ in self.updateBackground (background: settings.backgroundStyle) }
+        backgroundChange = settings.$backgroundStyle.sink { _ in
+            self.updateBackground (background: self.useDefaultBackground ? settings.backgroundStyle : host.background)
         }
         
+        /// Changes that can happen on the host itself
+        hostChange = DataStore.shared.runtimeVisibleChanges.sink { host in
+            if host.id == self.host.id {
+                if host.style == "" {
+                    self.applyTheme(theme: settings.getTheme())
+                } else {
+                    self.applyTheme(theme: settings.getTheme (themeName: host.style))
+                }
+                self.updateBackground (background: self.useDefaultBackground ? settings.backgroundStyle : host.background)
+            }
+        }
+
         addGestureRecognizer(UIPinchGestureRecognizer (target: self, action: #selector(pinchHandler)))
         keyboardTapRecognizer = UITapGestureRecognizer (target: self, action: #selector (activate))
     }
@@ -101,9 +117,17 @@ public class AppTerminalView: TerminalView {
             if metalLayer == nil {
                 metalLayer = CAMetalLayer ()
                 //metalLayer?.opacity = 0.4
-                metalHost = MetalHost (target: metalLayer!, fragmentName: background)
-                backgroundColor = UIColor.clear
             }
+
+            if let m = metalHost {
+                if m.fragmentName != background {
+                    m.stopRunning()
+                    metalHost = MetalHost (target: metalLayer!, fragmentName: background)
+                }
+            } else {
+                metalHost = MetalHost (target: metalLayer!, fragmentName: background)
+            }
+            backgroundColor = UIColor.clear
         }
     }
     
@@ -148,7 +172,7 @@ public class AppTerminalView: TerminalView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func makeUIColor (_ color: Color) -> UIColor
+    func makeUIColor (_ color: SwiftTerm.Color) -> UIColor
     {
         UIColor (red: CGFloat (color.red) / 65535.0,
                  green: CGFloat (color.green) / 65535.0,
@@ -168,6 +192,7 @@ public class AppTerminalView: TerminalView {
         self.selectedTextBackgroundColor = makeUIColor (theme.selectionColor)
         self.caretColor = makeUIColor (theme.cursor)
         
+
         // TODO: selection and caret colors
     }
 }

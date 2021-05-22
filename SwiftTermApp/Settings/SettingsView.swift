@@ -249,10 +249,17 @@ struct LiveBackgroundSelector: View {
     }
 }
 
+/// Shows the background selector with the labels:
+/// [Default|Solid|Live]
+///
+/// The "Default" label is only shown if showDefault is true, otherwise it is not shown
+/// 
 struct BackgroundSelector: View {
     @Binding var backgroundStyle: String
     @State var backgroundKind: Int = 0
-    @State var showDefault: Bool = false
+    
+    // If sets to true shows a selector "Default"
+    @State var showDefault: Bool
     
     var body: some View {
         HStack {
@@ -262,11 +269,19 @@ struct BackgroundSelector: View {
                     Spacer ()
                     Picker(selection: $backgroundKind, label: Text ("Background Style")){
                         if showDefault {
-                            Text ("Default").tag (1)
+                            Text ("Default").tag (0)
                         }
                         Text ("Solid").tag (1)
                         Text ("Live").tag (2)
-                    }.pickerStyle (SegmentedPickerStyle ())
+                    }
+                    .pickerStyle (SegmentedPickerStyle ())
+                    .onChange(of: backgroundKind) { _ in
+                        if backgroundKind == 0 {
+                            backgroundStyle = settings.backgroundStyle
+                        } else if backgroundKind == 1 {
+                            backgroundStyle = ""
+                        } 
+                    }
                 }
                 if backgroundKind == 2 {
                     LiveBackgroundSelector (selected: $backgroundStyle)
@@ -281,6 +296,7 @@ struct BackgroundSelector: View {
         }
     }
 }
+
 struct SettingsViewCore: View {
     @Binding var themeName: String
     @Binding var fontName: String
@@ -303,8 +319,7 @@ struct SettingsViewCore: View {
                 }
                 FontSelector (fontName: $fontName)
                 FontSizeSelector (fontName: fontName, fontSize: $fontSize)
-                BackgroundSelector (backgroundStyle: $backgroundStyle)
-                
+                BackgroundSelector (backgroundStyle: $backgroundStyle, showDefault: false)
             }
             Section {
                 Toggle(isOn: $keepOn) {

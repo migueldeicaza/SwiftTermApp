@@ -28,7 +28,34 @@ class Key: Codable, Identifiable {
     }
 }
 
-struct Host: Codable, Identifiable {
+/// Represents a host we connect to, the data structure we save, and keep at runtime
+/// Most properties are used at connection time, and a handful can be changed at runtime:
+///
+/// Properties that can be changed at runtime:
+/// - style:
+/// - background
+/// - backspaceAsControlH
+///
+/// Possibly should add; Font and FontSize
+class Host: Codable, Identifiable {
+    internal init(id: UUID = UUID(), alias: String = "", hostname: String = "", backspaceAsControlH: Bool = false, port: Int = 22, usePassword: Bool = true, username: String = "", password: String = "", hostKindGuess: String = "", environmentVariables: [String] = [], startupScripts: [String] = [], sshKey: UUID? = nil, style: String = "", background: String = "", lastUsed: Date = Date.distantPast) {
+        self.id = id
+        self.alias = alias
+        self.hostname = hostname
+        self.backspaceAsControlH = backspaceAsControlH
+        self.port = port
+        self.usePassword = usePassword
+        self.username = username
+        self.password = password
+        self.hostKindGuess = hostKindGuess
+        self.environmentVariables = environmentVariables
+        self.startupScripts = startupScripts
+        self.sshKey = sshKey
+        self.style = style
+        self.background = background
+        self.lastUsed = lastUsed
+    }
+    
     var id = UUID()
     var alias: String = ""
     var hostname: String = ""
@@ -38,13 +65,20 @@ struct Host: Codable, Identifiable {
     var username: String = ""
     var password: String = ""
     var hostKindGuess: String = ""
+    
+    /// Environment variables to pass on the connection
     var environmentVariables: [String] = []
     var startupScripts: [String] = []
     
     // This is the UUID of the key registered with the app
     var sshKey: UUID?
+    
+    /// The current color theme style name, if the style is "" it means "use the default"
     var style: String = ""
+    
+    /// The values are `default` to pick the value from settings, "" to use a solid color, or the name of a live background
     var background: String = ""
+    
     var lastUsed: Date = Date.distantPast
     
     func summary() -> String {
@@ -71,6 +105,9 @@ class DataStore: ObservableObject {
     @Published var keys: [Key] = [
         testKey1, testKey2
     ]
+    
+    /// Event raised when the properties that can be changed on a live connection have changed
+    var runtimeVisibleChanges = PassthroughSubject<Host,Never> ()
     
     let hostsArrayKey = "hostsArray"
     let keysArrayKey = "keysArray"

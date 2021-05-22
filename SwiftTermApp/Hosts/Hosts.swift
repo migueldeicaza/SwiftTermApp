@@ -22,40 +22,6 @@ func getImage (for host: Host) -> some View
     }
 }
 
-// For full screen Solution might be to use an external host UIViewController:
-// https://gist.github.com/timothycosta/a43dfe25f1d8a37c71341a1ebaf82213
-// https://stackoverflow.com/questions/56756318/swiftui-presentationbutton-with-modal-that-is-full-screen
-
-
-struct ConfigurableUITerminal: View {
-    @Binding var host: Host
-    @State var showConfig: Bool = false
-    
-    func hideKeyboard() {
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-    }
-    
-    var body: some View {
-        SwiftUITerminal(host: host, createNew: false, interactive: true)
-            .navigationBarTitle (Text (host.alias), displayMode: .inline)
-            .navigationBarItems(
-                trailing: HStack {
-                    Button (action: { self.showConfig = true }) {
-                        Image(systemName: "gearshape")
-                    }
-                    Button (action: { self.hideKeyboard() }) {
-                        Image(systemName: "keyboard")
-                    }
-                })
-            .sheet (isPresented: $showConfig) {
-                Form {
-                    ThemeSelector(themeName: self.$host.style, showDefault: true) { t in }
-                    BackgroundSelector (backgroundStyle: self.$host.background, showDefault: true)
-                }
-            }
-    }
-}
-
 struct HostSummaryView: View {
     @Binding var host: Host
     @State var showingModal = false
