@@ -74,12 +74,14 @@ public class AppTerminalView: TerminalView {
         /// Changes that can happen on the host itself
         hostChange = DataStore.shared.runtimeVisibleChanges.sink { host in
             if host.id == self.host.id {
+                self.updateBackground (background: self.useDefaultBackground ? settings.backgroundStyle : host.background)
+                
                 if host.style == "" {
                     self.applyTheme(theme: settings.getTheme())
                 } else {
                     self.applyTheme(theme: settings.getTheme (themeName: host.style))
                 }
-                self.updateBackground (background: self.useDefaultBackground ? settings.backgroundStyle : host.background)
+
             }
         }
 
@@ -111,12 +113,21 @@ public class AppTerminalView: TerminalView {
         if background == "" {
             if let m = metalHost {
                 m.stopRunning()
+                metalLayer?.removeFromSuperlayer()
                 metalLayer = nil
+                metalHost = nil
             }
         } else {
             if metalLayer == nil {
                 metalLayer = CAMetalLayer ()
+                metalLayer!.frame = frame
                 //metalLayer?.opacity = 0.4
+                
+                // If we are currently attached to a ViewController (ie, we are up and running, as opposed to bootstarpping)
+                // we should insert the layer directioly.
+                if let mySuper = superview {
+                    mySuper.layer.insertSublayer(metalLayer!, at: 0)
+                }
             }
 
             if let m = metalHost {
@@ -188,7 +199,7 @@ public class AppTerminalView: TerminalView {
         let t = getTerminal()
         t.foregroundColor = theme.foreground
         t.backgroundColor = theme.background
-        if metalLayer != nil {
+        if metalHost != nil {
             nativeBackgroundColor = UIColor.clear
         }
         self.selectedTextBackgroundColor = makeUIColor (theme.selectionColor)

@@ -15,7 +15,7 @@ import UIKit
 ///
 /// The MetalHost takes care of rendering to the screen
 ///
-/// It requires a CAMetalLayer as a paraemeter, which should be added as a sublayer to the
+/// It requires a CAMetalLayer as a parameter, which should be added as a sublayer to the
 /// view.layer where the contents should be displayed.   The methods `startRunning`
 /// and `stopRunning` should be invoked to setup the CADisplayLink.   Optionally,
 /// the `didMoveToWindow` method can be called from the view's `didMoveToWindow`
@@ -91,6 +91,10 @@ public class MetalHost {
         startTime = CACurrentMediaTime()
         time = startTime
         deltaTime = 0
+    }
+    
+    deinit {
+        stopRunning()
     }
     
     static func makeRenderPipelineState (device: MTLDevice, library: MTLLibrary, fragmentFunction: String) -> MTLRenderPipelineState?
@@ -200,7 +204,7 @@ public class MetalHost {
         startRunning()
     }
     @objc func tick (from displayLink: CADisplayLink) {
-        redraw ()
+         redraw ()
     }
     
 }
