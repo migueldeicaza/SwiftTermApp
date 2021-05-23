@@ -123,9 +123,11 @@ public class AppTerminalView: TerminalView {
                 if m.fragmentName != background {
                     m.stopRunning()
                     metalHost = MetalHost (target: metalLayer!, fragmentName: background)
+                    metalHost!.startRunning()
                 }
             } else {
                 metalHost = MetalHost (target: metalLayer!, fragmentName: background)
+                metalHost!.startRunning()
             }
             backgroundColor = UIColor.clear
         }
