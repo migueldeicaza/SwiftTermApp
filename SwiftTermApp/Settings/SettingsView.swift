@@ -277,7 +277,7 @@ struct BackgroundSelector: View {
                     .pickerStyle (SegmentedPickerStyle ())
                     .onChange(of: backgroundKind) { _ in
                         if backgroundKind == 0 {
-                            backgroundStyle = settings.backgroundStyle
+                            backgroundStyle = "default"
                         } else if backgroundKind == 1 {
                             backgroundStyle = ""
                         } 
