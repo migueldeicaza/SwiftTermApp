@@ -61,7 +61,7 @@ struct SessionView: View {
     
     var body: some View {
         NavigationLink (destination:
-            SwiftUITerminal (existing: terminalView, interactive: true)
+                            ConfigurableReusedTerminal (terminalView: terminalView)
                 .navigationBarTitle (Text (terminalView.host.alias), displayMode: .inline)
                 .onDisappear { self.immediateController.rehost () })
         {

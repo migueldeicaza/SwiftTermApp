@@ -122,26 +122,61 @@ struct HostIconSelector: View {
 struct HostEditView: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @State var alertClash: Bool = false
-    @State var host: Host
+    var _host: Host
     @Binding var showingModal: Bool
     @State var selectedKey = 0
-    @State var originalAlias: String = ""
     @State var keySelectorIsActive: Bool = false
     @State var showingPassword: Bool = false
-    @State var themeName = ""
-    @State var platformName = ""
+
+    @State var originalAlias: String = ""
+    @State var alias = ""
+    @State var hostname = ""
+    @State var backspaceAsControlH = false
+    @State var style = ""
+    @State var backgroundStyle = ""
+    @State var hostKindGuess = ""
+    @State var username = ""
+    @State var password = ""
+    @State var port = 22
+    @State var usePassword = false
+    @State var sshKey: UUID? = nil
+    
+    init (host: Host, showingModal: Binding<Bool>){
+        self._host = host
+        self._showingModal = showingModal
+        
+        _originalAlias = State (initialValue: host.alias)
+        _alias = State (initialValue: host.alias)
+        _hostname = State (initialValue: host.hostname)
+        _backspaceAsControlH = State (initialValue: host.backspaceAsControlH)
+        _port = State (initialValue: host.port)
+        _usePassword = State (initialValue: host.usePassword)
+        _username = State (initialValue: host.username)
+        _password = State (initialValue: host.password)
+        _hostKindGuess = State (initialValue: host.hostKindGuess)
+        _style = State (initialValue: host.style)
+        _backgroundStyle = State (initialValue: host.background)
+        _sshKey = State (initialValue: host.sshKey)
+    }
     
     var disableSave: Bool {
-        let alias = $host.alias.wrappedValue
-        let hostname = $host.hostname.wrappedValue
-        return alias == "" || hostname == ""
+        return alias == "" || hostname == "" || username == ""
     }
     
     func saveAndLeave ()
     {
-        self.host.lastUsed = Date()
-        self.host.hostKindGuess = platformName
-        store.save (host: self.host)
+        _host.lastUsed = Date()
+        _host.alias = alias
+        _host.hostname = hostname
+        _host.backspaceAsControlH = backspaceAsControlH
+        _host.port = port
+        _host.usePassword = usePassword
+        _host.hostKindGuess = hostKindGuess
+        _host.background = backgroundStyle
+        _host.style = style
+        _host.sshKey = sshKey
+        
+        store.save (host: _host)
         
         // Delaying the dismiss operation seems to prevent the SwiftUI crash:
         // https://stackoverflow.com/questions/58404725/why-does-my-swiftui-app-crash-when-navigating-backwards-after-placing-a-navigat
@@ -156,7 +191,7 @@ struct HostEditView: View {
     
     func assignKey (chosenKey: Key)
     {
-        self.host.sshKey = chosenKey.id
+        sshKey = chosenKey.id
         keySelectorIsActive = false
     }
     
@@ -166,28 +201,28 @@ struct HostEditView: View {
                 Section {
                     HStack {
                         Text ("Alias")//.modifier(PrimaryLabel())
-                        TextField("name", text: self.$host.alias)
+                        TextField("name", text: self.$alias)
                             .multilineTextAlignment(.trailing)
                             .autocapitalization(.none)
                         
                     }
                     HStack {
                         Text ("Host")//.modifier(PrimaryLabel())
-                        TextField ("192.168.1.100", text: self.$host.hostname)
+                        TextField ("192.168.1.100", text: self.$hostname)
                             .multilineTextAlignment(.trailing)
                             .autocapitalization(.none)
                     }
 
                     HStack {
                         Text ("Username").modifier(PrimaryLabel())
-                        TextField ("user", text: self.$host.username)
+                        TextField ("user", text: self.$username)
                             .multilineTextAlignment(.trailing)
                             .autocapitalization(.none)
                     }
                     HStack {
                         Text ("Authentication")
                         Spacer ()
-                        Picker(selection: self.$host.usePassword, label: Text ("Auth")) {
+                        Picker(selection: self.$usePassword, label: Text ("Auth")) {
                             Text ("Password")
                                 .tag (true)
                             Text ("SSH Key")
@@ -195,16 +230,16 @@ struct HostEditView: View {
                         }.pickerStyle(SegmentedPickerStyle())
                             .frame(width: 160)
                     }
-                    if self.$host.usePassword.wrappedValue {
+                    if self.$usePassword.wrappedValue {
                         HStack {
                             Text ("Password").modifier(PrimaryLabel())
                             
                             if showingPassword {
-                                TextField ("•••••••", text: self.$host.password)
+                                TextField ("•••••••", text: self.$password)
                                     .multilineTextAlignment(.trailing)
                                     .autocapitalization(.none)
                             } else {
-                                SecureField ("•••••••", text: self.$host.password)
+                                SecureField ("•••••••", text: self.$password)
                                     .multilineTextAlignment(.trailing)
                                     .autocapitalization(.none)
                             }
@@ -218,12 +253,12 @@ struct HostEditView: View {
                         HStack {
                             Text ("SSH Key")
                             
-                            if self.store.hostHasValidKey(host: self.host) {
+                            if self.store.hostHasValidKey(host: self._host) {
                                 Spacer ()
-                                Text (self.store.getSshDisplayName (forHost: host))
+                                Text (self.store.getSshDisplayName (forHost: _host))
                                 Image (systemName: "multiply.circle.fill")
                                     .onTapGesture {
-                                        self.host.sshKey = nil
+                                        self.sshKey = nil
                                     }
                             } else {
                                 NavigationLink(destination: KeyManagementView(action: assignKey),
@@ -236,17 +271,17 @@ struct HostEditView: View {
                 }
                 
                 Section (header: Text ("Appearance")){
-                    ThemeSelector(themeName: self.$host.style, showDefault: true) { t in }
-                    BackgroundSelector (backgroundStyle: self.$host.background, showDefault: true)
+                    ThemeSelector(themeName: self.$style, showDefault: true) { t in self.style = t }
+                    BackgroundSelector (backgroundStyle: self.$backgroundStyle, showDefault: true)
                     
                     //PlatformSelector(platformName: $platformName) {x in }
-                    HostIconSelector (platformName: $platformName)
+                    HostIconSelector (platformName: $hostKindGuess)
                     
                 }
                 Section (header: Text ("Other Options")) {
                     HStack {
                         Text ("Port").modifier(PrimaryLabel())
-                        TextField ("22", value: self.$host.port, formatter: NumberFormatter ())
+                        TextField ("22", value: self.$port, formatter: NumberFormatter ())
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
                     }
@@ -258,7 +293,7 @@ struct HostEditView: View {
                     self.showingModal.toggle()
                 },
                 trailing: Button("Save") {
-                    if self.host.alias != self.originalAlias && self.store.hasHost(withAlias: self.$host.wrappedValue.alias) {
+                    if self.alias != self.originalAlias && self.store.hasHost(withAlias: self.alias) {
                         self.alertClash = true
                     } else {
                         self.saveAndLeave ()
@@ -266,17 +301,13 @@ struct HostEditView: View {
                 }.disabled (disableSave))
                 .alert(isPresented: self.$alertClash) {
                     Alert (title: Text ("Duplicate Host"),
-                           message: Text ("There is already a host with the alias \(host.alias) declared, do you want to replace that host definition with this one?"), primaryButton: .cancel(), secondaryButton: .destructive(Text ("Proceed")) {
+                           message: Text ("There is already a host with the alias \(alias) declared, do you want to replace that host definition with this one?"), primaryButton: .cancel(), secondaryButton: .destructive(Text ("Proceed")) {
                             self.saveAndLeave ()
                         })
             }
                 // This is needed to prevent a warning from UIKit about autolayout
                 //https://gist.github.com/migueldeicaza/ed0ba152159817e0c4a1fd429b596573
             .disableAutocorrection(true)
-        }.onAppear() {
-            self.themeName = self.host.style
-            self.platformName = self.host.hostKindGuess
-            self.originalAlias = self.host.alias
         }
     }
 }

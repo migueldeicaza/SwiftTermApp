@@ -90,7 +90,6 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
     var passwordTextField: UITextField?
     
     func passwordPrompt (challenge: String) -> String {
-        //return "Granizado2!"
         guard let vc = getParentViewController() else {
             return ""
         }
@@ -98,7 +97,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
         let semaphore = DispatchSemaphore(value: 0)
         
         DispatchQueue.main.async {
-            let alertController = UIAlertController(title: "Authetication challenge", message: challenge, preferredStyle: .alert)
+            let alertController = UIAlertController(title: "Authentication challenge", message: challenge, preferredStyle: .alert)
             alertController.addTextField { [unowned self] (textField) in
                 textField.placeholder = challenge
                 textField.isSecureTextEntry = true
@@ -155,7 +154,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
                     #endif
                 }
             }
-            .connect()
+            .connect ()
             .authenticate(self.authenticationChallenge)
             .open { [unowned self] (error) in
                 if let error = error {
@@ -245,3 +244,4 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
         currentDirectory = directory
     }
 }
+

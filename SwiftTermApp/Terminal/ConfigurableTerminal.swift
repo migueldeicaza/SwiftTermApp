@@ -10,7 +10,7 @@ import SwiftUI
 
 
 struct RunningTerminalConfig: View {
-    @Binding var host: Host
+    var host: Host
     @Binding var showingModal: Bool
     @State var style: String = ""
     @State var background: String = ""
@@ -52,7 +52,7 @@ struct RunningTerminalConfig: View {
 
 
 struct ConfigurableUITerminal: View {
-    @Binding var host: Host
+    var host: Host
     @State var showConfig: Bool = false
     
     func hideKeyboard() {
@@ -72,7 +72,33 @@ struct ConfigurableUITerminal: View {
                     }
                 })
             .sheet (isPresented: $showConfig) {
-                RunningTerminalConfig (host: $host, showingModal: $showConfig)
+                RunningTerminalConfig (host: host, showingModal: $showConfig)
+            }
+    }
+}
+
+struct ConfigurableReusedTerminal: View {
+    var terminalView: SshTerminalView
+    @State var showConfig: Bool = false
+    
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+    
+    var body: some View {
+        SwiftUITerminal(existing: terminalView, interactive: true)
+            .navigationBarTitle (Text (terminalView.host.alias), displayMode: .inline)
+            .navigationBarItems(
+                trailing: HStack {
+                    Button (action: { self.showConfig = true }) {
+                        Image(systemName: "gearshape")
+                    }
+                    Button (action: { self.hideKeyboard() }) {
+                        Image(systemName: "keyboard")
+                    }
+                })
+            .sheet (isPresented: $showConfig) {
+                RunningTerminalConfig (host: terminalView.host, showingModal: $showConfig)
             }
     }
 }
@@ -89,9 +115,9 @@ struct ConfigurableUITerminal_Previews: PreviewProvider {
         var body: some View {
             NavigationView {
                 VStack {
-                    ConfigurableUITerminal(host: $host)
+                    ConfigurableUITerminal(host: host)
                     Text ("Below is the configuration")
-                    RunningTerminalConfig(host: $host, showingModal: $showingModal)
+                    RunningTerminalConfig(host: host, showingModal: $showingModal)
                 }
             }
         }

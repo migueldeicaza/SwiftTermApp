@@ -27,7 +27,7 @@ struct HostSummaryView: View {
     @State var showingModal = false
     
     var body: some View {
-        NavigationLink (destination: ConfigurableUITerminal(host: $host)) {
+        NavigationLink (destination: ConfigurableUITerminal(host: host)) {
             HStack (spacing: 12){
                 getImage (for: host)
                     .font (.system(size: 28))
@@ -46,7 +46,7 @@ struct HostSummaryView: View {
                 Button (action: {
                     print ("Hello")
                 }) {
-                    Image (systemName: "ellipsis.circle")
+                    Image (systemName: "pencil")
                         .font(.system(size: 24))
                 }
                 .onTapGesture {

@@ -174,7 +174,7 @@ struct ThemeSelector: View {
                         .border(self.themeName == t.name ? Color.accentColor : Color.clear, width: 2)
                         .onTapGesture {
                             self.themeName = t.name
-                            self.callback (t.name)
+                            //self.callback (t.name)
                     }
                 }
             }
