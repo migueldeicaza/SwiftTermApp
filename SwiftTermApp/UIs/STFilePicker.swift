@@ -48,11 +48,16 @@ struct STFilePicker: View {
         guard let url = urls.first else {
             return
         }
-        if let privKey = try? String (contentsOf: url) {
-            let k = Key(id: UUID(),type: "TODO: guess the key type", name: url.lastPathComponent, privateKey: privKey, publicKey: "", passphrase: "")
-            DataStore.shared.save(key: k)
+        if let contents = try? String (contentsOf: url) {
+            if contents.contains("PRIVATE KEY") {
+                let k = Key(id: UUID(),type: "TODO: guess the key type", name: url.lastPathComponent, privateKey: contents, publicKey: "", passphrase: "")
+                DataStore.shared.save(key: k)
+            } else {
+                print ("That was not a key we know much about")
+            }
         }
     }
+    
     var body: some View {
         FilePicker (callback: saveKey)
     }
