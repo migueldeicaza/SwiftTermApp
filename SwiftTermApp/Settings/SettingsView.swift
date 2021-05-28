@@ -67,7 +67,7 @@ class Settings: ObservableObject {
 
 var settings = Settings()
 
-var fontNames: [String] = ["Courier", "Courier New", "Menlo"]
+var fontNames: [String] = ["Courier", "Courier New", "Menlo", "SF Mono"]
 
 enum BeepKind: String {
     case silent
