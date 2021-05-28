@@ -19,7 +19,7 @@ final class FilePicker: NSObject, UIViewControllerRepresentable, UIDocumentPicke
     }
     
     lazy var viewController : UIDocumentPickerViewController = {
-        let vc = UIDocumentPickerViewController (forOpeningContentTypes: [UTType.data], asCopy: true)
+        let vc = UIDocumentPickerViewController (forOpeningContentTypes: [UTType.item, UTType.data, UTType.content], asCopy: true)
         vc.allowsMultipleSelection = false
         vc.shouldShowFileExtensions = true
         return vc

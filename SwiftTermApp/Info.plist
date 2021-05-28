@@ -66,5 +66,26 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>public.data</string>
+			<key>LSHandlerRank</key>
+			<string>None</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>public.item</string>
+			<key>LSHandlerRank</key>
+			<string>None</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>public.content</string>
+			<key>LSHandlerRank</key>
+			<string>None</string>
+		</dict>
+	</array>
 </dict>
 </plist>
