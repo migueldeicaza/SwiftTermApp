@@ -171,6 +171,8 @@ struct HostEditView: View {
         _host.backspaceAsControlH = backspaceAsControlH
         _host.port = port
         _host.usePassword = usePassword
+        _host.username = username
+        _host.password = password
         _host.hostKindGuess = hostKindGuess
         _host.background = backgroundStyle
         _host.style = style
