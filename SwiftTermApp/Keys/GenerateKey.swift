@@ -125,15 +125,28 @@ struct GenerateKey: View {
     }
 }
 
+
 //
 // This either uses the secure enclave to store the key (which is limited to the
 // EC key, or an RSA key.
 //
 struct LocalKeyButton: View {
     @State var showGenerator = false
+    @State var showLocalGenerator = false
     let keyTag = "keyTag"
     
     func generateSecureEnclaveKey (_ type: KeyType, _ comment: String, _ passphrase: String)-> String
+    {
+        return generateKey (type, comment, passphrase, inSecureEnclave: true)
+    }
+
+    func generateLocalKey (_ type: KeyType, _ comment: String, _ passphrase: String)-> String
+    {
+        return generateKey (type, comment, passphrase, inSecureEnclave: false)
+    }
+
+    func generateKey (_ type: KeyType, _ comment: String, _ passphrase: String, inSecureEnclave: Bool)-> String
+
     {
         switch type {
         case .ed25519:
@@ -145,7 +158,10 @@ struct LocalKeyButton: View {
                 nil)!   // Ignore error
 
             //"foo".data(using: .utf8)
-            let attributes: [String: Any] = [
+            let attributes: [String: Any]
+            
+            if false && inSecureEnclave {
+                attributes = [
                 kSecAttrKeyType as String:            kSecAttrKeyTypeECSECPrimeRandom,
                 kSecAttrKeySizeInBits as String:      256,
                 kSecAttrTokenID as String:            kSecAttrTokenIDSecureEnclave,
@@ -155,17 +171,30 @@ struct LocalKeyButton: View {
                         "foo".data(using: .utf8)! as CFData,
                     kSecAttrAccessControl as String:   access
                 ]
-            ]
+                ]
+            } else {
+                attributes = [
+                kSecAttrKeyType as String:            kSecAttrKeyTypeECSECPrimeRandom,
+                kSecAttrKeySizeInBits as String:      256,
+                ]
+            }
+            
             var error: Unmanaged<CFError>? = nil
             guard let privateKey = SecKeyCreateRandomKey(attributes as CFDictionary, &error) else {
                 print ("Oops: \(error.debugDescription)")
                 return "Error"
             }
             let publicKey = SecKeyCopyPublicKey  (privateKey)
-            let externalRepresentation = SecKeyCopyExternalRepresentation(publicKey!, &error)
+            let externalPublic = SecKeyCopyExternalRepresentation(publicKey!, &error)
+            let externalPrivate = SecKeyCopyExternalRepresentation(privateKey, &error)
+            
+            let publicText = SshUtil.generateSshPublicKey(k: publicKey!, msg: "test@localhost")
+            let privateText = SshUtil.generateSshPrivateKey(pub: publicKey!, priv: privateKey)
+            print ("Keys are: \(publicText)")
+            print ("Keys are: \(privateKey)")
             // The first byte is 4 according to the spec, we can skip that.
             
-            return "Got \(privateKey) and external: \(externalRepresentation.debugDescription)"
+            return "Got \(privateKey) and external: \(externalPublic.debugDescription)"
         case .rsa(let bits):
             if let (priv, pub) = try? CC.RSA.generateKeyPair(2048) {
                 print ("\(priv) \(pub) \(bits)")
@@ -180,13 +209,20 @@ struct LocalKeyButton: View {
         HStack {
             if SecureEnclave.isAvailable {
                 STButton(text: "Create Enclave Key", icon: "plus.circle")
+                    .onTapGesture {
+                        self.showGenerator = true
+                    }
             }
-        }.onTapGesture {
-            self.showGenerator = true
+            STButton (text: "Create ed25519 key", icon: "plus.circle")
+                .onTapGesture {
+                    self.showLocalGenerator = true
+                }
         }.sheet(isPresented: self.$showGenerator) {
             // SecureEnclave SwiftTerm PrivateKey (SE.ST.PK)
             GenerateKey (showGenerator: self.$showGenerator, keyName: self.keyTag, generateKey: self.generateSecureEnclaveKey)
-        }
+        }.sheet(isPresented: self.$showLocalGenerator) {
+            GenerateKey (showGenerator: self.$showGenerator, keyName: self.keyTag, generateKey: self.generateLocalKey)
+    }
     }
 }
 

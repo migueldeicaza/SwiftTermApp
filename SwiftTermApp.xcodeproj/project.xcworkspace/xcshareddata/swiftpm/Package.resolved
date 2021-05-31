@@ -2,11 +2,29 @@
   "object": {
     "pins": [
       {
+        "package": "CSSH",
+        "repositoryURL": "https://github.com/DimaRU/Libssh2Prebuild.git",
+        "state": {
+          "branch": null,
+          "revision": "631d39784b593505a1b37341cda80055363bc753",
+          "version": "1.9.0+OpenSSL_1_1_1h"
+        }
+      },
+      {
+        "package": "SwiftSH",
+        "repositoryURL": "https://github.com/migueldeicaza/SwiftSH",
+        "state": {
+          "branch": "swiftpm",
+          "revision": "57bcd029ff620606eaea759669bd6dae12f09667",
+          "version": null
+        }
+      },
+      {
         "package": "SwiftTerm",
         "repositoryURL": "https://github.com/migueldeicaza/SwiftTerm.git",
         "state": {
           "branch": "main",
-          "revision": "b72c83e2055e2e06dfc7f702d69e595a61d5ef61",
+          "revision": "98c1f1e03ba0a91ab837b673044f4cd970a50235",
           "version": null
         }
       }
