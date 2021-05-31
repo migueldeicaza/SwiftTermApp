@@ -137,7 +137,7 @@ struct HostEditView: View {
     @State var hostKindGuess = ""
     @State var username = ""
     @State var password = ""
-    @State var port = 22
+    @State var port = ""
     @State var usePassword = false
     @State var sshKey: UUID? = nil
     
@@ -149,7 +149,7 @@ struct HostEditView: View {
         _alias = State (initialValue: host.alias)
         _hostname = State (initialValue: host.hostname)
         _backspaceAsControlH = State (initialValue: host.backspaceAsControlH)
-        _port = State (initialValue: host.port)
+        _port = State (initialValue: "\(host.port)")
         _usePassword = State (initialValue: host.usePassword)
         _username = State (initialValue: host.username)
         _password = State (initialValue: host.password)
@@ -169,7 +169,7 @@ struct HostEditView: View {
         _host.alias = alias
         _host.hostname = hostname
         _host.backspaceAsControlH = backspaceAsControlH
-        _host.port = port
+        _host.port = Int (port) ?? 22
         _host.usePassword = usePassword
         _host.username = username
         _host.password = password
@@ -283,7 +283,7 @@ struct HostEditView: View {
                 Section (header: Text ("Other Options")) {
                     HStack {
                         Text ("Port").modifier(PrimaryLabel())
-                        TextField ("22", value: self.$port, formatter: NumberFormatter ())
+                        TextField ("22", text: self.$port)
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
                     }

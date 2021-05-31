@@ -120,7 +120,7 @@ struct KeyManagementView: View {
 struct KeyManagementView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            GenerateKey(showGenerator: .constant(true), generateKey: { a, b, c in "" })
+            //GenerateKey(showGenerator: .constant(true), generateKey: { a, b, c in "" })
             KeyManagementView()
         }
     }
