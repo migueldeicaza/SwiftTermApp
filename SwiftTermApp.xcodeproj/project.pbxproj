@@ -72,6 +72,7 @@
 		4967BA03245A7AF300A9D2A6 /* Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keys.swift; sourceTree = "<group>"; };
 		4967BA06245A85F800A9D2A6 /* SwCrypt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwCrypt.swift; sourceTree = "<group>"; };
 		497128C2265F34D8005A2988 /* SwiftSH.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SwiftSH.xcframework; path = SwiftSH.binaries/SwiftSH.xcframework; sourceTree = "<group>"; };
+		497128C526656609005A2988 /* SwiftTermApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SwiftTermApp-Bridging-Header.h"; sourceTree = "<group>"; };
 		4973B42B24650B440087D978 /* UIViewController+SwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+SwiftUI.swift"; sourceTree = "<group>"; };
 		499D36A52656B747004E307F /* QuickLauch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLauch.swift; sourceTree = "<group>"; };
 		499D36FC2658A093004E307F /* ConfigurableTerminal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurableTerminal.swift; sourceTree = "<group>"; };
@@ -138,6 +139,7 @@
 				49011691245622C6002C1F85 /* DataStore.swift */,
 				4967B9FB2459239700A9D2A6 /* Connections.swift */,
 				499D36A52656B747004E307F /* QuickLauch.swift */,
+				497128C526656609005A2988 /* SwiftTermApp-Bridging-Header.h */,
 			);
 			path = SwiftTermApp;
 			sourceTree = "<group>";
@@ -426,6 +428,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OBJC_BRIDGING_HEADER = "SwiftTermApp/SwiftTermApp-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -480,6 +483,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OBJC_BRIDGING_HEADER = "SwiftTermApp/SwiftTermApp-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
 			};

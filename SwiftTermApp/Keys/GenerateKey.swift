@@ -188,10 +188,10 @@ struct LocalKeyButton: View {
             let externalPublic = SecKeyCopyExternalRepresentation(publicKey!, &error)
             let externalPrivate = SecKeyCopyExternalRepresentation(privateKey, &error)
             
-            let publicText = SshUtil.generateSshPublicKey(k: publicKey!, msg: "test@localhost")
-            let privateText = SshUtil.generateSshPrivateKey(pub: publicKey!, priv: privateKey)
+            let publicText = SshUtil.generateSshPublicKey(k: publicKey!, comment: "test@localhost")
+            let privateText = SshUtil.generateSshPrivateKey(pub: publicKey!, priv: privateKey, comment: "test@localhost")
             print ("Keys are: \(publicText)")
-            print ("Keys are: \(privateKey)")
+            print ("Keys are: \(privateText)")
             // The first byte is 4 according to the spec, we can skip that.
             
             return "Got \(privateKey) and external: \(externalPublic.debugDescription)"

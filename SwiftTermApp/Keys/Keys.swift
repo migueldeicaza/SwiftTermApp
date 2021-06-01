@@ -28,6 +28,8 @@ class SshUtil {
     }
 
     public static func encode (data: Data) -> Data {
+        let sum = data.reduce ("") { res, n in "\(res), \(String(format:"%02X", n))"}
+        print ("Encoding data \(data.count) -> \(sum)")
         return encode (data.count) + data
     }
 
@@ -43,18 +45,29 @@ class SshUtil {
             print ("Got \(String(describing: error)) while extracting the key representation")
             return nil
         }
-        return encode (str: "ecdsa-sha2-nistp256") + encode (str: "nistp256") + encode (data.count) + data
+        return encode (str: "ecdsa-sha2-nistp256") + encode (str: "nistp256") + encode (data: data)
     }
     
-    public static func generateSshPublicKey (k: SecKey, msg: String) -> String? {
+    public static func generateSshPublicKey (k: SecKey, comment: String) -> String? {
         guard let inner = generateSshPublicKeyData (k: k) else {
             return nil
         }
-        return "ecdsa-sha2-nistp256 \(inner.base64EncodedString()) \(msg)"
+        return "ecdsa-sha2-nistp256 \(inner.base64EncodedString()) \(comment)"
     }
     
-    public static func generateSshPrivateKey (pub: SecKey, priv: SecKey) -> String? {
-        let header = "-----: PRIVATE KEY-----\n"
+    static func prepareSignature (_ data: Data) -> Data {
+        var copy = Data (data)
+        // Check if we need to pad with 0x00 to prevent certain
+        // ssh servers from thinking r or s is negative
+        let paddingRange: ClosedRange<UInt8> = 0x80...0xFF
+        if paddingRange ~= copy.first! {
+            copy.insert(0x00, at: 0)
+        }
+        return copy
+    }
+    
+    public static func generateSshPrivateKey (pub: SecKey, priv: SecKey, comment: String) -> String? {
+        let header = "-----BEGIN OPENSSH PRIVATE KEY-----\n"
         let footer = "\n-----END OPENSSH PRIVATE KEY-----\n"
         var content: Data
         guard let pubEncoded = generateSshPublicKeyData(k: pub) else {
@@ -62,6 +75,11 @@ class SshUtil {
         }
         var error: Unmanaged<CFError>? = nil
 
+        guard let pubData = SecKeyCopyExternalRepresentation (pub, &error) as Data? else {
+            print ("Got \(String(describing: error)) while extracting the public key representation")
+            return nil
+        }
+        
         guard let privData = SecKeyCopyExternalRepresentation (priv, &error) as Data? else {
             print ("Got \(String(describing: error)) while extracting the private key representation")
             return nil
@@ -74,21 +92,31 @@ class SshUtil {
         
         content = "openssh-key-v1".data(using: .utf8)!
         content.append(0)
-        content.append (encode(str: ciphername))
+        content.append (encode (str: ciphername))
         content.append (encode (str: kdfname))
         content.append (encode (kdf))
         content.append (encode (keycount))
         content.append (encode (data: pubEncoded))
             // missing: wrapper for the following:
-        // RND (2 32-bit values repeated)
-        // LENOF(X) + X="keytype" -> ecdsa-sha2-nistp256
-        // LENFOX(X) + X="nistp256"
-        // privData
-        // MISSING: LEN of a 32-bit blob, plus the blob
-        // 32-bit len + comment
-        // pad to blocksize 1, 2, 3, 4 bytes j
-        content.append (encode (data: privData))
         
+        var rnd = UInt32.random(in: 0..<UInt32.max)
+        var subBlock = Data ()
+        // dummy checksum
+        subBlock.append (Data (bytes: &rnd, count: 4))
+        subBlock.append (Data (bytes: &rnd, count: 4))
+        subBlock.append (encode (str: "ecdsa-sha2-nistp256"))
+        subBlock.append (encode (str: "nistp256"))
+        subBlock.append (encode (data: pubData))
+        
+        let d = prepareSignature (privData [pubData.count...])
+        subBlock.append (encode (data: d))
+        subBlock.append (encode (str: comment))
+        var padding: UInt8 = 1
+        while (subBlock.count % 8) != 0 {
+            subBlock.append(padding)
+            padding += 1
+        }
+        content.append(encode (data: subBlock))
         return header + content.base64EncodedString(options: .lineLength76Characters) + footer
     }
 }
