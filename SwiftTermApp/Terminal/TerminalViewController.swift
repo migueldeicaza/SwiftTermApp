@@ -88,25 +88,36 @@ class TerminalViewController: UIViewController {
         if terminalView == nil {
             terminalView = startConnection()
         }
-        guard let t = terminalView else {
+        guard let terminalView = terminalView else {
             return
         }
-        // if it succeeded
-        self.terminalView = t
-        t.frame = view.frame
-        t.translatesAutoresizingMaskIntoConstraints = true
-        t.autoresizingMask = [.flexibleHeight, .flexibleWidth]
-        view.addSubview(t)
         
-        if let ml = t.metalLayer {
+        self.terminalView = terminalView
+        
+        // Now setup the keyboard tracking capabilities, try to use the new iOS 15 features if available.
+        if #available(iOS 15.0, *) {
+            view.addSubview(terminalView)
+            terminalView.translatesAutoresizingMaskIntoConstraints = false
+            
+            terminalView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+            terminalView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+            terminalView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+            view.keyboardLayoutGuide.topAnchor.constraint(equalTo: terminalView.bottomAnchor).isActive = true
+        } else {
+            terminalView.frame = view.frame
+            terminalView.translatesAutoresizingMaskIntoConstraints = true
+            terminalView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
+            view.addSubview(terminalView)
+        }
+        if let ml = terminalView.metalLayer {
             view.layer.insertSublayer(ml, at: 0)
         }
         if interactive {
-            t.becomeFirstResponder()
+            terminalView.becomeFirstResponder()
         } else {
-            let _ = t.resignFirstResponder()
+            let _ = terminalView.resignFirstResponder()
         }
-        Connections.track(connection: t)
+        Connections.track(connection: terminalView)
     }
     
     override func viewDidLayoutSubviews() {
