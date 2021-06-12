@@ -105,8 +105,12 @@ struct HostsView : View {
             }
         }
         .listStyle(DefaultListStyle())
-        .navigationBarTitle(Text("Hosts"))
-        .navigationBarItems(trailing: EditButton())
+        .navigationTitle(Text("Hosts"))
+        .toolbar {
+            ToolbarItem (placement: .navigationBarTrailing) {
+                EditButton ()
+            }
+        }
         .sheet (isPresented: $showHostEdit) {
             HostEditView(host: Host(), showingModal: self.$showHostEdit)
         }

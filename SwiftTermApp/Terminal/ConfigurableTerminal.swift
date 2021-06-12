@@ -31,15 +31,22 @@ struct RunningTerminalConfig: View {
                     style = t
                 }
                 BackgroundSelector (backgroundStyle: $background, showDefault: true)
-            }.navigationBarItems(
-                leading:  Button ("Cancel") {
-                    self.showingModal = false
-                },
-                trailing: Button("Save") {
-                    save ()
-                    self.showingModal = false
-                })
-        }.onAppear() {
+            }
+            .toolbar {
+                ToolbarItem (placement: .navigationBarLeading) {
+                    Button ("Cancel") {
+                        self.showingModal = false
+                    }
+                }
+                ToolbarItem (placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        save ()
+                        self.showingModal = false
+                    }
+                }
+            }
+        }
+        .onAppear() {
             style = host.style
             background = host.background
         }
@@ -61,16 +68,20 @@ struct ConfigurableUITerminal: View {
     
     var body: some View {
         SwiftUITerminal(host: host, createNew: false, interactive: true)
-            .navigationBarTitle (Text (host.alias), displayMode: .inline)
-            .navigationBarItems(
-                trailing: HStack {
-                    Button (action: { self.showConfig = true }) {
-                        Image(systemName: "gearshape")
+            .navigationTitle (Text (host.alias))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem (placement: .navigationBarTrailing) {
+                    HStack {
+                        Button (action: { self.showConfig = true }) {
+                            Image(systemName: "gearshape")
+                        }
+                        Button (action: { self.hideKeyboard() }) {
+                            Image(systemName: "keyboard")
+                        }
                     }
-                    Button (action: { self.hideKeyboard() }) {
-                        Image(systemName: "keyboard")
-                    }
-                })
+                }
+            }
             .sheet (isPresented: $showConfig) {
                 RunningTerminalConfig (host: host, showingModal: $showConfig)
             }
@@ -87,16 +98,20 @@ struct ConfigurableReusedTerminal: View {
     
     var body: some View {
         SwiftUITerminal(existing: terminalView, interactive: true)
-            .navigationBarTitle (Text (terminalView.host.alias), displayMode: .inline)
-            .navigationBarItems(
-                trailing: HStack {
-                    Button (action: { self.showConfig = true }) {
-                        Image(systemName: "gearshape")
+            .navigationTitle (Text (terminalView.host.alias))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem (placement: .navigationBarTrailing) {
+                    HStack {
+                        Button (action: { self.showConfig = true }) {
+                            Image(systemName: "gearshape")
+                        }
+                        Button (action: { self.hideKeyboard() }) {
+                            Image(systemName: "keyboard")
+                        }
                     }
-                    Button (action: { self.hideKeyboard() }) {
-                        Image(systemName: "keyboard")
-                    }
-                })
+                }
+            }
             .sheet (isPresented: $showConfig) {
                 RunningTerminalConfig (host: terminalView.host, showingModal: $showConfig)
             }

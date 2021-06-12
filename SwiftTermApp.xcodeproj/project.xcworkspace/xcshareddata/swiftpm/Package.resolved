@@ -14,8 +14,8 @@
         "package": "SwiftSH",
         "repositoryURL": "https://github.com/migueldeicaza/SwiftSH",
         "state": {
-          "branch": "swiftpm",
-          "revision": "57bcd029ff620606eaea759669bd6dae12f09667",
+          "branch": "master",
+          "revision": "3f2dd003fcfe03194bd7ce3701646a818abeb1f8",
           "version": null
         }
       },
@@ -24,7 +24,7 @@
         "repositoryURL": "https://github.com/migueldeicaza/SwiftTerm.git",
         "state": {
           "branch": "main",
-          "revision": "98c1f1e03ba0a91ab837b673044f4cd970a50235",
+          "revision": "bf3a243436588000a0c401b8536e9681a155c4fc",
           "version": null
         }
       }

@@ -62,7 +62,9 @@ struct SessionView: View {
     var body: some View {
         NavigationLink (destination:
                             ConfigurableReusedTerminal (terminalView: terminalView)
-                .navigationBarTitle (Text (terminalView.host.alias), displayMode: .inline)
+                .navigationTitle (Text (terminalView.host.alias))
+                .navigationBarTitleDisplayMode(.inline)
+
                 .onDisappear { self.immediateController.rehost () })
         {
             VStack (spacing: 0){
@@ -114,7 +116,7 @@ struct SessionsView: View {
             }
             }
             Spacer ()
-        }.navigationBarTitle(Text("Sessions"))
+        }.navigationTitle(Text("Sessions"))
     }
 }
 

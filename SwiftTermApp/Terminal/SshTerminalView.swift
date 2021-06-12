@@ -45,10 +45,18 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
         } else {
             if let sshKeyId = host.sshKey {
                 if let sshKey = DataStore.shared.keys.first(where: { $0.id == sshKeyId }) {
-                    authenticationChallenge = .byPublicKeyFromMemory(username: self.host.username,
-                                                                     password: sshKey.passphrase,
-                                                                     publicKey: Data (sshKey.publicKey.utf8),
-                                                                     privateKey: Data (sshKey.privateKey.utf8))
+                    if sshKey.name == "SecureEnclave" {
+                        authenticationChallenge = .byPublicKeyFromMemory(username: self.host.username,
+                                                                         password: sshKey.passphrase,
+                                                                         publicKey: Data (sshKey.publicKey.utf8),
+                                                                         privateKey: Data (sshKey.privateKey.utf8))
+
+                    } else {
+                        authenticationChallenge = .byPublicKeyFromMemory(username: self.host.username,
+                                                                         password: sshKey.passphrase,
+                                                                         publicKey: Data (sshKey.publicKey.utf8),
+                                                                         privateKey: Data (sshKey.privateKey.utf8))
+                    }
                 } else {
                     throw MyError.noValidKey ("The host references an SSH key that is no longer set")
                 }

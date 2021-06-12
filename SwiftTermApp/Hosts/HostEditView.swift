@@ -290,25 +290,32 @@ struct HostEditView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(
-                leading:  Button ("Cancel") {
-                    self.showingModal.toggle()
-                },
-                trailing: Button("Save") {
-                    if self.alias != self.originalAlias && self.store.hasHost(withAlias: self.alias) {
-                        self.alertClash = true
-                    } else {
-                        self.saveAndLeave ()
+            .toolbar {
+                ToolbarItem (placement: .navigationBarLeading) {
+                    Button ("Cancel") {
+                        self.showingModal.toggle()
                     }
-                }.disabled (disableSave))
-                .alert(isPresented: self.$alertClash) {
-                    Alert (title: Text ("Duplicate Host"),
-                           message: Text ("There is already a host with the alias \(alias) declared, do you want to replace that host definition with this one?"), primaryButton: .cancel(), secondaryButton: .destructive(Text ("Proceed")) {
+                }
+                ToolbarItem (placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        if self.alias != self.originalAlias && self.store.hasHost(withAlias: self.alias) {
+                            self.alertClash = true
+                        } else {
+                            self.saveAndLeave ()
+                        }
+                    }
+                    .disabled (disableSave)
+                    .alert(isPresented: self.$alertClash) {
+                        Alert (title: Text ("Duplicate Host"),
+                               message: Text ("There is already a host with the alias \(alias) declared, do you want to replace that host definition with this one?"), primaryButton: .cancel(), secondaryButton: .destructive(Text ("Proceed")) {
                             self.saveAndLeave ()
                         })
+                    }
+                }
             }
-                // This is needed to prevent a warning from UIKit about autolayout
-                //https://gist.github.com/migueldeicaza/ed0ba152159817e0c4a1fd429b596573
+            
+            // This is needed to prevent a warning from UIKit about autolayout
+            //https://gist.github.com/migueldeicaza/ed0ba152159817e0c4a1fd429b596573
             .disableAutocorrection(true)
         }
     }

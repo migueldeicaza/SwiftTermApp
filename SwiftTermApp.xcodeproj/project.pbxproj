@@ -18,8 +18,8 @@
 		49011690245607F7002C1F85 /* Hosts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901168F245607F7002C1F85 /* Hosts.swift */; };
 		49011692245622C6002C1F85 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49011691245622C6002C1F85 /* DataStore.swift */; };
 		4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4911B3032463AD3E00816BAA /* GenerateKey.swift */; };
+		491769B62666BE8000D32353 /* SwiftSH in Frameworks */ = {isa = PBXBuildFile; productRef = 491769B52666BE8000D32353 /* SwiftSH */; };
 		4922DDAF26632E4600B7D2BE /* CSwiftSH in Frameworks */ = {isa = PBXBuildFile; productRef = 4922DDAE26632E4600B7D2BE /* CSwiftSH */; };
-		4922DDB126632E4600B7D2BE /* SwiftSH in Frameworks */ = {isa = PBXBuildFile; productRef = 4922DDB026632E4600B7D2BE /* SwiftSH */; };
 		49584D83248C3BEA0081D015 /* MetalHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49584D82248C3BEA0081D015 /* MetalHost.swift */; };
 		49584D85248C3C500081D015 /* ShadersBase.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49584D84248C3C500081D015 /* ShadersBase.metal */; };
 		49584D87248C3C7F0081D015 /* PlasmaGlobe.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49584D86248C3C7F0081D015 /* PlasmaGlobe.metal */; };
@@ -28,7 +28,7 @@
 		4967B9FC2459239700A9D2A6 /* Connections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967B9FB2459239700A9D2A6 /* Connections.swift */; };
 		4967B9FE24592D0B00A9D2A6 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967B9FD24592D0B00A9D2A6 /* SettingsView.swift */; };
 		4967BA0224592D3600A9D2A6 /* SessionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967BA0124592D3600A9D2A6 /* SessionsView.swift */; };
-		4967BA04245A7AF300A9D2A6 /* Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967BA03245A7AF300A9D2A6 /* Keys.swift */; };
+		4967BA04245A7AF300A9D2A6 /* SshUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967BA03245A7AF300A9D2A6 /* SshUtil.swift */; };
 		4967BA07245A85F800A9D2A6 /* SwCrypt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4967BA06245A85F800A9D2A6 /* SwCrypt.swift */; };
 		4973B42C24650B440087D978 /* UIViewController+SwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973B42B24650B440087D978 /* UIViewController+SwiftUI.swift */; };
 		499D36A62656B747004E307F /* QuickLauch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499D36A52656B747004E307F /* QuickLauch.swift */; };
@@ -36,6 +36,7 @@
 		49A0A2BE2491C792002593F7 /* LazyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2BD2491C792002593F7 /* LazyView.swift */; };
 		49A0A2C02491CDC4002593F7 /* InteractiveLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2BF2491CDC4002593F7 /* InteractiveLogin.swift */; };
 		49A0A2C2249298BF002593F7 /* DigitalBrain.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2C1249298BF002593F7 /* DigitalBrain.metal */; };
+		49BA359426744CEF00B63510 /* GenerateSecureEnclave.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BA359326744CEF00B63510 /* GenerateSecureEnclave.swift */; };
 		49C1B6AF24625C7D00D54F6F /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 49C1B6AE24625C7D00D54F6F /* SwiftTerm */; };
 		49C1B6B5246260DC00D54F6F /* TerminalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6B4246260DC00D54F6F /* TerminalViewController.swift */; };
 		49C1B6B72462611F00D54F6F /* SshTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6B62462611F00D54F6F /* SshTerminalView.swift */; };
@@ -69,9 +70,8 @@
 		4967B9FB2459239700A9D2A6 /* Connections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connections.swift; sourceTree = "<group>"; };
 		4967B9FD24592D0B00A9D2A6 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		4967BA0124592D3600A9D2A6 /* SessionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionsView.swift; sourceTree = "<group>"; };
-		4967BA03245A7AF300A9D2A6 /* Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keys.swift; sourceTree = "<group>"; };
+		4967BA03245A7AF300A9D2A6 /* SshUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SshUtil.swift; sourceTree = "<group>"; };
 		4967BA06245A85F800A9D2A6 /* SwCrypt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwCrypt.swift; sourceTree = "<group>"; };
-		497128C2265F34D8005A2988 /* SwiftSH.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SwiftSH.xcframework; path = SwiftSH.binaries/SwiftSH.xcframework; sourceTree = "<group>"; };
 		497128C526656609005A2988 /* SwiftTermApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SwiftTermApp-Bridging-Header.h"; sourceTree = "<group>"; };
 		4973B42B24650B440087D978 /* UIViewController+SwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+SwiftUI.swift"; sourceTree = "<group>"; };
 		499D36A52656B747004E307F /* QuickLauch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLauch.swift; sourceTree = "<group>"; };
@@ -79,6 +79,8 @@
 		49A0A2BD2491C792002593F7 /* LazyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LazyView.swift; sourceTree = "<group>"; };
 		49A0A2BF2491CDC4002593F7 /* InteractiveLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveLogin.swift; sourceTree = "<group>"; };
 		49A0A2C1249298BF002593F7 /* DigitalBrain.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = DigitalBrain.metal; sourceTree = "<group>"; };
+		49BA355E267149D400B63510 /* SwiftTerm */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftTerm; path = ../SwiftTerm; sourceTree = "<group>"; };
+		49BA359326744CEF00B63510 /* GenerateSecureEnclave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateSecureEnclave.swift; sourceTree = "<group>"; };
 		49C1B6B4246260DC00D54F6F /* TerminalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalViewController.swift; sourceTree = "<group>"; };
 		49C1B6B62462611F00D54F6F /* SshTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SshTerminalView.swift; sourceTree = "<group>"; };
 		49C1B6BD24637DD500D54F6F /* ButtonColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonColors.swift; sourceTree = "<group>"; };
@@ -93,7 +95,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4922DDB126632E4600B7D2BE /* SwiftSH in Frameworks */,
+				491769B62666BE8000D32353 /* SwiftSH in Frameworks */,
 				49C1B6AF24625C7D00D54F6F /* SwiftTerm in Frameworks */,
 				4922DDAF26632E4600B7D2BE /* CSwiftSH in Frameworks */,
 			);
@@ -105,6 +107,7 @@
 		4901166924553789002C1F85 = {
 			isa = PBXGroup;
 			children = (
+				49BA355E267149D400B63510 /* SwiftTerm */,
 				4901167424553789002C1F85 /* SwiftTermApp */,
 				4901167324553789002C1F85 /* Products */,
 				49C1B6B8246263F100D54F6F /* Frameworks */,
@@ -201,7 +204,6 @@
 		49C1B6B8246263F100D54F6F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				497128C2265F34D8005A2988 /* SwiftSH.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -218,10 +220,11 @@
 		49C216C4245D102600280B6A /* Keys */ = {
 			isa = PBXGroup;
 			children = (
-				4967BA03245A7AF300A9D2A6 /* Keys.swift */,
+				4967BA03245A7AF300A9D2A6 /* SshUtil.swift */,
 				4901168B24554A51002C1F85 /* AddKeyManually.swift */,
 				4901168D2456058B002C1F85 /* KeyManagementView.swift */,
 				4911B3032463AD3E00816BAA /* GenerateKey.swift */,
+				49BA359326744CEF00B63510 /* GenerateSecureEnclave.swift */,
 			);
 			path = Keys;
 			sourceTree = "<group>";
@@ -262,7 +265,7 @@
 			packageProductDependencies = (
 				49C1B6AE24625C7D00D54F6F /* SwiftTerm */,
 				4922DDAE26632E4600B7D2BE /* CSwiftSH */,
-				4922DDB026632E4600B7D2BE /* SwiftSH */,
+				491769B52666BE8000D32353 /* SwiftSH */,
 			);
 			productName = testMasterDetail;
 			productReference = 4901167224553789002C1F85 /* SwiftTermApp.app */;
@@ -329,7 +332,8 @@
 				49C1B6BE24637DD500D54F6F /* ButtonColors.swift in Sources */,
 				49C1B6B5246260DC00D54F6F /* TerminalViewController.swift in Sources */,
 				49EED560245D0A0B00A8794E /* STButton.swift in Sources */,
-				4967BA04245A7AF300A9D2A6 /* Keys.swift in Sources */,
+				49BA359426744CEF00B63510 /* GenerateSecureEnclave.swift in Sources */,
+				4967BA04245A7AF300A9D2A6 /* SshUtil.swift in Sources */,
 				49584D89248C3D570081D015 /* StarNest.metal in Sources */,
 				49C1B6B72462611F00D54F6F /* SshTerminalView.swift in Sources */,
 				49011692245622C6002C1F85 /* DataStore.swift in Sources */,
@@ -497,17 +501,14 @@
 				DEVELOPMENT_ASSET_PATHS = "\"SwiftTermApp/Preview Content\"";
 				DEVELOPMENT_TEAM = PJQC57N853;
 				ENABLE_PREVIEWS = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/SwiftSH.binaries",
-				);
-				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/SwiftSH.binaries";
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = SwiftTermApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/SwiftSH.binaries";
+				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = org.tirania.SwiftTermApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -523,17 +524,14 @@
 				DEVELOPMENT_ASSET_PATHS = "\"SwiftTermApp/Preview Content\"";
 				DEVELOPMENT_TEAM = PJQC57N853;
 				ENABLE_PREVIEWS = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/SwiftSH.binaries",
-				);
-				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/SwiftSH.binaries";
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = SwiftTermApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/SwiftSH.binaries";
+				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = org.tirania.SwiftTermApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -569,7 +567,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/migueldeicaza/SwiftSH";
 			requirement = {
-				branch = swiftpm;
+				branch = master;
 				kind = branch;
 			};
 		};
@@ -584,15 +582,15 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		491769B52666BE8000D32353 /* SwiftSH */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4922DDAD26632E4600B7D2BE /* XCRemoteSwiftPackageReference "SwiftSH" */;
+			productName = SwiftSH;
+		};
 		4922DDAE26632E4600B7D2BE /* CSwiftSH */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4922DDAD26632E4600B7D2BE /* XCRemoteSwiftPackageReference "SwiftSH" */;
 			productName = CSwiftSH;
-		};
-		4922DDB026632E4600B7D2BE /* SwiftSH */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4922DDAD26632E4600B7D2BE /* XCRemoteSwiftPackageReference "SwiftSH" */;
-			productName = SwiftSH;
 		};
 		49C1B6AE24625C7D00D54F6F /* SwiftTerm */ = {
 			isa = XCSwiftPackageProductDependency;

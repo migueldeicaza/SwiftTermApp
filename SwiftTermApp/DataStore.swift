@@ -9,6 +9,7 @@
 import Foundation
 import Combine
 
+// TODO: maybe the `type` could be an enum with Swift 5.5?
 class Key: Codable, Identifiable {
     var id: UUID
     var type: String = ""

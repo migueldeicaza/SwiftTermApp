@@ -109,10 +109,14 @@ struct EditKey: View {
                 }
             }
             .listStyle(GroupedListStyle())
-            .navigationBarItems(
-                leading:  Button ("Cancel") { self.addKeyManuallyShown = false },
-                trailing: Button("Save") { self.saveAndLeave() }
-                    .disabled (disableSave))
+            .toolbar {
+                ToolbarItem (placement: .navigationBarLeading) {
+                    Button ("Cancel") { self.addKeyManuallyShown = false }
+                }
+                ToolbarItem (placement: .navigationBarTrailing) {
+                    Button("Save") { self.saveAndLeave() }
+                }
+            }
         }.onAppear {
             self.setupKey ()
         }

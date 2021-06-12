@@ -27,6 +27,8 @@ struct TerminalCommands: Commands {
 
 @main
 struct SampleApp: App {
+    @State var dates = [Date]()
+
     var body: some Scene {
         WindowGroup {
             ContentView()

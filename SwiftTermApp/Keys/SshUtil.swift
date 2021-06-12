@@ -1,23 +1,12 @@
 //
-//  Keys.swift
+//  SshUtil.swift - Utility functions to interoperate with SSH
+//
 //  SwiftTermApp
 //
 //  Created by Miguel de Icaza on 4/29/20.
 //  Copyright © 2020 Miguel de Icaza. All rights reserved.
 //
-
-import SwiftUI
-
-enum KeyType {
-    case ed25519
-    case rsa(Int)
-}
-
-struct Keys: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-    }
-}
+import Foundation
 
 class SshUtil {
     public static func encode (str: String) -> Data {
@@ -28,8 +17,7 @@ class SshUtil {
     }
 
     public static func encode (data: Data) -> Data {
-        let sum = data.reduce ("") { res, n in "\(res), \(String(format:"%02X", n))"}
-        print ("Encoding data \(data.count) -> \(sum)")
+        //let sum = data.reduce ("") { res, n in "\(res), \(String(format:"%02X", n))"}
         return encode (data.count) + data
     }
 
@@ -38,7 +26,12 @@ class SshUtil {
         return Data (bytes: &bigEndianInt, count: 4)
     }
     
-    public static func generateSshPublicKeyData (k: SecKey) -> Data? {
+    ///
+    /// Given a SecKey that represents a public key created with kSecAttrKeyTypeECSECPrimeRandom 256 bits
+    /// returns the packaged binary.   This binary should be both base64-encoded, and then additional data should
+    /// be added to make it suitable to be given to SSH.
+    ///
+    static func generateSshPublicKeyData (k: SecKey) -> Data? {
         var error: Unmanaged<CFError>? = nil
 
         guard let data = SecKeyCopyExternalRepresentation (k, &error) as Data? else {
@@ -48,6 +41,11 @@ class SshUtil {
         return encode (str: "ecdsa-sha2-nistp256") + encode (str: "nistp256") + encode (data: data)
     }
     
+    ///
+    /// Given a SecKey that represents a public key created with kSecAttrKeyTypeECSECPrimeRandom 256 bits
+    /// returns a public key suitable to be added to ssh `authorized_keys`.   The comment is added as part
+    /// of the returned public key.
+    ///
     public static func generateSshPublicKey (k: SecKey, comment: String) -> String? {
         guard let inner = generateSshPublicKeyData (k: k) else {
             return nil
@@ -55,6 +53,16 @@ class SshUtil {
         return "ecdsa-sha2-nistp256 \(inner.base64EncodedString()) \(comment)"
     }
     
+    /// The generated private key, sometimes contains a value that is treated by ssh as negative (the
+    /// top bit is 1), this little bit of code inserts a 0 to the signature, to ensure that the value is not
+    /// treated as a negative.
+    ///
+    /// Background: the `sshbuf_get_bignum2_bytes_direct` in sshbuf-getput-basic.c
+    /// refuses negative bignums:
+    /// ```    /* Refuse negative (MSB set) bignums */
+    ///        if ((len != 0 && (*d & 0x80) != 0))
+    ///                return SSH_ERR_BIGNUM_IS_NEGATIVE;
+    /// ```
     static func prepareSignature (_ data: Data) -> Data {
         var copy = Data (data)
         // Check if we need to pad with 0x00 to prevent certain
@@ -66,6 +74,15 @@ class SshUtil {
         return copy
     }
     
+    ///
+    /// WARNING: this does not use passphrases, nor does it attempt to encrypt the content with the passphrase.
+    ///
+    /// Given a pair of SecKey that represent the public and private keys created with kSecAttrKeyTypeECSECPrimeRandom 256 bits
+    /// this returns a private key without a passphrase set that can be as an identity that will work against the public key here.
+    ///
+    /// The purpose of this routine is purely to assist in the debugging of the kind of keys that can be created on the secure
+    /// enclave, and can be used to debug the SSH authentication workflow, and nothing more.
+    ///
     public static func generateSshPrivateKey (pub: SecKey, priv: SecKey, comment: String) -> String? {
         let header = "-----BEGIN OPENSSH PRIVATE KEY-----\n"
         let footer = "\n-----END OPENSSH PRIVATE KEY-----\n"
@@ -84,6 +101,7 @@ class SshUtil {
             print ("Got \(String(describing: error)) while extracting the private key representation")
             return nil
         }
+        print ("Private is: \(privData.base64EncodedString())")
 
         let ciphername = "none"
         let kdfname = "none"
@@ -118,10 +136,5 @@ class SshUtil {
         }
         content.append(encode (data: subBlock))
         return header + content.base64EncodedString(options: .lineLength76Characters) + footer
-    }
-}
-struct Keys_Previews: PreviewProvider {
-    static var previews: some View {
-        Keys()
     }
 }

@@ -75,7 +75,7 @@ struct KeyManagementView: View {
         List {
             VStack {
                 LocalKeyButton ()
-                STButton (text: "Create Key", icon: "plus.circle")
+                STButton (text: "Add Key", icon: "plus.circle")
                     .onTapGesture {
                         self.addKeyManuallyShown = true
                     }
@@ -100,20 +100,22 @@ struct KeyManagementView: View {
             .cornerRadius(10)
         }
         .listStyle(DefaultListStyle())
-        .navigationBarTitle("Keys")
-        .navigationBarItems(trailing: HStack {
-            Button (action: {
-                self.newKeyShown = true
-            }) {
-                Image (systemName: "plus")
+        .navigationTitle("Keys")
+        .toolbar {
+            ToolbarItem (placement: .navigationBarTrailing) {
+                HStack {
+                    Button (action: {
+                        self.newKeyShown = true
+                    }) {
+                        Image (systemName: "plus")
+                    }
+                    EditButton()
+                }
             }
-            EditButton()
         }
         .sheet(isPresented: self.$newKeyShown) {
-            GenerateKey(showGenerator: self.$newKeyShown, generateKey: { a, b, c in "" } )
+            GenerateKey(showGenerator: self.$newKeyShown, generateKey: { a, b, c in nil } )
         }
-        
-        )
     }
 }
 

@@ -21,9 +21,9 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             HomeView(dates: $dates)
-                .navigationBarTitle(Text("SwiftTerm"))
+                .navigationTitle(Text("SwiftTerm"))
             DetailView()
-        }//.navigationViewStyle(DoubleColumnNavigationViewStyle())
+        }.navigationViewStyle(StackNavigationViewStyle())
     }
 }
 
@@ -83,7 +83,8 @@ struct DetailView: View {
     var body: some View {
         Group {
             Text("Detail view content goes here")
-        }.navigationBarTitle(Text("Detail"))
+        }
+        .navigationTitle(Text("Detail"))
     }
 }
 
