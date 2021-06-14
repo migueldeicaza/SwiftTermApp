@@ -13,28 +13,46 @@ struct KeyView: View {
     @State var showEdit = false
     var action: ((Key)-> ())?
     
+    func shareKeyAction () {
+        let activity = UIActivityViewController(activityItems: [key.publicKey], applicationActivities: nil)
+        UIApplication.shared.windows.first?.rootViewController?.present(activity, animated: true, completion: nil)
+    }
     var body: some View {
-        HStack(alignment: .center, spacing: 10) {
-            Image(systemName: "lock")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 24)
-                .padding(8)
-            VStack (alignment: .leading) {
-                Text ("\(key.name)")
-                    .font(.body)
-                Text ("Key Type: \(key.type)")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+        List {
+            Section {
+                HStack(alignment: .center, spacing: 10) {
+                    Image(systemName: "lock")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 24)
+                        .padding(8)
+                    VStack (alignment: .leading) {
+                        Text ("\(key.name)")
+                            .font(.body)
+                        Text ("Key Type: \(key.type)")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    }
+                }.onTapGesture {
+                    if let a = self.action {
+                        a (self.key)
+                    } else {
+                        self.showEdit = true
+                    }
+                }.sheet(isPresented: $showEdit) {
+                    EditKey(addKeyManuallyShown: self.$showEdit, key: self.$key)
+                }
             }
-        }.onTapGesture {
-            if let a = self.action {
-                a (self.key)
-            } else {
-                self.showEdit = true
+            Section {
+                HStack {
+                    Button (action: shareKeyAction, label: {
+                        HStack {
+                            Image (systemName: "square.and.arrow.up")
+                            Text ("Share Public Key")
+                        }
+                    })
+                }
             }
-        }.sheet(isPresented: $showEdit) {
-            EditKey(addKeyManuallyShown: self.$showEdit, key: self.$key)
         }
     }
 }

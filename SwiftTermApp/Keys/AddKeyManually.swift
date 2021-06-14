@@ -123,7 +123,9 @@ struct EditKey: View {
     }
 }
 
-var sampleKey = Key(id: UUID(), privateKey:
+var sampleKey = Key(id: UUID(),
+                    name: "Sample Key",
+                    privateKey:
                                    """
                                       -----BEGIN OPENSSH PRIVATE KEY-----
                                       b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABB2LUMKCJ
@@ -164,8 +166,9 @@ var sampleKey = Key(id: UUID(), privateKey:
                                       GEJZKnWJTggyxn4zYxfeqLQ5XU0axnQULoxIL4q70EVCEEeHj57ZIxQ9FKZ3pYpVUSYwei
                                       3vVROJPJfraMiFxyTn4cR91z/ElYyVuZisqFDJ6i9dAHMRAL
                                       -----END OPENSSH PRIVATE KEY-----
-                                      """
-                                 ) // , privateKey: AddKeyManually.pkey)
+                                      """,
+                    publicKey: "Fake Public Key",
+                    passphrase: "doodoo")
 //
 // Implements adding a new Key from pasted data
 struct AddKeyManually: View {
