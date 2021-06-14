@@ -122,52 +122,54 @@ struct EditKey: View {
         }
     }
 }
+
+var sampleKey = Key(id: UUID(), privateKey:
+                                   """
+                                      -----BEGIN OPENSSH PRIVATE KEY-----
+                                      b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABB2LUMKCJ
+                                      kNl81rKVpz877uAAAAEAAAAAEAAAGXAAAAB3NzaC1yc2EAAAADAQABAAABgQCeW0V0zStj
+                                      hsFGntgp7Sexiq4jcofPFvm7lrT563mquimGgPnL5m7PRwyL1+vYPTt3UdCVjITjssLt3W
+                                      NswomHSO6S9ArvWvJoZHdCY3JeqZDZlZe2RhwCyvW0gboabWCjpZxNXHm35WpFEJbrUfsI
+                                      sykoEQegpx1o/NUtIxNpI8YJT6ZEahzAHHHofjigq3t4NdC6OjvH7YdiGFk8OQdMc1r3Kt
+                                      knLq/c38raYz8L3x4eM/KoDvZYMx8iz7x7N4Piv/O+u0BHbsLRD2ruVi3CAkfVwY1sT+Tq
+                                      1rLmo3OhGVrH9nJcr8JJrUFfgjDbFjE4xroyMvunlEMIyP0S1SGJaU2QrrO3vqSKk2DP96
+                                      n6UvwHjB5iTpaadLR5hps+kMij+m7JHSQ5Xu5T2vRAimL5uJ6hJRLVmBTlPohMeh54enxU
+                                      b8yvyghMNVrkj7O0PgjvFYRAwm7aGODkkHdrGXpgTTESobo8uquLVqtdh+qEodkjqICk1a
+                                      J98625ymfbWRsAAAWg51jsCSAyiv4zsCjdjcxpqg72e8KMPYCXWWxvQSne9HoxAH5SkPr4
+                                      Av53rZ0GRNK41GId+83Xj9ZPubkdszjKi1f5DIeyEQor/6+aGG8zFPRk2b8qxXYouPtNBr
+                                      Vbl1Cf0u2+ERsZrs5E5Mu2ryvjo8HP2vhKD/aO/z1GI8RkHRoBB27TSIrQEc/zmQTXulmo
+                                      8+2kqVaWHUJNbakXSkMxtoRy3nHKOpW19hYr//oOQjhJfjj/jA1CoqHobRUzKRqckF0Yng
+                                      x6cC11ut/zZp1u0llsikbwYgkXTvJrVSdhb04e390rt64tq6SttAr8EIIZO412z4G/OMu5
+                                      iDHlmI3x2nAG5BebMi3g4KJDmyLf8/8dFzGaWigGvuZWqGB7f3gcm0DTHbAlg3il9IMj0Z
+                                      QL1Y6hVoCoyapsOMNtsMsO7qkK7jfleida3t/4FcvHstwSOLDeBjGMeVZUcyi6LXmM5L0q
+                                      +Iu2NqrensEN+uYiE732OhdcDh7RCRdZygd5TRj4VegpF/BMmyslggVzfzm8pwn2Tl6Ej8
+                                      KrfwSqqAWN53DJphtSc1maqMcBs/zL3VZXhFPugyRDODfRGsj9skmJD05pkSxARxsUeI95
+                                      Hnl5mUtUx/ccEYqlUHQF5zj+Z4mIlOxZ2tu/mFvzy5E3CroxeTkZXPOjREL3Z0K2Uk3sUd
+                                      4NxhlNap6TWKTjW1jYMOXq56QKtya9SbfAR/KGSXHnwJnKqnaLhcdiN+xdoGpWhX4KRhsj
+                                      TfseOfD0LIerP1hlRu5EkEd6CL/1AuvMpSvIAH77oSxF6BAaiWZqxvQehoJFgU1ZJIPCfO
+                                      saz5Izwl8LtBnMjNolkANvuutmyf5k1x56o3wO6sG+d5I/D3Set/959rz85aw4ySpq3hFm
+                                      Y37uVk5xUPQ8rIHbIhKBed3YfNhdbTGq1sSVGzHnH18E45SScr6XK1M002NekuZRlFosRW
+                                      UEKjjKq7XX23+gLi5llnGUfShvKZr0dmhvTLATR4F8Wq4gLElqXeTucfvPw9mgxTI6ONvQ
+                                      vfevKQRhkmrX/yLntU/Nhctxn5atcNaSaclVuOSrUM0xysXv6vKhTN1Mbef8YkwT6uUKAC
+                                      6OP6koobg19ZAz7tVzM0Dh93lfUqu6gbvYBZ29ADwze70d01lYLxoFLue4lLHkpT+sIJ+N
+                                      OyszhNyUwVRHMNx4g/SWRf7TBHekwkpe4ODDYykxNu1VNSMscE0pODkYlkqj44sypOcKWe
+                                      olud5r3U4QMVspbnrUwbQaba+bqfXV3DVh1s57+uLG9jrkgDFx4YXiE4Q5Y1AH1QbTx3Jp
+                                      U1HzkSENSbmtFmUPjlh4emVUFTvUgwmVdjXU1/8MRK09CpnetxLmUE8/uP2KII5Ruqz2Xx
+                                      TQZAYBzm+dAxJIpjcmVN//GZel7J7U0XlLOcfViSfPbnR+55f+jsvY4zf182rMS7yujDQd
+                                      Cqeymp9WPDX3VuvbJd4U/q4lG6RFY4udaE/1yIfV/KiviKIEfjkMd3mReomNug3rLce/HK
+                                      m0NTxz58oE8Q/kEi2qKjZbcO+Soh02KhsCqws06bZiQdnJhGgViVdoobOPhgWHq20ZeKMf
+                                      bdboDR38H5jdWDB0aqq6oUgg64cNdtKqQnQcacaP15kDcXgZM+ugEdoxI3q9QSW711Ddvh
+                                      gpP2g++xIbrpdzhEMS4BdDtlFgq1qoak7O3bxRXRydgisyiJrwYfV5At8yUMHenEgKR5iP
+                                      bQqD33RP43l7qhduhTBG6tPmyHfQQ1TdhuaChvr/bOIrZQ+dx+Dt0ryUmkYHpqsvntH23Q
+                                      GEJZKnWJTggyxn4zYxfeqLQ5XU0axnQULoxIL4q70EVCEEeHj57ZIxQ9FKZ3pYpVUSYwei
+                                      3vVROJPJfraMiFxyTn4cR91z/ElYyVuZisqFDJ6i9dAHMRAL
+                                      -----END OPENSSH PRIVATE KEY-----
+                                      """
+                                 ) // , privateKey: AddKeyManually.pkey)
 //
 // Implements adding a new Key from pasted data
 struct AddKeyManually: View {
-    @State var key: Key = Key(id: UUID(), privateKey:
-                                """
-                                   -----BEGIN OPENSSH PRIVATE KEY-----
-                                   b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABB2LUMKCJ
-                                   kNl81rKVpz877uAAAAEAAAAAEAAAGXAAAAB3NzaC1yc2EAAAADAQABAAABgQCeW0V0zStj
-                                   hsFGntgp7Sexiq4jcofPFvm7lrT563mquimGgPnL5m7PRwyL1+vYPTt3UdCVjITjssLt3W
-                                   NswomHSO6S9ArvWvJoZHdCY3JeqZDZlZe2RhwCyvW0gboabWCjpZxNXHm35WpFEJbrUfsI
-                                   sykoEQegpx1o/NUtIxNpI8YJT6ZEahzAHHHofjigq3t4NdC6OjvH7YdiGFk8OQdMc1r3Kt
-                                   knLq/c38raYz8L3x4eM/KoDvZYMx8iz7x7N4Piv/O+u0BHbsLRD2ruVi3CAkfVwY1sT+Tq
-                                   1rLmo3OhGVrH9nJcr8JJrUFfgjDbFjE4xroyMvunlEMIyP0S1SGJaU2QrrO3vqSKk2DP96
-                                   n6UvwHjB5iTpaadLR5hps+kMij+m7JHSQ5Xu5T2vRAimL5uJ6hJRLVmBTlPohMeh54enxU
-                                   b8yvyghMNVrkj7O0PgjvFYRAwm7aGODkkHdrGXpgTTESobo8uquLVqtdh+qEodkjqICk1a
-                                   J98625ymfbWRsAAAWg51jsCSAyiv4zsCjdjcxpqg72e8KMPYCXWWxvQSne9HoxAH5SkPr4
-                                   Av53rZ0GRNK41GId+83Xj9ZPubkdszjKi1f5DIeyEQor/6+aGG8zFPRk2b8qxXYouPtNBr
-                                   Vbl1Cf0u2+ERsZrs5E5Mu2ryvjo8HP2vhKD/aO/z1GI8RkHRoBB27TSIrQEc/zmQTXulmo
-                                   8+2kqVaWHUJNbakXSkMxtoRy3nHKOpW19hYr//oOQjhJfjj/jA1CoqHobRUzKRqckF0Yng
-                                   x6cC11ut/zZp1u0llsikbwYgkXTvJrVSdhb04e390rt64tq6SttAr8EIIZO412z4G/OMu5
-                                   iDHlmI3x2nAG5BebMi3g4KJDmyLf8/8dFzGaWigGvuZWqGB7f3gcm0DTHbAlg3il9IMj0Z
-                                   QL1Y6hVoCoyapsOMNtsMsO7qkK7jfleida3t/4FcvHstwSOLDeBjGMeVZUcyi6LXmM5L0q
-                                   +Iu2NqrensEN+uYiE732OhdcDh7RCRdZygd5TRj4VegpF/BMmyslggVzfzm8pwn2Tl6Ej8
-                                   KrfwSqqAWN53DJphtSc1maqMcBs/zL3VZXhFPugyRDODfRGsj9skmJD05pkSxARxsUeI95
-                                   Hnl5mUtUx/ccEYqlUHQF5zj+Z4mIlOxZ2tu/mFvzy5E3CroxeTkZXPOjREL3Z0K2Uk3sUd
-                                   4NxhlNap6TWKTjW1jYMOXq56QKtya9SbfAR/KGSXHnwJnKqnaLhcdiN+xdoGpWhX4KRhsj
-                                   TfseOfD0LIerP1hlRu5EkEd6CL/1AuvMpSvIAH77oSxF6BAaiWZqxvQehoJFgU1ZJIPCfO
-                                   saz5Izwl8LtBnMjNolkANvuutmyf5k1x56o3wO6sG+d5I/D3Set/959rz85aw4ySpq3hFm
-                                   Y37uVk5xUPQ8rIHbIhKBed3YfNhdbTGq1sSVGzHnH18E45SScr6XK1M002NekuZRlFosRW
-                                   UEKjjKq7XX23+gLi5llnGUfShvKZr0dmhvTLATR4F8Wq4gLElqXeTucfvPw9mgxTI6ONvQ
-                                   vfevKQRhkmrX/yLntU/Nhctxn5atcNaSaclVuOSrUM0xysXv6vKhTN1Mbef8YkwT6uUKAC
-                                   6OP6koobg19ZAz7tVzM0Dh93lfUqu6gbvYBZ29ADwze70d01lYLxoFLue4lLHkpT+sIJ+N
-                                   OyszhNyUwVRHMNx4g/SWRf7TBHekwkpe4ODDYykxNu1VNSMscE0pODkYlkqj44sypOcKWe
-                                   olud5r3U4QMVspbnrUwbQaba+bqfXV3DVh1s57+uLG9jrkgDFx4YXiE4Q5Y1AH1QbTx3Jp
-                                   U1HzkSENSbmtFmUPjlh4emVUFTvUgwmVdjXU1/8MRK09CpnetxLmUE8/uP2KII5Ruqz2Xx
-                                   TQZAYBzm+dAxJIpjcmVN//GZel7J7U0XlLOcfViSfPbnR+55f+jsvY4zf182rMS7yujDQd
-                                   Cqeymp9WPDX3VuvbJd4U/q4lG6RFY4udaE/1yIfV/KiviKIEfjkMd3mReomNug3rLce/HK
-                                   m0NTxz58oE8Q/kEi2qKjZbcO+Soh02KhsCqws06bZiQdnJhGgViVdoobOPhgWHq20ZeKMf
-                                   bdboDR38H5jdWDB0aqq6oUgg64cNdtKqQnQcacaP15kDcXgZM+ugEdoxI3q9QSW711Ddvh
-                                   gpP2g++xIbrpdzhEMS4BdDtlFgq1qoak7O3bxRXRydgisyiJrwYfV5At8yUMHenEgKR5iP
-                                   bQqD33RP43l7qhduhTBG6tPmyHfQQ1TdhuaChvr/bOIrZQ+dx+Dt0ryUmkYHpqsvntH23Q
-                                   GEJZKnWJTggyxn4zYxfeqLQ5XU0axnQULoxIL4q70EVCEEeHj57ZIxQ9FKZ3pYpVUSYwei
-                                   3vVROJPJfraMiFxyTn4cR91z/ElYyVuZisqFDJ6i9dAHMRAL
-                                   -----END OPENSSH PRIVATE KEY-----
-                                   """
-                              ) // , privateKey: AddKeyManually.pkey)
+    @State var key: Key = sampleKey
     @Binding var addKeyManuallyShown: Bool
     
     var body: some View {

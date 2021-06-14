@@ -17,7 +17,8 @@ private let dateFormatter: DateFormatter = {
 
 struct ContentView: View {
     @State var dates = [Date]()
-    
+    @ObservedObject var store: DataStore = DataStore.shared
+
     var body: some View {
         NavigationView {
             HomeView(dates: $dates)

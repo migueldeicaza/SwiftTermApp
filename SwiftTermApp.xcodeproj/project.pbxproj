@@ -36,7 +36,10 @@
 		49A0A2BE2491C792002593F7 /* LazyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2BD2491C792002593F7 /* LazyView.swift */; };
 		49A0A2C02491CDC4002593F7 /* InteractiveLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2BF2491CDC4002593F7 /* InteractiveLogin.swift */; };
 		49A0A2C2249298BF002593F7 /* DigitalBrain.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2C1249298BF002593F7 /* DigitalBrain.metal */; };
-		49BA359426744CEF00B63510 /* GenerateSecureEnclave.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BA359326744CEF00B63510 /* GenerateSecureEnclave.swift */; };
+		49BA359626751B2700B63510 /* GenerateSecureEnclave.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BA359526751B2700B63510 /* GenerateSecureEnclave.swift */; };
+		49BA35982676EEB600B63510 /* KeyTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BA35972676EEB600B63510 /* KeyTools.swift */; };
+		49BA359A2676EFD200B63510 /* CreateLocalKeyButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BA35992676EFD200B63510 /* CreateLocalKeyButtons.swift */; };
+		49BA359C2676F15D00B63510 /* KeyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BA359B2676F15D00B63510 /* KeyView.swift */; };
 		49C1B6AF24625C7D00D54F6F /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 49C1B6AE24625C7D00D54F6F /* SwiftTerm */; };
 		49C1B6B5246260DC00D54F6F /* TerminalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6B4246260DC00D54F6F /* TerminalViewController.swift */; };
 		49C1B6B72462611F00D54F6F /* SshTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6B62462611F00D54F6F /* SshTerminalView.swift */; };
@@ -80,7 +83,10 @@
 		49A0A2BF2491CDC4002593F7 /* InteractiveLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveLogin.swift; sourceTree = "<group>"; };
 		49A0A2C1249298BF002593F7 /* DigitalBrain.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = DigitalBrain.metal; sourceTree = "<group>"; };
 		49BA355E267149D400B63510 /* SwiftTerm */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftTerm; path = ../SwiftTerm; sourceTree = "<group>"; };
-		49BA359326744CEF00B63510 /* GenerateSecureEnclave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateSecureEnclave.swift; sourceTree = "<group>"; };
+		49BA359526751B2700B63510 /* GenerateSecureEnclave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateSecureEnclave.swift; sourceTree = "<group>"; };
+		49BA35972676EEB600B63510 /* KeyTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyTools.swift; sourceTree = "<group>"; };
+		49BA35992676EFD200B63510 /* CreateLocalKeyButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateLocalKeyButtons.swift; sourceTree = "<group>"; };
+		49BA359B2676F15D00B63510 /* KeyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyView.swift; sourceTree = "<group>"; };
 		49C1B6B4246260DC00D54F6F /* TerminalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalViewController.swift; sourceTree = "<group>"; };
 		49C1B6B62462611F00D54F6F /* SshTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SshTerminalView.swift; sourceTree = "<group>"; };
 		49C1B6BD24637DD500D54F6F /* ButtonColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonColors.swift; sourceTree = "<group>"; };
@@ -220,11 +226,14 @@
 		49C216C4245D102600280B6A /* Keys */ = {
 			isa = PBXGroup;
 			children = (
-				4967BA03245A7AF300A9D2A6 /* SshUtil.swift */,
 				4901168B24554A51002C1F85 /* AddKeyManually.swift */,
-				4901168D2456058B002C1F85 /* KeyManagementView.swift */,
 				4911B3032463AD3E00816BAA /* GenerateKey.swift */,
-				49BA359326744CEF00B63510 /* GenerateSecureEnclave.swift */,
+				49BA359526751B2700B63510 /* GenerateSecureEnclave.swift */,
+				4901168D2456058B002C1F85 /* KeyManagementView.swift */,
+				49BA35972676EEB600B63510 /* KeyTools.swift */,
+				4967BA03245A7AF300A9D2A6 /* SshUtil.swift */,
+				49BA35992676EFD200B63510 /* CreateLocalKeyButtons.swift */,
+				49BA359B2676F15D00B63510 /* KeyView.swift */,
 			);
 			path = Keys;
 			sourceTree = "<group>";
@@ -332,7 +341,7 @@
 				49C1B6BE24637DD500D54F6F /* ButtonColors.swift in Sources */,
 				49C1B6B5246260DC00D54F6F /* TerminalViewController.swift in Sources */,
 				49EED560245D0A0B00A8794E /* STButton.swift in Sources */,
-				49BA359426744CEF00B63510 /* GenerateSecureEnclave.swift in Sources */,
+				49BA359626751B2700B63510 /* GenerateSecureEnclave.swift in Sources */,
 				4967BA04245A7AF300A9D2A6 /* SshUtil.swift in Sources */,
 				49584D89248C3D570081D015 /* StarNest.metal in Sources */,
 				49C1B6B72462611F00D54F6F /* SshTerminalView.swift in Sources */,
@@ -343,7 +352,10 @@
 				4967B9FE24592D0B00A9D2A6 /* SettingsView.swift in Sources */,
 				4967BA0224592D3600A9D2A6 /* SessionsView.swift in Sources */,
 				4973B42C24650B440087D978 /* UIViewController+SwiftUI.swift in Sources */,
+				49BA359C2676F15D00B63510 /* KeyView.swift in Sources */,
 				4901168E2456058B002C1F85 /* KeyManagementView.swift in Sources */,
+				49BA35982676EEB600B63510 /* KeyTools.swift in Sources */,
+				49BA359A2676EFD200B63510 /* CreateLocalKeyButtons.swift in Sources */,
 				49A0A2C2249298BF002593F7 /* DigitalBrain.metal in Sources */,
 				49584D87248C3C7F0081D015 /* PlasmaGlobe.metal in Sources */,
 				49584D8C248C41620081D015 /* MetalSwiftUI.swift in Sources */,
@@ -504,6 +516,7 @@
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = SwiftTermApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -527,6 +540,7 @@
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = SwiftTermApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
