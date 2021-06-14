@@ -28,12 +28,11 @@ struct GenerateSecureEnclave: View {
         return false
     }
     
-    @State var generated = ""
     func callGenerateKey ()
     {
-//        if let generated = generateKey(v, title, passphrase) {
-//            DataStore.shared.save(key: generated)
-//        }
+        if let generated = KeyTools.generateKey (type: .ecdsa, secureEnclaveKeyTag: "SwiftTermSecureEnclaveKeyTag", comment: title, passphrase: "", inSecureEnclave: true) {
+            DataStore.shared.save(key: generated)
+        }
     }
     
     var body: some View {

@@ -19,6 +19,7 @@ struct PasteKeyButton: View {
     }
 }
 
+
 struct KeyManagementView: View {
     @State var newKeyShown = false
     @State var addKeyManuallyShown = false
@@ -61,7 +62,7 @@ struct KeyManagementView: View {
                     }
             }
             ForEach(store.keys.indices, id: \.self){ idx in
-                KeyView (key: self.$store.keys [idx], action: self.action)
+                KeySummaryView (key: self.$store.keys [idx], action: self.action)
             }
             .onDelete(perform: delete)
             .onMove(perform: move)
@@ -91,7 +92,6 @@ struct KeyManagementView: View {
 struct KeyManagementView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            //GenerateKey(showGenerator: .constant(true), generateKey: { a, b, c in "" })
             KeyManagementView()
         }
     }

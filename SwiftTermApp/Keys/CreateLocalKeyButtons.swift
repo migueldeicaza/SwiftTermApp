@@ -15,13 +15,12 @@ import CryptoKit
 // EC key, or an RSA key.
 //
 struct CreateLocalKeyButtons: View {
-    @State var showGenerator = false
+    @State var showEnclaveGenerator = false
     @State var showLocalGenerator = false
-    let keyTag = "SwiftTermSecureEnclave"
     
     func generateLocalKey (_ type: KeyType, _ comment: String, _ passphrase: String)-> Key?
     {
-        return KeyTools.generateKey (type: type, keyTag: keyTag, comment: comment, passphrase: passphrase, inSecureEnclave: false)
+        return KeyTools.generateKey (type: type, secureEnclaveKeyTag: "", comment: comment, passphrase: passphrase, inSecureEnclave: false)
     }
 
     var body: some View {
@@ -29,7 +28,7 @@ struct CreateLocalKeyButtons: View {
             if SecureEnclave.isAvailable {
                 STButton(text: "Create Enclave Key", icon: "plus.circle")
                     .onTapGesture {
-                        self.showGenerator = true
+                        self.showEnclaveGenerator = true
                     }
             }
 
@@ -37,8 +36,12 @@ struct CreateLocalKeyButtons: View {
                 .onTapGesture {
                     self.showLocalGenerator = true
                 }
-        }.sheet(isPresented: self.$showLocalGenerator) {
-            GenerateKey (showGenerator: self.$showGenerator, keyName: self.keyTag, generateKey: self.generateLocalKey)
+        }
+        .sheet(isPresented: self.$showLocalGenerator) {
+            GenerateKey (showGenerator: self.$showLocalGenerator,  generateKey: self.generateLocalKey)
+        }
+        .sheet(isPresented: self.$showEnclaveGenerator) {
+            GenerateSecureEnclave (showGenerator: self.$showEnclaveGenerator)
         }
     }
 }

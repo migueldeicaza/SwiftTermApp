@@ -9,7 +9,7 @@
 import Foundation
 
 class KeyTools {
-    static func generateKey (type: KeyType, keyTag: String, comment: String, passphrase: String, inSecureEnclave: Bool)-> Key?
+    static func generateKey (type: KeyType, secureEnclaveKeyTag: String, comment: String, passphrase: String, inSecureEnclave: Bool)-> Key?
 
     {
         switch type {
@@ -31,7 +31,7 @@ class KeyTools {
                 kSecPrivateKeyAttrs as String: [
                     kSecAttrIsPermanent as String:     true,
                     kSecAttrApplicationTag as String:
-                        keyTag.data(using: .utf8)! as CFData,
+                        secureEnclaveKeyTag.data(using: .utf8)! as CFData,
                     kSecAttrAccessControl as String:   access
                 ]
                 ]
@@ -55,7 +55,7 @@ class KeyTools {
             }
             let privateText: String
             if inSecureEnclave {
-                privateText = keyTag
+                privateText = secureEnclaveKeyTag
             } else {
                 guard let p = SshUtil.generateSshPrivateKey(pub: publicKey!, priv: privateKey, comment: comment) else {
                     print ("Could not produce the private key")
