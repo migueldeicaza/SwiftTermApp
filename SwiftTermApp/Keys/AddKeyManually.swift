@@ -58,23 +58,7 @@ struct EditKey: View {
                         }
                         TextField ("Required", text: self.$key.name)
                     }
-                    HStack {
-                        Text ("Passphrase")
-                        if showingPassword {
-                            TextField ("•••••••", text: self.$key.passphrase)
-                                .multilineTextAlignment(.trailing)
-                                .autocapitalization(.none)
-                        } else {
-                            SecureField ("•••••••", text: self.$key.passphrase)
-                                .multilineTextAlignment(.trailing)
-                                .autocapitalization(.none)
-                        }
-                        
-                        Button (action: { self.showingPassword.toggle () }, label: {
-                            Image(systemName: self.showingPassword ? "eye.slash" : "eye")
-                            
-                        })
-                    }
+                    Passphrase(passphrase: self.$key.passphrase, disabled: true)
                     VStack {
                         HStack {
                             Text ("Private Key")
@@ -98,12 +82,12 @@ struct EditKey: View {
                             ContentsFromFile (target: self.$key.privateKey)
                         }
                         HStack {
-                            TextField ("Optional", text: self.$key.publicKey)
+                            TextEditor (text: self.$key.publicKey)
                                 .frame(minHeight: 80, maxHeight: 220)
                                 .lineLimit(20)
                                 .autocapitalization(.none)
-                                .font(.system(.body, design: .monospaced))
-                                //.font(.system(size: 8, weight: .light, design: .monospaced))
+                                .font(.system(size: 8, weight: .light, design: .monospaced))
+                                
                         }
                     }
                 }

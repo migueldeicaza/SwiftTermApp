@@ -12,10 +12,13 @@ import SwiftUI
 struct STButton: View {
     var text: String
     let icon: String
+    @State var centered = true
 
     var body: some View {
         HStack {
-            Spacer()
+            if centered {
+                Spacer()
+            }
             Image (systemName: icon)
                 .foregroundColor(ButtonColors.highColor)
                 .font(Font.title.weight(.semibold))
@@ -28,13 +31,16 @@ struct STButton: View {
         .background(ButtonColors.backgroundColor)
         .cornerRadius(12)
         .foregroundColor(ButtonColors.highColor)
-        .padding()
+        .padding([.horizontal])
     }
 }
 
 
 struct STButton_Previews: PreviewProvider {
     static var previews: some View {
-        STButton(text: "Hello", icon: "gear")
+        VStack {
+            STButton(text: "Hello", icon: "gear")
+            STButton(text: "Centered=false", icon: "gear", centered: false)
+        }
     }
 }

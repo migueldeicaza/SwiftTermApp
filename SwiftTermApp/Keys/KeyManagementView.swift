@@ -45,7 +45,7 @@ struct KeyManagementView: View {
         List {
             VStack {
                 CreateLocalKeyButtons ()
-                STButton (text: "Add Key", icon: "plus.circle")
+                STButton (text: "Add Key", icon: "plus.circle", centered: false)
                     .onTapGesture {
                         self.addKeyManuallyShown = true
                     }
@@ -53,13 +53,13 @@ struct KeyManagementView: View {
                         AddKeyManually (addKeyManuallyShown: self.$addKeyManuallyShown)
                     }
 
-                STButton (text: "Import Key from File", icon: "folder.badge.plus")
-                    .onTapGesture {
-                        self.addFromFileShown = true
-                    }
-                    .sheet (isPresented: self.$addFromFileShown, onDismiss: { self.addFromFileShown = false }) {
-                        STFilePicker()
-                    }
+//                STButton (text: "Import Key from File", icon: "folder.badge.plus", centered: false)
+//                    .onTapGesture {
+//                        self.addFromFileShown = true
+//                    }
+//                    .sheet (isPresented: self.$addFromFileShown, onDismiss: { self.addFromFileShown = false }) {
+//                        STFilePicker()
+//                    }
             }
             ForEach(store.keys.indices, id: \.self){ idx in
                 KeySummaryView (key: self.$store.keys [idx], action: self.action)
@@ -73,18 +73,8 @@ struct KeyManagementView: View {
         .navigationTitle("Keys")
         .toolbar {
             ToolbarItem (placement: .navigationBarTrailing) {
-                HStack {
-                    Button (action: {
-                        self.newKeyShown = true
-                    }) {
-                        Image (systemName: "plus")
-                    }
-                    EditButton()
-                }
+                EditButton()
             }
-        }
-        .sheet(isPresented: self.$newKeyShown) {
-            GenerateKey(showGenerator: self.$newKeyShown, generateKey: { a, b, c in nil } )
         }
     }
 }

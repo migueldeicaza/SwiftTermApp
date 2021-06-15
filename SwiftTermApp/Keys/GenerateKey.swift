@@ -26,18 +26,12 @@ struct GenerateKey: View {
     @State var title = "SwiftTerm key on \(UIDevice.current.name)"
     @Binding var showGenerator: Bool
     @State var showAlert: Bool = false
+    @State var showKeyError: Bool = false
     
     // Externally settable
     
-    // If not-nil, this should be a password to give to the key
-    var usePassphrase: Bool = false
     @State var passphrase: String = ""
     var keyName: String = ""
-    
-    // Callback invoked with the desired key, it should generate the key
-    // and add it to the keychain - this might be the secure enclave, or
-    // a regular location for devices that do not have it.
-    var generateKey: (_ type: KeyType, _ comment: String, _ passphrase: String)->Key?
     
     func haveKey (_ keyName: String) -> Bool
     {
@@ -54,8 +48,10 @@ struct GenerateKey: View {
     func callGenerateKey ()
     {
         let v: KeyType = keyStyle == 0 ? .ecdsa : .rsa(keyBits == 0 ? 1024 : keyBits == 1 ? 2048 : 4096)
-        if let generated = generateKey(v, title, passphrase) {
+        if let generated = KeyTools.generateKey (type: v, secureEnclaveKeyTag: "", comment: title, passphrase: passphrase, inSecureEnclave: false) {
             DataStore.shared.save(key: generated)
+        } else {
+            
         }
     }
     
@@ -87,26 +83,18 @@ struct GenerateKey: View {
                         }.pickerStyle(SegmentedPickerStyle())
                     }
                 }
-                if self.usePassphrase {
-                    Section {
-                        Text ("Passphrase")
-                        TextField("Title", text: self.$passphrase)
-                    }
-                }
                 Section {
+                    // Currently, I only support passphrases for generated RSA keys
+                    if self.keyStyle == 1 {
+                        Passphrase(passphrase: $passphrase)
+                    }
                     HStack {
                         Text ("Comment")
                         TextField ("", text: self.$title)
                             .font(.subheadline)
                     }
                 }
-                Section {
-                    HStack {
-                        Text ("Generated Key")
-                        TextField ("", text: self.$generated)
-                            .font(.subheadline)
-                    }
-                }
+
             }
             .listStyle(GroupedListStyle ())
             .environment(\.horizontalSizeClass, .regular)
@@ -122,6 +110,7 @@ struct GenerateKey: View {
                             self.showAlert = true
                         } else {
                             self.callGenerateKey()
+                            self.showGenerator = false
                         }
                     }
                 }
@@ -134,11 +123,14 @@ struct GenerateKey: View {
                    
                    secondaryButton: .destructive(Text ("Replace"), action: self.callGenerateKey))
         }
+        .alert("Unable to generate key", isPresented: $showKeyError) {
+            Button("OK", role: .cancel) { }
+        }
     }
 }
 
 struct GenerateKey_Previews: PreviewProvider {
     static var previews: some View {
-        GenerateKey(showGenerator: .constant(true), generateKey: { x, a, b in nil })
+        GenerateKey(keyStyle: 1, showGenerator: .constant(true))
     }
 }

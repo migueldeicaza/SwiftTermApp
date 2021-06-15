@@ -72,12 +72,25 @@ class KeyTools {
             
             // TODO: not yet implemented
         case .rsa(let bits):
-            if let (priv, pub) = try? CC.RSA.generateKeyPair(2048) {
-                print ("\(priv) \(pub) \(bits)")
+            guard let (priv, pub) = try? CC.RSA.generateKeyPair(bits) else {
+                return nil
             }
-            break
+
+            guard let pemPublic = try? publicPEMKeyToSSHFormat(data: pub) else {
+                return nil
+            }
+            
+            let pemPrivate = passphrase == ""
+                ? PEM.PrivateKey.toPEM(priv)
+                : PEM.EncryptedPrivateKey.toPEM(priv, passphrase: passphrase, mode: .aes256CBC)
+            
+            return Key (id: UUID (),
+                        type: "RSA/\(bits)",
+                        name: comment,
+                        privateKey: pemPrivate,
+                        publicKey: pemPublic,
+                        passphrase: passphrase)
         }
-        return nil
     }
 
     static func haveSecureEnclaveKey (keyTag: String) -> Bool {
@@ -90,3 +103,4 @@ class KeyTools {
         return SecItemCopyMatching (lookupKey as CFDictionary, &item) == errSecSuccess && item != nil
     }
 }
+

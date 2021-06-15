@@ -18,27 +18,22 @@ struct CreateLocalKeyButtons: View {
     @State var showEnclaveGenerator = false
     @State var showLocalGenerator = false
     
-    func generateLocalKey (_ type: KeyType, _ comment: String, _ passphrase: String)-> Key?
-    {
-        return KeyTools.generateKey (type: type, secureEnclaveKeyTag: "", comment: comment, passphrase: passphrase, inSecureEnclave: false)
-    }
-
     var body: some View {
         VStack {
             if SecureEnclave.isAvailable {
-                STButton(text: "Create Enclave Key", icon: "plus.circle")
+                STButton(text: "Create Enclave Key", icon: "plus.circle", centered: false)
                     .onTapGesture {
                         self.showEnclaveGenerator = true
                     }
             }
 
-            STButton (text: "Create Key", icon: "plus.circle")
+            STButton (text: "Create Key", icon: "plus.circle", centered: false)
                 .onTapGesture {
                     self.showLocalGenerator = true
                 }
         }
         .sheet(isPresented: self.$showLocalGenerator) {
-            GenerateKey (showGenerator: self.$showLocalGenerator,  generateKey: self.generateLocalKey)
+            GenerateKey (showGenerator: self.$showLocalGenerator)
         }
         .sheet(isPresented: self.$showEnclaveGenerator) {
             GenerateSecureEnclave (showGenerator: self.$showEnclaveGenerator)
