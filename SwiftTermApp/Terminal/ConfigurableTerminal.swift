@@ -59,8 +59,8 @@ struct RunningTerminalConfig: View {
 
 
 struct ConfigurableUITerminal: View {
-    var host: Host!
-    var terminalView: SshTerminalView!
+    var host: Host?
+    var terminalView: SshTerminalView?
     var createNew: Bool = false
     var interactive: Bool = true
     @State var showConfig: Bool = false
@@ -71,7 +71,7 @@ struct ConfigurableUITerminal: View {
     
     var body: some View {
         SwiftUITerminal(host: host, existing: terminalView, createNew: createNew, interactive: interactive)
-            .navigationTitle (Text (host.alias))
+            .navigationTitle (Text ((terminalView?.host.alias ?? host?.alias) ?? "error"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem (placement: .navigationBarTrailing) {
@@ -86,7 +86,7 @@ struct ConfigurableUITerminal: View {
                 }
             }
             .sheet (isPresented: $showConfig) {
-                RunningTerminalConfig (host: host, showingModal: $showConfig)
+                RunningTerminalConfig (host: terminalView?.host ?? host!, showingModal: $showConfig)
             }
     }
 }
