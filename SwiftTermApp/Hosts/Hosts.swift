@@ -56,7 +56,7 @@ struct HostSummaryView: View {
                 HostEditView(host: self.host, showingModal: self.$showingModal)
             }
             .contextMenu {
-                NavigationLink(destination: Text ("Hello") /* SwiftUITerminal(host: self.host, createNew: true, interactive: true) */){
+                NavigationLink(destination: ConfigurableUITerminal (host: self.host, terminalView: nil, createNew: true, interactive: true)) {
                     Text("New Connection")
                     Image(systemName: "plus.circle")
                 }

@@ -89,16 +89,31 @@ public class AppTerminalView: TerminalView {
         keyboardTapRecognizer = UITapGestureRecognizer (target: self, action: #selector (activate))
     }
 
+    static var currentTerminalView: AppTerminalView? = nil
+    
+    override public func becomeFirstResponder() -> Bool {
+        if super.becomeFirstResponder() {
+            AppTerminalView.currentTerminalView = self
+            return true
+        }
+        return false
+    }
+    
     override public func resignFirstResponder() -> Bool {
         addGestureRecognizer(keyboardTapRecognizer)
-        return super.resignFirstResponder()
+        if super.resignFirstResponder() {
+            AppTerminalView.currentTerminalView = nil
+            return true
+        }
+        return false
     }
     
     @objc
     func activate ()
     {
-        becomeFirstResponder()
-        removeGestureRecognizer(keyboardTapRecognizer)
+        if becomeFirstResponder() {
+            removeGestureRecognizer(keyboardTapRecognizer)
+        }
     }
     
     override public func didMoveToWindow() {

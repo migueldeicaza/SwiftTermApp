@@ -56,12 +56,12 @@ struct SessionView: View {
     init (terminalView: SshTerminalView)
     {
         self.terminalView = terminalView
-        self.immediateController = SwiftUITerminal(existing: terminalView, interactive: false)
+        self.immediateController = SwiftUITerminal(host: nil, existing: terminalView, createNew: false, interactive: false)
     }
     
     var body: some View {
         NavigationLink (destination:
-                            ConfigurableReusedTerminal (terminalView: terminalView)
+                            ConfigurableUITerminal (host: nil, terminalView: terminalView, createNew: false, interactive: true)
                 .navigationTitle (Text (terminalView.host.alias))
                 .navigationBarTitleDisplayMode(.inline)
 
@@ -121,7 +121,7 @@ struct SessionsView: View {
 }
 
 struct SessionsView_Previews: PreviewProvider {
-    static var v = SwiftUITerminal(host: DataStore.shared.hosts [0], createNew: true, interactive: true)
+    static var v = SwiftUITerminal(host: DataStore.shared.hosts [0], existing: nil, createNew: true, interactive: true)
     static var previews: some View {
         Group {
             HStack {

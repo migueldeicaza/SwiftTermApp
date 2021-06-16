@@ -13,6 +13,7 @@ struct EditKey: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @Binding var addKeyManuallyShown: Bool
     @Binding var key: Key
+    @State var disableChangePassword = false
     @State var showingPassword = false
     
    var disableSave: Bool {
@@ -58,7 +59,7 @@ struct EditKey: View {
                         }
                         TextField ("Required", text: self.$key.name)
                     }
-                    Passphrase(passphrase: self.$key.passphrase, disabled: true)
+                    Passphrase(passphrase: self.$key.passphrase, disabled: disableChangePassword)
                     VStack {
                         HStack {
                             Text ("Private Key")
@@ -160,7 +161,7 @@ struct AddKeyManually: View {
     @Binding var addKeyManuallyShown: Bool
     
     var body: some View {
-        EditKey(addKeyManuallyShown: $addKeyManuallyShown, key: $key)
+        EditKey(addKeyManuallyShown: $addKeyManuallyShown, key: $key, disableChangePassword: false)
     }
 }
 

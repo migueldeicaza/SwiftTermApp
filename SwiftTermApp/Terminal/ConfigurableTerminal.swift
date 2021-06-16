@@ -59,7 +59,10 @@ struct RunningTerminalConfig: View {
 
 
 struct ConfigurableUITerminal: View {
-    var host: Host
+    var host: Host!
+    var terminalView: SshTerminalView!
+    var createNew: Bool = false
+    var interactive: Bool = true
     @State var showConfig: Bool = false
     
     func hideKeyboard() {
@@ -67,7 +70,7 @@ struct ConfigurableUITerminal: View {
     }
     
     var body: some View {
-        SwiftUITerminal(host: host, createNew: false, interactive: true)
+        SwiftUITerminal(host: host, existing: terminalView, createNew: createNew, interactive: interactive)
             .navigationTitle (Text (host.alias))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -84,36 +87,6 @@ struct ConfigurableUITerminal: View {
             }
             .sheet (isPresented: $showConfig) {
                 RunningTerminalConfig (host: host, showingModal: $showConfig)
-            }
-    }
-}
-
-struct ConfigurableReusedTerminal: View {
-    var terminalView: SshTerminalView
-    @State var showConfig: Bool = false
-    
-    func hideKeyboard() {
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-    }
-    
-    var body: some View {
-        SwiftUITerminal(existing: terminalView, interactive: true)
-            .navigationTitle (Text (terminalView.host.alias))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem (placement: .navigationBarTrailing) {
-                    HStack {
-                        Button (action: { self.showConfig = true }) {
-                            Image(systemName: "gearshape")
-                        }
-                        Button (action: { self.hideKeyboard() }) {
-                            Image(systemName: "keyboard")
-                        }
-                    }
-                }
-            }
-            .sheet (isPresented: $showConfig) {
-                RunningTerminalConfig (host: terminalView.host, showingModal: $showConfig)
             }
     }
 }

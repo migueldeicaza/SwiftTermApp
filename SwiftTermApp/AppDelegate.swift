@@ -18,8 +18,14 @@ struct TerminalCommands: Commands {
     var body: some Commands {
         CommandMenu ("Title") {
             Section {
-                Button ("Soft Reset", action: {}).keyboardShortcut(KeyEquivalent("r"), modifiers: [/*@START_MENU_TOKEN@*/.command/*@END_MENU_TOKEN@*/, .option])
-                Button ("Hard Reset", action: {}).keyboardShortcut(KeyEquivalent("r"), modifiers: [/*@START_MENU_TOKEN@*/.command/*@END_MENU_TOKEN@*/, .option, .control])
+                Button ("Soft Reset", action: {
+                    guard let current = AppTerminalView.currentTerminalView else { return }
+                    current.getTerminal().softReset()
+                }).keyboardShortcut(KeyEquivalent("r"), modifiers: [/*@START_MENU_TOKEN@*/.command/*@END_MENU_TOKEN@*/, .option])
+                Button ("Hard Reset", action: {
+                    guard let current = AppTerminalView.currentTerminalView else { return }
+                    current.getTerminal().resetToInitialState()
+                }).keyboardShortcut(KeyEquivalent("r"), modifiers: [/*@START_MENU_TOKEN@*/.command/*@END_MENU_TOKEN@*/, .option, .control])
             }
         }
     }
@@ -32,7 +38,8 @@ struct SampleApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-        }.commands {
+        }
+        .commands {
             TerminalCommands ()
         }
         #if os(macOS)

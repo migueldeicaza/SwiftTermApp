@@ -159,16 +159,19 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
     var kind: Kind
     var interactive: Bool
     
-    init (host: Host, createNew: Bool, interactive: Bool)
-    {
-        kind = .host(host: host, createNew: createNew)
-        self.interactive = interactive
-    }
-    
-    init (existing: SshTerminalView, interactive: Bool)
-    {
-        self.terminalView = existing
-        kind = .rehost(rehost: existing)
+    /// Creates a new SwiftUITerminal, either it creates a new one based on a host configuration (`host` is not nil), in which
+    /// case the `createNew` parameter indicates if this should createa  new host or not.   If `host` is nil, then
+    /// this assumes that this is going to rehost an existing SshTerminalView, in that case, `existing` should not
+    /// be nil.
+    init (host: Host?, existing: SshTerminalView?, createNew: Bool, interactive: Bool) {
+        if host == nil {
+            assert (existing != nil)
+            self.terminalView = existing
+            kind = .rehost(rehost: existing!)
+        } else {
+            assert (existing == nil)
+            kind = .host(host: host!, createNew: createNew)
+        }
         self.interactive = interactive
         super.init ()
     }

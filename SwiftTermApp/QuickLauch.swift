@@ -13,7 +13,7 @@ struct DelayedSwiftUITerminal: View {
     @Binding var destHost: Host?
     
     var body: some View {
-        SwiftUITerminal(host: self.destHost!, createNew: true, interactive: true)
+        SwiftUITerminal(host: self.destHost!, existing: nil, createNew: true, interactive: true)
     }
 }
 struct QuickLaunch: View {

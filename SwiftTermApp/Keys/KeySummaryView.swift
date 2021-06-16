@@ -54,7 +54,7 @@ struct KeySummaryView: View {
                     self.showEdit = true
                 }
             }.sheet(isPresented: $showEdit) {
-                EditKey(addKeyManuallyShown: self.$showEdit, key: self.$key)
+                EditKey(addKeyManuallyShown: self.$showEdit, key: self.$key, disableChangePassword: true)
             }.sheet(isPresented: $showSharing) {
                 ShareKeyView(publicKey: $key.publicKey)
             }

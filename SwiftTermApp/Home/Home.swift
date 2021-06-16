@@ -16,25 +16,49 @@ private let dateFormatter: DateFormatter = {
 }()
 
 struct ContentView: View {
-    @State var dates = [Date]()
+#if os(iOS)
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+#endif
+
     @ObservedObject var store: DataStore = DataStore.shared
 
     var body: some View {
+#if os(iOS)
+        if horizontalSizeClass == .compact {
+            CompactHomeView()
+        } else {
+            LargeHomeView()
+        }
+#else
+        LargeHomeView()
+#endif
+    }
+}
+
+struct CompactHomeView: View {
+    var body: some View {
         NavigationView {
-            HomeView(dates: $dates)
+            HomeView()
                 .navigationTitle(Text("SwiftTerm"))
-            DetailView()
+            DefaultHomeView()
         }.navigationViewStyle(StackNavigationViewStyle())
     }
 }
 
+struct LargeHomeView: View {
+    
+    var body: some View {
+        NavigationView {
+            HomeView ()
+            DefaultHomeView ()
+        }
+    }
+}
 
 struct HomeView: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @ObservedObject var connections = Connections.shared
     
-    @Binding var dates: [Date]
-
     func sortDate (first: Host, second: Host) throws -> Bool
     {
         first.lastUsed > second.lastUsed
@@ -80,18 +104,11 @@ struct HomeView: View {
     }
 }
 
-struct DetailView: View {
-    var body: some View {
-        Group {
-            Text("Detail view content goes here")
-        }
-        .navigationTitle(Text("Detail"))
-    }
-}
-
-
-struct ContentView_Previews: PreviewProvider {
+struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        CompactHomeView()
+            .previewDevice(PreviewDevice(rawValue: "iPhone 12"))
+        LargeHomeView()
+            .previewDevice(PreviewDevice(rawValue: "iPad Pro (12.9-inch) (5th generation)"))
     }
 }
