@@ -95,12 +95,28 @@ struct HomeView: View {
                         Label("Keys", systemImage: "key")
                     })
                 NavigationLink(
+                    destination: HostKeysList (),
+                    label: {
+                        Label("Known Host Keys", systemImage: "lock.desktopcomputer")
+                    })
+                NavigationLink(
                     destination: SettingsView(),
                     label: {
                         Label("Settings", systemImage: "gear")
                     })
             }
-        }.listStyle(GroupedListStyle())
+            
+            Section {
+                NavigationLink(
+                    destination: CreditsView(),
+                    label: {
+                        Label("Credits", systemImage: "info.circle")
+                    })
+            }
+        }
+        .listStyle(GroupedListStyle())
+        //.listStyle(.sidebar)
+
     }
 }
 

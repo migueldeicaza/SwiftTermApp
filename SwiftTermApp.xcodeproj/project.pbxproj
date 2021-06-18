@@ -44,6 +44,8 @@
 		49BA35A4267847E100B63510 /* PEMtoSSH.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BA35A3267847E100B63510 /* PEMtoSSH.swift */; };
 		49BA35A626784B6B00B63510 /* Passphrase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BA35A526784B6B00B63510 /* Passphrase.swift */; };
 		49BA35E2267993E800B63510 /* DefaultHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BA35E1267993E800B63510 /* DefaultHomeView.swift */; };
+		49BA35ED267BE7AB00B63510 /* HostKeysList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BA35EC267BE7AB00B63510 /* HostKeysList.swift */; };
+		49BA35F1267C3F2600B63510 /* CreditsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BA35F0267C3F2600B63510 /* CreditsView.swift */; };
 		49C1B6AF24625C7D00D54F6F /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 49C1B6AE24625C7D00D54F6F /* SwiftTerm */; };
 		49C1B6B5246260DC00D54F6F /* TerminalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6B4246260DC00D54F6F /* TerminalViewController.swift */; };
 		49C1B6B72462611F00D54F6F /* SshTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6B62462611F00D54F6F /* SshTerminalView.swift */; };
@@ -95,6 +97,8 @@
 		49BA35A3267847E100B63510 /* PEMtoSSH.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PEMtoSSH.swift; sourceTree = "<group>"; };
 		49BA35A526784B6B00B63510 /* Passphrase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Passphrase.swift; sourceTree = "<group>"; };
 		49BA35E1267993E800B63510 /* DefaultHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultHomeView.swift; sourceTree = "<group>"; };
+		49BA35EC267BE7AB00B63510 /* HostKeysList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostKeysList.swift; sourceTree = "<group>"; };
+		49BA35F0267C3F2600B63510 /* CreditsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsView.swift; sourceTree = "<group>"; };
 		49C1B6B4246260DC00D54F6F /* TerminalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalViewController.swift; sourceTree = "<group>"; };
 		49C1B6B62462611F00D54F6F /* SshTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SshTerminalView.swift; sourceTree = "<group>"; };
 		49C1B6BD24637DD500D54F6F /* ButtonColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonColors.swift; sourceTree = "<group>"; };
@@ -139,6 +143,7 @@
 		4901167424553789002C1F85 /* SwiftTermApp */ = {
 			isa = PBXGroup;
 			children = (
+				49BA35EB267BE79A00B63510 /* HostKeys */,
 				49BA35DE267991B800B63510 /* Home */,
 				49BA359F267846DE00B63510 /* External */,
 				49584D81248C3BD80081D015 /* Metal */,
@@ -228,8 +233,17 @@
 			children = (
 				4901167924553789002C1F85 /* Home.swift */,
 				49BA35E1267993E800B63510 /* DefaultHomeView.swift */,
+				49BA35F0267C3F2600B63510 /* CreditsView.swift */,
 			);
 			path = Home;
+			sourceTree = "<group>";
+		};
+		49BA35EB267BE79A00B63510 /* HostKeys */ = {
+			isa = PBXGroup;
+			children = (
+				49BA35EC267BE7AB00B63510 /* HostKeysList.swift */,
+			);
+			path = HostKeys;
 			sourceTree = "<group>";
 		};
 		49C1B6B3246260C000D54F6F /* Terminal */ = {
@@ -390,7 +404,9 @@
 				4901167624553789002C1F85 /* AppDelegate.swift in Sources */,
 				4967B9FC2459239700A9D2A6 /* Connections.swift in Sources */,
 				4967B9FE24592D0B00A9D2A6 /* SettingsView.swift in Sources */,
+				49BA35ED267BE7AB00B63510 /* HostKeysList.swift in Sources */,
 				4967BA0224592D3600A9D2A6 /* SessionsView.swift in Sources */,
+				49BA35F1267C3F2600B63510 /* CreditsView.swift in Sources */,
 				4973B42C24650B440087D978 /* UIViewController+SwiftUI.swift in Sources */,
 				49BA359C2676F15D00B63510 /* KeySummaryView.swift in Sources */,
 				4901168E2456058B002C1F85 /* KeyManagementView.swift in Sources */,

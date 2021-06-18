@@ -87,6 +87,14 @@ class Host: Codable, Identifiable {
     }
 }
 
+struct KnownHost: Identifiable {
+    var host: String
+    var keyType: String
+    var key: String
+    var rest: String
+    var id: UUID
+}
+
 class DataStore: ObservableObject {
     static let testKey1 = Key (id: UUID(), type: "RSA/1024", name: "Fake Legacy Key", privateKey: "", publicKey: "", passphrase: "")
     static let testKey2 = Key (id: UUID(), type: "RSA/4098", name: "Fake 2020 iPhone Key", privateKey: "", publicKey: "", passphrase: "")
@@ -107,14 +115,27 @@ class DataStore: ObservableObject {
         testKey1, testKey2
     ]
     
+    @Published var knownHosts: [KnownHost] = []
+    
     /// Event raised when the properties that can be changed on a live connection have changed
     var runtimeVisibleChanges = PassthroughSubject<Host,Never> ()
     
     let hostsArrayKey = "hostsArray"
     let keysArrayKey = "keysArray"
+    var knownHostPath: String
     
     init ()
     {
+        func getKnownHostsPath () -> String {
+            let fm = FileManager.default
+            guard let p = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+                return "known_hosts"
+            }
+            try? fm.createDirectory (at: p, withIntermediateDirectories: true, attributes: nil)
+            return p.path + "/known_hosts"
+        }
+        self.knownHostPath = getKnownHostsPath()
+        
         defaults = UserDefaults (suiteName: "SwiftTermApp")
         let decoder = JSONDecoder ()
         if let d = defaults {
@@ -129,6 +150,7 @@ class DataStore: ObservableObject {
                 }
             }
         }
+        loadKnownHosts()
     }
     
     // Saves the data store
@@ -144,6 +166,8 @@ class DataStore: ObservableObject {
         if let keyData = try? coder.encode (keys) {
             d.set (keyData, forKey: keysArrayKey)
         }
+        
+        saveKnownHosts ()
     }
     
     // Records the new host in the data store
@@ -212,5 +236,37 @@ class DataStore: ObservableObject {
         }
         return res
     }
+    
+    func loadKnownHosts ()
+    {
+        guard let content = try? String (contentsOfFile: knownHostPath) else {
+            return
+        }
+        
+        func makeRecord (part: [Substring]) -> KnownHost? {
+            guard part.count >= 3 else {
+                return nil
+            }
+            return KnownHost (host: String (part [0]),
+                           keyType: String (part [1]),
+                           key: String (part[2]),
+                           rest: part [3...].map { String ($0) }.joined(separator: " "),
+                           id: UUID ())
+        }
+        knownHosts.removeAll()
+        for line in content.split(separator: "\n") {
+            guard let record = makeRecord(part: line.split (separator: " ")) else { continue }
+            knownHosts.append(record)
+        }
+    }
+    
+    func saveKnownHosts () {
+        var res = ""
+        for record in knownHosts {
+            res += "\(record.host) \(record.keyType) \(record.key) \(record.rest)\n"
+        }
+        try? res.write(toFile: knownHostPath, atomically: true, encoding: .utf8)
+    }
+    
     static var shared: DataStore = DataStore()
 }
