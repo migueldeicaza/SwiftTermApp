@@ -122,7 +122,7 @@ class DataStore: ObservableObject {
     
     let hostsArrayKey = "hostsArray"
     let keysArrayKey = "keysArray"
-    var knownHostPath: String
+    public var knownHostsPath: String
     
     init ()
     {
@@ -134,7 +134,7 @@ class DataStore: ObservableObject {
             try? fm.createDirectory (at: p, withIntermediateDirectories: true, attributes: nil)
             return p.path + "/known_hosts"
         }
-        self.knownHostPath = getKnownHostsPath()
+        self.knownHostsPath = getKnownHostsPath()
         
         defaults = UserDefaults (suiteName: "SwiftTermApp")
         let decoder = JSONDecoder ()
@@ -239,7 +239,7 @@ class DataStore: ObservableObject {
     
     func loadKnownHosts ()
     {
-        guard let content = try? String (contentsOfFile: knownHostPath) else {
+        guard let content = try? String (contentsOfFile: knownHostsPath) else {
             return
         }
         
@@ -265,7 +265,7 @@ class DataStore: ObservableObject {
         for record in knownHosts {
             res += "\(record.host) \(record.keyType) \(record.key) \(record.rest)\n"
         }
-        try? res.write(toFile: knownHostPath, atomically: true, encoding: .utf8)
+        try? res.write(toFile: knownHostsPath, atomically: true, encoding: .utf8)
     }
     
     static var shared: DataStore = DataStore()

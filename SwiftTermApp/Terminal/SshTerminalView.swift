@@ -168,6 +168,10 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
                 if let error = error {
                     self.feed(text: "[ERROR] \(error)\n")
                 } else {
+                    let session = self.shell!.session
+                    
+                    checkHostIntegrity ()
+                    
                     if self.host.hostKindGuess == "" {
                         if let guess = self.guessRemote(remoteBanner: s.remoteBanner) {
                             DispatchQueue.main.async {
@@ -180,6 +184,30 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
                 }
             }
         }
+    }
+    
+    /// Checks that we are connecting to the host we thought we were, this uses the `known_hosts` database
+    func checkHostIntegrity () {
+        let session = self.shell!.session
+
+        let knownHosts = session.makeKnownHost()
+        
+        try? knownHosts.readFile(filename: DataStore.shared.knownHostsPath)
+        if let keyAndType = session.hostKey() {
+            let res = knownHosts.check (hostName: host.hostname, port: Int32 (host.port), key: keyAndType.key)
+            let hostKeyType = SshUtil.extractKeyType (keyAndType.key)
+            switch res.status {
+            case .notFound:
+                break
+            case .keyMismatch:
+                break
+            case .failure:
+                break
+            case .match:
+                break
+            }
+        }
+        
     }
 
     var remoteBannerToIcon : [String:String] = [

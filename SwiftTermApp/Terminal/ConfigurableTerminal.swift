@@ -64,9 +64,26 @@ struct ConfigurableUITerminal: View {
     var createNew: Bool = false
     var interactive: Bool = true
     @State var showConfig: Bool = false
-    
-    func hideKeyboard() {
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+
+    func topMostViewController (_ t: UIViewController) -> UIViewController {
+        if let presented = t.presentedViewController {
+            return topMostViewController (presented)
+        }
+        
+        if let navigation = t as? UINavigationController {
+            return topMostViewController(navigation.visibleViewController ?? navigation)
+        }
+        
+        if let tab = t as? UITabBarController {
+            return topMostViewController (tab.selectedViewController ?? tab)
+        }
+        return t
+    }
+
+    func hideKeyboard () {
+        if let ctv = AppTerminalView.currentTerminalView {
+            _ = ctv.resignFirstResponder()
+        }
     }
     
     var body: some View {

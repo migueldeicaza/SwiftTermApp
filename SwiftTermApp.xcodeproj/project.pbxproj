@@ -36,6 +36,8 @@
 		49A0A2BE2491C792002593F7 /* LazyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2BD2491C792002593F7 /* LazyView.swift */; };
 		49A0A2C02491CDC4002593F7 /* InteractiveLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2BF2491CDC4002593F7 /* InteractiveLogin.swift */; };
 		49A0A2C2249298BF002593F7 /* DigitalBrain.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2C1249298BF002593F7 /* DigitalBrain.metal */; };
+		49B84C53268137C700B36066 /* HostAuthUnknown.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B84C52268137C700B36066 /* HostAuthUnknown.swift */; };
+		49B84C5526813F9400B36066 /* HostAuthKeyMismatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B84C5426813F9400B36066 /* HostAuthKeyMismatch.swift */; };
 		49BA359626751B2700B63510 /* GenerateSecureEnclave.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BA359526751B2700B63510 /* GenerateSecureEnclave.swift */; };
 		49BA35982676EEB600B63510 /* KeyTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BA35972676EEB600B63510 /* KeyTools.swift */; };
 		49BA359A2676EFD200B63510 /* CreateLocalKeyButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BA35992676EFD200B63510 /* CreateLocalKeyButtons.swift */; };
@@ -88,6 +90,9 @@
 		49A0A2BD2491C792002593F7 /* LazyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LazyView.swift; sourceTree = "<group>"; };
 		49A0A2BF2491CDC4002593F7 /* InteractiveLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveLogin.swift; sourceTree = "<group>"; };
 		49A0A2C1249298BF002593F7 /* DigitalBrain.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = DigitalBrain.metal; sourceTree = "<group>"; };
+		49B84C512681215300B36066 /* es-419 */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "es-419"; path = "es-419.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
+		49B84C52268137C700B36066 /* HostAuthUnknown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostAuthUnknown.swift; sourceTree = "<group>"; };
+		49B84C5426813F9400B36066 /* HostAuthKeyMismatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostAuthKeyMismatch.swift; sourceTree = "<group>"; };
 		49BA355E267149D400B63510 /* SwiftTerm */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftTerm; path = ../SwiftTerm; sourceTree = "<group>"; };
 		49BA359526751B2700B63510 /* GenerateSecureEnclave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateSecureEnclave.swift; sourceTree = "<group>"; };
 		49BA35972676EEB600B63510 /* KeyTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyTools.swift; sourceTree = "<group>"; };
@@ -145,6 +150,7 @@
 			children = (
 				49BA35EB267BE79A00B63510 /* HostKeys */,
 				49BA35DE267991B800B63510 /* Home */,
+				49B84C5626818C4700B36066 /* Extensions */,
 				49BA359F267846DE00B63510 /* External */,
 				49584D81248C3BD80081D015 /* Metal */,
 				49F0740A2481B3D100A83CDC /* Settings */,
@@ -210,6 +216,13 @@
 			path = UIs;
 			sourceTree = "<group>";
 		};
+		49B84C5626818C4700B36066 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 		49BA359F267846DE00B63510 /* External */ = {
 			isa = PBXGroup;
 			children = (
@@ -269,6 +282,8 @@
 			children = (
 				49011689245540F2002C1F85 /* HostEditView.swift */,
 				4901168F245607F7002C1F85 /* Hosts.swift */,
+				49B84C52268137C700B36066 /* HostAuthUnknown.swift */,
+				49B84C5426813F9400B36066 /* HostAuthKeyMismatch.swift */,
 			);
 			path = Hosts;
 			sourceTree = "<group>";
@@ -352,6 +367,7 @@
 			knownRegions = (
 				en,
 				Base,
+				"es-419",
 			);
 			mainGroup = 4901166924553789002C1F85;
 			packageReferences = (
@@ -401,6 +417,7 @@
 				49011692245622C6002C1F85 /* DataStore.swift in Sources */,
 				49BA35A22678471600B63510 /* Asn1Parser.swift in Sources */,
 				4901168C24554A51002C1F85 /* AddKeyManually.swift in Sources */,
+				49B84C53268137C700B36066 /* HostAuthUnknown.swift in Sources */,
 				4901167624553789002C1F85 /* AppDelegate.swift in Sources */,
 				4967B9FC2459239700A9D2A6 /* Connections.swift in Sources */,
 				4967B9FE24592D0B00A9D2A6 /* SettingsView.swift in Sources */,
@@ -418,6 +435,7 @@
 				49A0A2BE2491C792002593F7 /* LazyView.swift in Sources */,
 				49F02ADF24610D7A00CFEB50 /* STFilePicker.swift in Sources */,
 				49A0A2C02491CDC4002593F7 /* InteractiveLogin.swift in Sources */,
+				49B84C5526813F9400B36066 /* HostAuthKeyMismatch.swift in Sources */,
 				49011690245607F7002C1F85 /* Hosts.swift in Sources */,
 				4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */,
 				49F0741024834B9D00A83CDC /* AppTerminalView.swift in Sources */,
@@ -436,6 +454,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				490116812455378A002C1F85 /* Base */,
+				49B84C512681215300B36066 /* es-419 */,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
@@ -447,6 +466,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -509,6 +529,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";

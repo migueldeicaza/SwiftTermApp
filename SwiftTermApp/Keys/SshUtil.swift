@@ -137,4 +137,21 @@ class SshUtil {
         content.append(encode (data: subBlock))
         return header + content.base64EncodedString(options: .lineLength76Characters) + footer
     }
+
+    /// Given a host key as returned by session.hostKey, returns the type of the key
+    public static func extractKeyType (_ bytes: [Int8]) -> String? {
+        let data = Data (bytes.map { UInt8 (bitPattern: $0)})
+
+        if data.count < 4 {
+            return nil
+        }
+
+        let count = (data [0] << 24 | data [1] << 16 | data [2] << 8 | data [3])
+        let last = 4 + count
+        if data.count < last {
+            return nil
+        }
+        return String (data: data [4..<last], encoding: .utf8)
+    }
+
 }
