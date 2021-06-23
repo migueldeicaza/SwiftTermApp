@@ -12,6 +12,7 @@ import UIKit
 import SwiftTerm
 import SwiftSH
 import AudioToolbox
+import SwiftUI
 
 enum MyError : Error {
     case noValidKey(String)
@@ -165,22 +166,20 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
             .connect ()
             .authenticate(self.authenticationChallenge)
             .open { [unowned self] (error) in
-                if let error = error {
-                    self.feed(text: "[ERROR] \(error)\n")
-                } else {
-                    let session = self.shell!.session
-                    
-                    checkHostIntegrity ()
-                    
-                    if self.host.hostKindGuess == "" {
-                        if let guess = self.guessRemote(remoteBanner: s.remoteBanner) {
-                            DispatchQueue.main.async {
-                                 DataStore.shared.updateGuess (for: self.host, to: guess)
+                DispatchQueue.main.async {
+                    if let error = error {
+                        self.feed(text: "[ERROR] \(error)\n")
+                    } else {
+                            checkHostIntegrity ()
+                            
+                            if self.host.hostKindGuess == "" {
+                                if let guess = self.guessRemote(remoteBanner: s.remoteBanner) {
+                                     DataStore.shared.updateGuess (for: self.host, to: guess)
+                                }
                             }
-                        }
+                            let t = self.getTerminal()
+                            s.setTerminalSize(width: UInt (t.cols), height: UInt (t.rows))
                     }
-                    let t = self.getTerminal()
-                    s.setTerminalSize(width: UInt (t.cols), height: UInt (t.rows))
                 }
             }
         }
@@ -192,14 +191,62 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
 
         let knownHosts = session.makeKnownHost()
         
+        func getHostName () -> String {
+            if host.port != 22 {
+                return "\(host.hostname):\(host.port)"
+            }
+            return host.hostname
+        }
+        
+        func getFingerPrint () -> String {
+            guard let bytes = session.fingerprintBytes(.sha256) else { return "Unknown" }
+            let d = Data (bytes)
+            return "SHA256:" + d.base64EncodedString()
+        }
+        
+        func closeConnection () {
+            try? session.disconnect()
+            Connections.remove(self)
+        }
+        
         try? knownHosts.readFile(filename: DataStore.shared.knownHostsPath)
         if let keyAndType = session.hostKey() {
             let res = knownHosts.check (hostName: host.hostname, port: Int32 (host.port), key: keyAndType.key)
             let hostKeyType = SshUtil.extractKeyType (keyAndType.key)
+            
             switch res.status {
             case .notFound:
+                if let parent = getParentViewController() {
+                    var window: UIHostingController<HostAuthUnknown>!
+                    window = UIHostingController<HostAuthUnknown>(rootView: HostAuthUnknown(alias: host.alias, hostString: getHostName(), fingerprint: getFingerPrint(), cancelCallback: {
+                            window.dismiss (animated: true, completion: nil)
+                            
+                            closeConnection()
+                        }, okCallback: {
+                            try? knownHosts.add(hostname: self.host.hostname, port: Int32 (self.host.port), key: keyAndType.key, keyType: hostKeyType ?? "", comment: self.host.alias)
+                            do {
+                                try knownHosts.writeFile(filename: DataStore.shared.knownHostsPath)
+                                DataStore.shared.loadKnownHosts()
+                            } catch {
+                                print ("Error writing knownhosts file \(error)")
+                            }
+                            window.dismiss (animated: true, completion: nil)
+                        }))
+                    parent.present(window, animated: true, completion: nil)
+                }
                 break
             case .keyMismatch:
+                if let parent = getParentViewController() {
+                    var window: UIHostingController<HostAuthKeyMismatch>!
+                    
+                    window = UIHostingController<HostAuthKeyMismatch>(rootView: HostAuthKeyMismatch(alias: host.alias, hostString: getHostName(), fingerprint: getFingerPrint(), callback: {
+                        window.dismiss(animated: true, completion: {
+                            closeConnection()
+                        })
+                        
+                    }))
+                    parent.present(window, animated: true, completion: nil)
+                }
                 break
             case .failure:
                 break

@@ -12,6 +12,8 @@ struct HostAuthUnknown: View {
     @State var alias: String
     @State var hostString: String
     @State var fingerprint: String
+    var cancelCallback: () -> () = {  }
+    var okCallback: () -> () = {  }
     
     var body: some View {
         VStack (alignment: .leading){
@@ -32,12 +34,12 @@ struct HostAuthUnknown: View {
                 Text ("The authenticity of host '`\(hostString)`' can not be established.\n\nIf this is the first time you connect to this host, you can check that the fingertprint for the host matches the fingerprint you recognize and then proceed. Otherwise, select cancel.\n\nFingerprint:\n\n`\(fingerprint)`\n\nDo you want to continue connecting?")
                     .padding ([.bottom])
                 HStack (alignment: .center, spacing: 20) {
-                    Button ("Cancel", role: .cancel) { }
+                    Button ("Cancel", role: .cancel) { cancelCallback () }
                         .buttonStyle(.bordered)
                         .controlSize(.large)
                         .tint(Color.red)
 
-                    Button ("Yes", role: .none) { }
+                    Button ("Yes", role: .none) { okCallback ()}
                         .keyboardShortcut(.defaultAction)
                         .buttonStyle(.bordered)
                         .controlSize(.large)
