@@ -113,7 +113,7 @@ class TerminalViewController: UIViewController {
             view.layer.insertSublayer(ml, at: 0)
         }
         if interactive {
-            terminalView.becomeFirstResponder()
+            _ = terminalView.becomeFirstResponder()
         } else {
             let _ = terminalView.resignFirstResponder()
         }

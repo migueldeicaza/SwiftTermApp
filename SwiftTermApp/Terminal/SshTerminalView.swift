@@ -30,7 +30,6 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
     var authenticationChallenge: AuthenticationChallenge!
     var sshQueue: DispatchQueue
     
-    
     override init (frame: CGRect, host: Host) throws
     {
         sshQueue = DispatchQueue.global(qos: .background)
@@ -78,7 +77,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
         shell?.log.enabled = true
         shell?.log.level = .debug
         shell?.setCallbackQueue(queue: sshQueue)
-
+        
         sshQueue.async {
             self.connect ()
         }        
@@ -129,6 +128,14 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
     {
         if let s = shell {
             s.withCallback { [unowned self] (data: Data?, error: Data?) in
+                let receivedEOF = s.channel.receivedEOF
+                let socketClosed = (data == nil && error == nil)
+                if receivedEOF || socketClosed {
+                    DispatchQueue.main.async {
+                        connectionClosed (receivedEOF: receivedEOF)
+                    }
+                }
+                
                 if let d = data {
                     let sliced = Array(d) [0...]
      
@@ -185,7 +192,30 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
         }
     }
     
-    /// Checks that we are connecting to the host we thought we were, this uses the `known_hosts` database
+    /// The connection has been closed, notify the user.
+    func connectionClosed (receivedEOF: Bool) {
+        Connections.remove(self)
+        if let parent = getParentViewController() {
+            var window: UIHostingController<HostConnectionClosed>!
+            window = UIHostingController<HostConnectionClosed>(rootView: HostConnectionClosed(host: host, receivedEOF: receivedEOF, ok: {
+                window.dismiss(animated: true, completion: nil)
+            }))
+            
+            //if #available(iOS (15.0), *) {
+            
+                // Temporary workaround until beta2 https://developer.apple.com/forums/thread/682203
+                if let sheet = window.presentationController as? UISheetPresentationController {
+                    sheet.detents = [.medium()]
+                }
+            
+            
+            parent.present(window, animated: true, completion: nil)
+        }
+    }
+    
+    /// Checks that we are connecting to the host we thought we were,
+    /// this uses and updates the `known_hosts` database to track the
+    /// known hosts
     func checkHostIntegrity () {
         let session = self.shell!.session
 
@@ -215,7 +245,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
             let hostKeyType = SshUtil.extractKeyType (keyAndType.key)
             
             switch res.status {
-            case .notFound:
+            case .notFound, .failure:
                 if let parent = getParentViewController() {
                     var window: UIHostingController<HostAuthUnknown>!
                     window = UIHostingController<HostAuthUnknown>(rootView: HostAuthUnknown(alias: host.alias, hostString: getHostName(), fingerprint: getFingerPrint(), cancelCallback: {
@@ -248,9 +278,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
                     parent.present(window, animated: true, completion: nil)
                 }
                 break
-            case .failure:
-                break
             case .match:
+                // We are good!
                 break
             }
         }

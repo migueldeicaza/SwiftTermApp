@@ -36,6 +36,7 @@
 		49A0A2BE2491C792002593F7 /* LazyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2BD2491C792002593F7 /* LazyView.swift */; };
 		49A0A2C02491CDC4002593F7 /* InteractiveLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2BF2491CDC4002593F7 /* InteractiveLogin.swift */; };
 		49A0A2C2249298BF002593F7 /* DigitalBrain.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2C1249298BF002593F7 /* DigitalBrain.metal */; };
+		49A64C6126842A480069C7FA /* HostConnectionClosed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A64C6026842A480069C7FA /* HostConnectionClosed.swift */; };
 		49B84C53268137C700B36066 /* HostAuthUnknown.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B84C52268137C700B36066 /* HostAuthUnknown.swift */; };
 		49B84C5526813F9400B36066 /* HostAuthKeyMismatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B84C5426813F9400B36066 /* HostAuthKeyMismatch.swift */; };
 		49BA359626751B2700B63510 /* GenerateSecureEnclave.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BA359526751B2700B63510 /* GenerateSecureEnclave.swift */; };
@@ -90,6 +91,8 @@
 		49A0A2BD2491C792002593F7 /* LazyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LazyView.swift; sourceTree = "<group>"; };
 		49A0A2BF2491CDC4002593F7 /* InteractiveLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveLogin.swift; sourceTree = "<group>"; };
 		49A0A2C1249298BF002593F7 /* DigitalBrain.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = DigitalBrain.metal; sourceTree = "<group>"; };
+		49A64C5E268427ED0069C7FA /* SwiftSH */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftSH; path = ../SwiftSH; sourceTree = "<group>"; };
+		49A64C6026842A480069C7FA /* HostConnectionClosed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostConnectionClosed.swift; sourceTree = "<group>"; };
 		49B84C512681215300B36066 /* es-419 */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "es-419"; path = "es-419.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
 		49B84C52268137C700B36066 /* HostAuthUnknown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostAuthUnknown.swift; sourceTree = "<group>"; };
 		49B84C5426813F9400B36066 /* HostAuthKeyMismatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostAuthKeyMismatch.swift; sourceTree = "<group>"; };
@@ -130,6 +133,7 @@
 		4901166924553789002C1F85 = {
 			isa = PBXGroup;
 			children = (
+				49A64C5E268427ED0069C7FA /* SwiftSH */,
 				49BA355E267149D400B63510 /* SwiftTerm */,
 				4901167424553789002C1F85 /* SwiftTermApp */,
 				4901167324553789002C1F85 /* Products */,
@@ -202,9 +206,20 @@
 			path = SwCrypt;
 			sourceTree = "<group>";
 		};
+		49A64C5F26842A1B0069C7FA /* ConnectionUI */ = {
+			isa = PBXGroup;
+			children = (
+				49B84C52268137C700B36066 /* HostAuthUnknown.swift */,
+				49B84C5426813F9400B36066 /* HostAuthKeyMismatch.swift */,
+				49A64C6026842A480069C7FA /* HostConnectionClosed.swift */,
+			);
+			path = ConnectionUI;
+			sourceTree = "<group>";
+		};
 		49B2473F245D09A50075F01B /* UIs */ = {
 			isa = PBXGroup;
 			children = (
+				49A64C5F26842A1B0069C7FA /* ConnectionUI */,
 				49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */,
 				49EED55F245D0A0B00A8794E /* STButton.swift */,
 				49C1B6BD24637DD500D54F6F /* ButtonColors.swift */,
@@ -282,8 +297,6 @@
 			children = (
 				49011689245540F2002C1F85 /* HostEditView.swift */,
 				4901168F245607F7002C1F85 /* Hosts.swift */,
-				49B84C52268137C700B36066 /* HostAuthUnknown.swift */,
-				49B84C5426813F9400B36066 /* HostAuthKeyMismatch.swift */,
 			);
 			path = Hosts;
 			sourceTree = "<group>";
@@ -414,6 +427,7 @@
 				4967BA04245A7AF300A9D2A6 /* SshUtil.swift in Sources */,
 				49584D89248C3D570081D015 /* StarNest.metal in Sources */,
 				49C1B6B72462611F00D54F6F /* SshTerminalView.swift in Sources */,
+				49A64C6126842A480069C7FA /* HostConnectionClosed.swift in Sources */,
 				49011692245622C6002C1F85 /* DataStore.swift in Sources */,
 				49BA35A22678471600B63510 /* Asn1Parser.swift in Sources */,
 				4901168C24554A51002C1F85 /* AddKeyManually.swift in Sources */,
@@ -498,6 +512,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -514,7 +529,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.7;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -561,6 +576,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_BITCODE = NO;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -571,7 +587,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.7;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
