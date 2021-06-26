@@ -92,7 +92,7 @@ struct ConfigurableUITerminal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem (placement: .navigationBarTrailing) {
-                    HStack {
+                    ControlGroup {
                         Button (action: { self.showConfig = true }) {
                             Image(systemName: "gearshape")
                         }
