@@ -159,15 +159,15 @@ public class AppTerminalView: TerminalView {
         }
     }
     
-    public override var frame: CGRect {
+    public override var bounds: CGRect {
         get {
-            return super.frame
+            return super.bounds
         }
         set {
-            super.frame = newValue
+            super.bounds = newValue
             
             if let ml = metalLayer {
-                ml.frame = newValue
+                ml.bounds = newValue
             }
         }
     }
