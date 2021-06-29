@@ -137,8 +137,15 @@ class TerminalViewController: UIViewController {
         }
     }
         
+    static var visibleTerminal: AppTerminalView?
+    
+    override func viewWillAppear(_ animated: Bool) {
+        TerminalViewController.visibleTerminal = terminalView
+    }
+    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        TerminalViewController.visibleTerminal = nil
     }
 }
 

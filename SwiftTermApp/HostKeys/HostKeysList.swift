@@ -8,9 +8,31 @@
 
 import SwiftUI
 
+struct Explanation: View {
+    @Binding var shown: Bool
+    
+    var body: some View {
+        NavigationView {
+            VStack (alignment: .leading){
+                Text ("SwiftTermApp remembers the keys that each host you have connected to uses.   These keys are used to ensure that you do not accidentally log into a malicious host that can steal information from you.\n\nIn some scenarios, when a computer system is reinstalled the keys might change, and you might want to consider removing it from the list of known hosts.\n\nYou can use the fingerprint to visually inspect if the key matches the host you are trying to connect to.")
+                Spacer ()
+            }
+            .padding()
+            
+            .toolbar {
+                ToolbarItem (placement: .navigationBarTrailing) {
+                    Button ("Dismiss") {
+                        self.shown = false
+                    }
+                }
+            }
+        }
+    }
+}
 struct HostKeysList: View {
     @ObservedObject var store: DataStore = DataStore.shared
-
+    @State var showInfo = false
+    
     var body: some View {
         List {
             ForEach (store.knownHosts) { record in
@@ -28,16 +50,22 @@ struct HostKeysList: View {
                     Text ("Key:")
                     Text ("\(record.key)")
                         .font(.system(size: 12, weight: .light, design: .monospaced))
-                        
+                    
                 }
             }
             .onDelete(perform: delete)
         }
         .toolbar {
             ToolbarItem (placement: .navigationBarTrailing) {
+                Button (action: { self.showInfo = true }) {
+                    Image(systemName: "info.circle")
+                }
+            }
+            ToolbarItem (placement: .navigationBarTrailing) {
                 EditButton()
             }
         }
+        .sheet(isPresented: self.$showInfo) { Explanation (shown: self.$showInfo) }
     }
     
     func delete (at offsets: IndexSet) {

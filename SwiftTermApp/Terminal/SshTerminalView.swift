@@ -74,8 +74,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
                               port: UInt16 (host.port & 0xffff),
                               environment: [Environment(name: "LANG", variable: "en_US.UTF-8")],
                               terminal: "xterm-256color")
-        shell?.log.enabled = true
-        shell?.log.level = .debug
+        //shell?.log.enabled = true
+        //shell?.log.level = .debug
         shell?.setCallbackQueue(queue: sshQueue)
         
         sshQueue.async {

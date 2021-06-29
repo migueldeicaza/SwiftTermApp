@@ -18,6 +18,7 @@
 		49011690245607F7002C1F85 /* Hosts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901168F245607F7002C1F85 /* Hosts.swift */; };
 		49011692245622C6002C1F85 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49011691245622C6002C1F85 /* DataStore.swift */; };
 		4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4911B3032463AD3E00816BAA /* GenerateKey.swift */; };
+		49148F99268AB0B0000AB718 /* InputKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49148F98268AB0B0000AB718 /* InputKeyboard.swift */; };
 		491769B62666BE8000D32353 /* SwiftSH in Frameworks */ = {isa = PBXBuildFile; productRef = 491769B52666BE8000D32353 /* SwiftSH */; };
 		4922DDAF26632E4600B7D2BE /* CSwiftSH in Frameworks */ = {isa = PBXBuildFile; productRef = 4922DDAE26632E4600B7D2BE /* CSwiftSH */; };
 		49584D83248C3BEA0081D015 /* MetalHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49584D82248C3BEA0081D015 /* MetalHost.swift */; };
@@ -33,6 +34,7 @@
 		4973B42C24650B440087D978 /* UIViewController+SwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973B42B24650B440087D978 /* UIViewController+SwiftUI.swift */; };
 		499D36A62656B747004E307F /* QuickLauch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499D36A52656B747004E307F /* QuickLauch.swift */; };
 		499D36FD2658A093004E307F /* ConfigurableTerminal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499D36FC2658A093004E307F /* ConfigurableTerminal.swift */; };
+		499D8EBA268A690600CCEF9D /* ColumnSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499D8EB9268A690600CCEF9D /* ColumnSelector.swift */; };
 		49A0A2BE2491C792002593F7 /* LazyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2BD2491C792002593F7 /* LazyView.swift */; };
 		49A0A2C02491CDC4002593F7 /* InteractiveLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2BF2491CDC4002593F7 /* InteractiveLogin.swift */; };
 		49A0A2C2249298BF002593F7 /* DigitalBrain.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2C1249298BF002593F7 /* DigitalBrain.metal */; };
@@ -73,6 +75,7 @@
 		4901168F245607F7002C1F85 /* Hosts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hosts.swift; sourceTree = "<group>"; };
 		49011691245622C6002C1F85 /* DataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
 		4911B3032463AD3E00816BAA /* GenerateKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateKey.swift; sourceTree = "<group>"; };
+		49148F98268AB0B0000AB718 /* InputKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputKeyboard.swift; sourceTree = "<group>"; };
 		49584D82248C3BEA0081D015 /* MetalHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalHost.swift; sourceTree = "<group>"; };
 		49584D84248C3C500081D015 /* ShadersBase.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ShadersBase.metal; sourceTree = "<group>"; };
 		49584D86248C3C7F0081D015 /* PlasmaGlobe.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = PlasmaGlobe.metal; sourceTree = "<group>"; };
@@ -88,6 +91,7 @@
 		4973B42B24650B440087D978 /* UIViewController+SwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+SwiftUI.swift"; sourceTree = "<group>"; };
 		499D36A52656B747004E307F /* QuickLauch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLauch.swift; sourceTree = "<group>"; };
 		499D36FC2658A093004E307F /* ConfigurableTerminal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurableTerminal.swift; sourceTree = "<group>"; };
+		499D8EB9268A690600CCEF9D /* ColumnSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnSelector.swift; sourceTree = "<group>"; };
 		49A0A2BD2491C792002593F7 /* LazyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LazyView.swift; sourceTree = "<group>"; };
 		49A0A2BF2491CDC4002593F7 /* InteractiveLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveLogin.swift; sourceTree = "<group>"; };
 		49A0A2C1249298BF002593F7 /* DigitalBrain.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = DigitalBrain.metal; sourceTree = "<group>"; };
@@ -281,6 +285,7 @@
 				49C1B6B62462611F00D54F6F /* SshTerminalView.swift */,
 				49C1B6B4246260DC00D54F6F /* TerminalViewController.swift */,
 				499D36FC2658A093004E307F /* ConfigurableTerminal.swift */,
+				49148F98268AB0B0000AB718 /* InputKeyboard.swift */,
 			);
 			path = Terminal;
 			sourceTree = "<group>";
@@ -329,6 +334,7 @@
 			children = (
 				4967B9FD24592D0B00A9D2A6 /* SettingsView.swift */,
 				49F0740B2481B3ED00A83CDC /* ColorLoader.swift */,
+				499D8EB9268A690600CCEF9D /* ColumnSelector.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -441,6 +447,7 @@
 				4973B42C24650B440087D978 /* UIViewController+SwiftUI.swift in Sources */,
 				49BA359C2676F15D00B63510 /* KeySummaryView.swift in Sources */,
 				4901168E2456058B002C1F85 /* KeyManagementView.swift in Sources */,
+				49148F99268AB0B0000AB718 /* InputKeyboard.swift in Sources */,
 				49BA35982676EEB600B63510 /* KeyTools.swift in Sources */,
 				49BA359A2676EFD200B63510 /* CreateLocalKeyButtons.swift in Sources */,
 				49A0A2C2249298BF002593F7 /* DigitalBrain.metal in Sources */,
@@ -455,6 +462,7 @@
 				49F0741024834B9D00A83CDC /* AppTerminalView.swift in Sources */,
 				49F0740C2481B3ED00A83CDC /* ColorLoader.swift in Sources */,
 				4901167A24553789002C1F85 /* Home.swift in Sources */,
+				499D8EBA268A690600CCEF9D /* ColumnSelector.swift in Sources */,
 				4967BA07245A85F800A9D2A6 /* SwCrypt.swift in Sources */,
 				499D36FD2658A093004E307F /* ConfigurableTerminal.swift in Sources */,
 				499D36A62656B747004E307F /* QuickLauch.swift in Sources */,

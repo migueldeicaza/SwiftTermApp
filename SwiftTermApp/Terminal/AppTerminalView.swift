@@ -89,11 +89,8 @@ public class AppTerminalView: TerminalView {
         keyboardTapRecognizer = UITapGestureRecognizer (target: self, action: #selector (activate))
     }
 
-    static var currentTerminalView: AppTerminalView? = nil
-    
     override public func becomeFirstResponder() -> Bool {
         if super.becomeFirstResponder() {
-            AppTerminalView.currentTerminalView = self
             return true
         }
         return false
@@ -102,7 +99,6 @@ public class AppTerminalView: TerminalView {
     override public func resignFirstResponder() -> Bool {
         addGestureRecognizer(keyboardTapRecognizer)
         if super.resignFirstResponder() {
-            AppTerminalView.currentTerminalView = nil
             return true
         }
         return false
@@ -167,14 +163,16 @@ public class AppTerminalView: TerminalView {
             super.bounds = newValue
             
             if let ml = metalLayer {
-                ml.bounds = newValue
+                ml.frame = CGRect (origin: CGPoint.zero, size: newValue.size)
             }
         }
     }
     
     func updateFont (newSize: CGFloat)
     {
-        if let uifont = UIFont (name: settings.fontName, size: newSize) {
+        if settings.fontName == "SF Mono" {
+            font = UIFont.monospacedSystemFont(ofSize: newSize, weight: .regular)
+        } else if let uifont = UIFont (name: settings.fontName, size: newSize) {
             font = uifont
         }
     }

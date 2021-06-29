@@ -152,12 +152,12 @@ var sampleKey = Key(id: UUID(),
                                       3vVROJPJfraMiFxyTn4cR91z/ElYyVuZisqFDJ6i9dAHMRAL
                                       -----END OPENSSH PRIVATE KEY-----
                                       """,
-                    publicKey: "Fake Public Key",
-                    passphrase: "doodoo")
+                    publicKey: "",
+                    passphrase: "")
 //
 // Implements adding a new Key from pasted data
 struct AddKeyManually: View {
-    @State var key: Key = sampleKey
+    @State var key: Key
     @Binding var addKeyManuallyShown: Bool
     
     var body: some View {
@@ -166,8 +166,7 @@ struct AddKeyManually: View {
 }
 
 struct PasteKey_Previews: PreviewProvider {
-   
     static var previews: some View {
-        AddKeyManually(addKeyManuallyShown: .constant(true))
+        AddKeyManually(key: sampleKey, addKeyManuallyShown: .constant(true))
     }
 }

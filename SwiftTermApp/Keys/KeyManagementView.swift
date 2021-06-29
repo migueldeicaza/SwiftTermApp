@@ -50,7 +50,7 @@ struct KeyManagementView: View {
                         self.addKeyManuallyShown = true
                     }
                     .sheet (isPresented: self.$addKeyManuallyShown) {
-                        AddKeyManually (addKeyManuallyShown: self.$addKeyManuallyShown)
+                        AddKeyManually (key: Key(), addKeyManuallyShown: self.$addKeyManuallyShown)
                     }
 
 //                STButton (text: "Import Key from File", icon: "folder.badge.plus", centered: false)

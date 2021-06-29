@@ -16,14 +16,24 @@ struct TerminalCommands: Commands {
     
     
     var body: some Commands {
-        CommandMenu ("Title") {
+//        CommandGroup (after: CommandGroupPlacement.textEditing) {
+//                Button ("XCopy", action: {
+//                    guard let current = AppTerminalView.currentTerminalView else { return }
+//                    current.getTerminal().softReset()
+//                }).keyboardShortcut(KeyEquivalent("r"), modifiers: [/*@START_MENU_TOKEN@*/.command/*@END_MENU_TOKEN@*/, .option])
+//                Button ("XPaste", action: {
+//                    guard let current = AppTerminalView.currentTerminalView else { return }
+//                    current.getTerminal().resetToInitialState()
+//                }).keyboardShortcut(KeyEquivalent("r"), modifiers: [/*@START_MENU_TOKEN@*/.command/*@END_MENU_TOKEN@*/, .option, .control])
+//        }
+        CommandMenu ("Terminal") {
             Section {
                 Button ("Soft Reset", action: {
-                    guard let current = AppTerminalView.currentTerminalView else { return }
+                    guard let current = TerminalViewController.visibleTerminal else { return }
                     current.getTerminal().softReset()
                 }).keyboardShortcut(KeyEquivalent("r"), modifiers: [/*@START_MENU_TOKEN@*/.command/*@END_MENU_TOKEN@*/, .option])
                 Button ("Hard Reset", action: {
-                    guard let current = AppTerminalView.currentTerminalView else { return }
+                    guard let current = TerminalViewController.visibleTerminal else { return }
                     current.getTerminal().resetToInitialState()
                 }).keyboardShortcut(KeyEquivalent("r"), modifiers: [/*@START_MENU_TOKEN@*/.command/*@END_MENU_TOKEN@*/, .option, .control])
             }
@@ -40,7 +50,7 @@ struct SampleApp: App {
             ContentView()
         }
         .commands {
-            TerminalCommands ()
+            TerminalCommands()
         }
         #if os(macOS)
         Settings {

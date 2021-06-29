@@ -8,19 +8,22 @@
 
 import SwiftUI
 
-
 struct RunningTerminalConfig: View {
     var host: Host
     @Binding var showingModal: Bool
     @State var style: String = ""
     @State var background: String = ""
-    
+    @State var fontName: String = ""
+    @State var fontSize: CGFloat = 0
+     
     func save () {
         host.style = style
         host.background = background
         print ("Background set is: \(background)")
         DataStore.shared.saveState()
         DataStore.shared.runtimeVisibleChanges.send(host)
+        settings.fontName = fontName
+        settings.fontSize = fontSize
     }
     
     var body: some View {
@@ -31,6 +34,8 @@ struct RunningTerminalConfig: View {
                     style = t
                 }
                 BackgroundSelector (backgroundStyle: $background, showDefault: true)
+                FontSelector (fontName: $fontName)
+                FontSizeSelector (fontName: fontName, fontSize: $fontSize)
             }
             .toolbar {
                 ToolbarItem (placement: .navigationBarLeading) {
@@ -49,6 +54,8 @@ struct RunningTerminalConfig: View {
         .onAppear() {
             style = host.style
             background = host.background
+            fontSize = settings.fontSize
+            fontName = settings.fontName
         }
     }
 }
@@ -81,8 +88,12 @@ struct ConfigurableUITerminal: View {
     }
 
     func hideKeyboard () {
-        if let ctv = AppTerminalView.currentTerminalView {
-            _ = ctv.resignFirstResponder()
+        if let visible = TerminalViewController.visibleTerminal {
+            if visible.isFirstResponder {
+                _ = visible.resignFirstResponder()
+            } else {
+                _ = visible.becomeFirstResponder()
+            }
         }
     }
     

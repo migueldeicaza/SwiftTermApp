@@ -18,7 +18,7 @@ class Key: Codable, Identifiable {
     var publicKey: String = ""
     var passphrase: String = ""
     
-    public init (id: UUID, type: String = "", name: String = "", privateKey: String = "", publicKey: String = "", passphrase: String = "")
+    public init (id: UUID = UUID(), type: String = "", name: String = "", privateKey: String = "", publicKey: String = "", passphrase: String = "")
     {
         self.id = id
         self.type = type
