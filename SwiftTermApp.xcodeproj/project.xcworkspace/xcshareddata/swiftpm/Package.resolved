@@ -9,6 +9,24 @@
           "revision": "631d39784b593505a1b37341cda80055363bc753",
           "version": "1.9.0+OpenSSL_1_1_1h"
         }
+      },
+      {
+        "package": "SwiftSH",
+        "repositoryURL": "https://github.com/migueldeicaza/SwiftSH",
+        "state": {
+          "branch": "master",
+          "revision": "6e8d842a153ca9bd4697f0d111de6ae1d5420a41",
+          "version": null
+        }
+      },
+      {
+        "package": "SwiftTerm",
+        "repositoryURL": "https://github.com/migueldeicaza/SwiftTerm.git",
+        "state": {
+          "branch": "main",
+          "revision": "c51ddee19b9d79f42c13661db27efd3a6595460a",
+          "version": null
+        }
       }
     ]
   },

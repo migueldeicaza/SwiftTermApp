@@ -95,12 +95,10 @@
 		49A0A2BD2491C792002593F7 /* LazyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LazyView.swift; sourceTree = "<group>"; };
 		49A0A2BF2491CDC4002593F7 /* InteractiveLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveLogin.swift; sourceTree = "<group>"; };
 		49A0A2C1249298BF002593F7 /* DigitalBrain.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = DigitalBrain.metal; sourceTree = "<group>"; };
-		49A64C5E268427ED0069C7FA /* SwiftSH */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftSH; path = ../SwiftSH; sourceTree = "<group>"; };
 		49A64C6026842A480069C7FA /* HostConnectionClosed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostConnectionClosed.swift; sourceTree = "<group>"; };
 		49B84C512681215300B36066 /* es-419 */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "es-419"; path = "es-419.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
 		49B84C52268137C700B36066 /* HostAuthUnknown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostAuthUnknown.swift; sourceTree = "<group>"; };
 		49B84C5426813F9400B36066 /* HostAuthKeyMismatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostAuthKeyMismatch.swift; sourceTree = "<group>"; };
-		49BA355E267149D400B63510 /* SwiftTerm */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftTerm; path = ../SwiftTerm; sourceTree = "<group>"; };
 		49BA359526751B2700B63510 /* GenerateSecureEnclave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateSecureEnclave.swift; sourceTree = "<group>"; };
 		49BA35972676EEB600B63510 /* KeyTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyTools.swift; sourceTree = "<group>"; };
 		49BA35992676EFD200B63510 /* CreateLocalKeyButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateLocalKeyButtons.swift; sourceTree = "<group>"; };
@@ -137,8 +135,6 @@
 		4901166924553789002C1F85 = {
 			isa = PBXGroup;
 			children = (
-				49A64C5E268427ED0069C7FA /* SwiftSH */,
-				49BA355E267149D400B63510 /* SwiftTerm */,
 				4901167424553789002C1F85 /* SwiftTermApp */,
 				4901167324553789002C1F85 /* Products */,
 				49C1B6B8246263F100D54F6F /* Frameworks */,
