@@ -37,7 +37,8 @@ struct QuickLaunch: View {
         
         destHost = Host(alias: quickCommand,
                         hostname: host,
-                    
+                        port: port,
+                        username: user,
                         lastUsed: Date())
         activate = true
     }
