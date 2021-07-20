@@ -116,6 +116,7 @@ struct ConfigurableUITerminal: View {
             .sheet (isPresented: $showConfig) {
                 RunningTerminalConfig (host: terminalView?.host ?? host!, showingModal: $showConfig)
             }
+        
     }
 }
 

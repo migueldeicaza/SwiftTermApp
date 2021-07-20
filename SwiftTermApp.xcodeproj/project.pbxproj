@@ -38,6 +38,7 @@
 		49A0A2BE2491C792002593F7 /* LazyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2BD2491C792002593F7 /* LazyView.swift */; };
 		49A0A2C02491CDC4002593F7 /* InteractiveLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2BF2491CDC4002593F7 /* InteractiveLogin.swift */; };
 		49A0A2C2249298BF002593F7 /* DigitalBrain.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2C1249298BF002593F7 /* DigitalBrain.metal */; };
+		49A4466126A3D76200A636DC /* Commands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A4466026A3D76200A636DC /* Commands.swift */; };
 		49A64C6126842A480069C7FA /* HostConnectionClosed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A64C6026842A480069C7FA /* HostConnectionClosed.swift */; };
 		49B84C53268137C700B36066 /* HostAuthUnknown.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B84C52268137C700B36066 /* HostAuthUnknown.swift */; };
 		49B84C5526813F9400B36066 /* HostAuthKeyMismatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B84C5426813F9400B36066 /* HostAuthKeyMismatch.swift */; };
@@ -95,6 +96,7 @@
 		49A0A2BD2491C792002593F7 /* LazyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LazyView.swift; sourceTree = "<group>"; };
 		49A0A2BF2491CDC4002593F7 /* InteractiveLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveLogin.swift; sourceTree = "<group>"; };
 		49A0A2C1249298BF002593F7 /* DigitalBrain.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = DigitalBrain.metal; sourceTree = "<group>"; };
+		49A4466026A3D76200A636DC /* Commands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Commands.swift; sourceTree = "<group>"; };
 		49A64C6026842A480069C7FA /* HostConnectionClosed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostConnectionClosed.swift; sourceTree = "<group>"; };
 		49B84C512681215300B36066 /* es-419 */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "es-419"; path = "es-419.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
 		49B84C52268137C700B36066 /* HostAuthUnknown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostAuthUnknown.swift; sourceTree = "<group>"; };
@@ -112,6 +114,7 @@
 		49C1B6B4246260DC00D54F6F /* TerminalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalViewController.swift; sourceTree = "<group>"; };
 		49C1B6B62462611F00D54F6F /* SshTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SshTerminalView.swift; sourceTree = "<group>"; };
 		49C1B6BD24637DD500D54F6F /* ButtonColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonColors.swift; sourceTree = "<group>"; };
+		49E4E59726A13C6A00D285EE /* SwiftTerm */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftTerm; path = ../SwiftTerm; sourceTree = "<group>"; };
 		49EED55F245D0A0B00A8794E /* STButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STButton.swift; sourceTree = "<group>"; };
 		49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STFilePicker.swift; sourceTree = "<group>"; };
 		49F0740B2481B3ED00A83CDC /* ColorLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorLoader.swift; sourceTree = "<group>"; };
@@ -135,6 +138,7 @@
 		4901166924553789002C1F85 = {
 			isa = PBXGroup;
 			children = (
+				49E4E59726A13C6A00D285EE /* SwiftTerm */,
 				4901167424553789002C1F85 /* SwiftTermApp */,
 				4901167324553789002C1F85 /* Products */,
 				49C1B6B8246263F100D54F6F /* Frameworks */,
@@ -164,6 +168,7 @@
 				49C216C3245D101200280B6A /* Hosts */,
 				49B2473F245D09A50075F01B /* UIs */,
 				4901167524553789002C1F85 /* AppDelegate.swift */,
+				49A4466026A3D76200A636DC /* Commands.swift */,
 				4901167B2455378A002C1F85 /* Assets.xcassets */,
 				490116802455378A002C1F85 /* LaunchScreen.storyboard */,
 				490116832455378A002C1F85 /* Info.plist */,
@@ -423,6 +428,7 @@
 				49BA35A626784B6B00B63510 /* Passphrase.swift in Sources */,
 				49C1B6BE24637DD500D54F6F /* ButtonColors.swift in Sources */,
 				49C1B6B5246260DC00D54F6F /* TerminalViewController.swift in Sources */,
+				49A4466126A3D76200A636DC /* Commands.swift in Sources */,
 				49EED560245D0A0B00A8794E /* STButton.swift in Sources */,
 				49BA359626751B2700B63510 /* GenerateSecureEnclave.swift in Sources */,
 				49BA35A4267847E100B63510 /* PEMtoSSH.swift in Sources */,
@@ -605,6 +611,7 @@
 		490116872455378A002C1F85 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"SwiftTermApp/Preview Content\"";
@@ -629,6 +636,7 @@
 		490116882455378A002C1F85 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"SwiftTermApp/Preview Content\"";
