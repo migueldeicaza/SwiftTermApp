@@ -355,5 +355,16 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
     public func hostCurrentDirectoryUpdate(source: TerminalView, directory: String?) {
         currentDirectory = directory
     }
+    
+    public func requestOpenLink (source: TerminalView, link: String, params: [String:String])
+    {
+        if let fixedup = link.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
+            if let url = NSURLComponents(string: fixedup) {
+                if let nested = url.url {
+                    UIApplication.shared.open (nested)
+                }
+            }
+        }
+    }
 }
 

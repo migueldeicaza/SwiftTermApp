@@ -114,7 +114,6 @@
 		49C1B6B4246260DC00D54F6F /* TerminalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalViewController.swift; sourceTree = "<group>"; };
 		49C1B6B62462611F00D54F6F /* SshTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SshTerminalView.swift; sourceTree = "<group>"; };
 		49C1B6BD24637DD500D54F6F /* ButtonColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonColors.swift; sourceTree = "<group>"; };
-		49E4E59726A13C6A00D285EE /* SwiftTerm */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftTerm; path = ../SwiftTerm; sourceTree = "<group>"; };
 		49EED55F245D0A0B00A8794E /* STButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STButton.swift; sourceTree = "<group>"; };
 		49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STFilePicker.swift; sourceTree = "<group>"; };
 		49F0740B2481B3ED00A83CDC /* ColorLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorLoader.swift; sourceTree = "<group>"; };
@@ -138,7 +137,6 @@
 		4901166924553789002C1F85 = {
 			isa = PBXGroup;
 			children = (
-				49E4E59726A13C6A00D285EE /* SwiftTerm */,
 				4901167424553789002C1F85 /* SwiftTermApp */,
 				4901167324553789002C1F85 /* Products */,
 				49C1B6B8246263F100D54F6F /* Frameworks */,
