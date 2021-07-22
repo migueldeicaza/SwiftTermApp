@@ -12,13 +12,17 @@ import Combine
 // TODO: maybe the `type` could be an enum with Swift 5.5?
 class Key: Codable, Identifiable {
     var id: UUID
-    var type: String = ""
+    var type: KeyType = .rsa(4096)
     var name: String = ""
+    
+    // This stores the private key as pasted by the user, or if it is a type = .ecdsa(inSecureEnclave:true) the tag for the key in the KeyChain
     var privateKey: String = ""
+    // This stores the public key as pasted by the user
     var publicKey: String = ""
     var passphrase: String = ""
+    var keyTag: String = ""
     
-    public init (id: UUID = UUID(), type: String = "", name: String = "", privateKey: String = "", publicKey: String = "", passphrase: String = "")
+    public init (id: UUID = UUID(), type: KeyType = .rsa(4096), name: String = "", privateKey: String = "", publicKey: String = "", passphrase: String = "")
     {
         self.id = id
         self.type = type
@@ -26,6 +30,37 @@ class Key: Codable, Identifiable {
         self.privateKey = privateKey
         self.publicKey = publicKey
         self.passphrase = passphrase
+    }
+    
+    /// If the key is stored in the KeyChain, returns the handle
+    public func getKeyHandle () -> SecKey? {
+        switch type  {
+            case .ecdsa(inEnclave: true):
+                let query: [String:Any] = [
+                  kSecClass as String: kSecClassKey,
+                  kSecAttrApplicationTag as String: privateKey,
+                  kSecReturnRef as String: true
+                ]
+                var result: CFTypeRef!
+                
+                if SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess && result != nil {
+                    return (result as! SecKey)
+                }
+            return nil
+        default:
+            return nil
+        }
+    }
+    
+    ///
+    public func getPublicKeyAsData () -> Data {
+        let values = publicKey.split (separator: " ")
+        if values.count > 2 {
+            if let decoded =  Data (base64Encoded: String (values [1])) {
+                return decoded
+            }
+        }
+        return Data()
     }
 }
 
@@ -96,15 +131,15 @@ struct KnownHost: Identifiable {
 }
 
 class DataStore: ObservableObject {
-    static let testKey1 = Key (id: UUID(), type: "RSA/1024", name: "Fake Legacy Key", privateKey: "", publicKey: "", passphrase: "")
-    static let testKey2 = Key (id: UUID(), type: "RSA/4098", name: "Fake 2020 iPhone Key", privateKey: "", publicKey: "", passphrase: "")
+    static let testKey1 = Key (id: UUID(), type: .rsa (1024), name: "Fake Legacy Key", privateKey: "", publicKey: "", passphrase: "")
+    static let testKey2 = Key (id: UUID(), type: .rsa (4096), name: "Fake 2020 iPhone Key", privateKey: "", publicKey: "", passphrase: "")
     
     static let testUuid2 = UUID ()
     
     var defaults: UserDefaults?
     
     @Published var hosts: [Host] = [
-       Host(alias: "Dummy MacPro",         hostname: "192.168.86.74", lastUsed: Date ()),
+       Host(alias: "Dummy MacPro",         hostname: "192.168.86.220", lastUsed: Date ()),
        //Host(alias: "Dummy Raspberri Pi",   hostname: "raspberry.tirania.org", lastUsed: Date ()),
        //Host(alias: "Dummy MacBook",        hostname: "road.tirania.org", usePassword: false, sshKey: DataStore.testKey1.id),
        //Host(alias: "Dummy Old Vax",        hostname: "oldvax.tirania.org",usePassword: false, sshKey: DataStore.testKey2.id),

@@ -41,7 +41,7 @@ struct KeySummaryView: View {
                 VStack (alignment: .leading) {
                     Text ("\(key.name)")
                         .font(.body)
-                    Text ("Key Type: \(key.type)")
+                    Text ("Key Type: \(key.type.description)")
                         .font(.subheadline)
                         .foregroundColor(.gray)
                 }
@@ -54,7 +54,7 @@ struct KeySummaryView: View {
                     self.showEdit = true
                 }
             }.sheet(isPresented: $showEdit) {
-                EditKey(addKeyManuallyShown: self.$showEdit, key: self.$key, disableChangePassword: true)
+                EditKey(addKeyManuallyShown: self.$showEdit, key: self.key, disableChangePassword: true)
             }.sheet(isPresented: $showSharing) {
                 ShareKeyView(publicKey: $key.publicKey)
             }

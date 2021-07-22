@@ -30,7 +30,7 @@ struct GenerateSecureEnclave: View {
     
     func callGenerateKey ()
     {
-        if let generated = KeyTools.generateKey (type: .ecdsa, secureEnclaveKeyTag: "SwiftTermSecureEnclaveKeyTag", comment: title, passphrase: "", inSecureEnclave: true) {
+        if let generated = KeyTools.generateKey (type: .ecdsa(inEnclave:true), secureEnclaveKeyTag: "SwiftTermSecureEnclaveKeyTag", comment: title, passphrase: "") {
             DataStore.shared.save(key: generated)
         }
     }
@@ -77,6 +77,7 @@ struct GenerateSecureEnclave: View {
                             self.showAlert = true
                         } else {
                             self.callGenerateKey()
+                            self.showGenerator = false
                         }
                     }
                 }

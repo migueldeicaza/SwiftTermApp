@@ -36,6 +36,9 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
         
         try super.init (frame: frame, host: host)
         
+        // Default, in case there is an error extracting the key from the secure enclave
+        authenticationChallenge = .byKeyboardInteractive(username: host.username, callback: passwordPrompt )
+        
         if host.usePassword {
             if host.password == "" {
                 authenticationChallenge = .byKeyboardInteractive(username: host.username, callback: passwordPrompt )
@@ -45,17 +48,22 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
         } else {
             if let sshKeyId = host.sshKey {
                 if let sshKey = DataStore.shared.keys.first(where: { $0.id == sshKeyId }) {
-                    if sshKey.name == "SecureEnclave" {
+                    switch sshKey.type {
+                    case .rsa(_), .ecdsa(inEnclave: false):
                         authenticationChallenge = .byPublicKeyFromMemory(username: self.host.username,
                                                                          password: sshKey.passphrase,
                                                                          publicKey: Data (sshKey.publicKey.utf8),
                                                                          privateKey: Data (sshKey.privateKey.utf8))
-
-                    } else {
-                        authenticationChallenge = .byPublicKeyFromMemory(username: self.host.username,
-                                                                         password: sshKey.passphrase,
-                                                                         publicKey: Data (sshKey.publicKey.utf8),
-                                                                         privateKey: Data (sshKey.privateKey.utf8))
+                    case .ecdsa(inEnclave: true):
+                        if let keyHandle = sshKey.getKeyHandle() {
+                            authenticationChallenge = .byCallback(username: self.host.username, publicKey: sshKey.getPublicKeyAsData()) { dataToSign in
+                                var error: Unmanaged<CFError>?
+                                guard let signed = SecKeyCreateSignature(keyHandle, .ecdsaSignatureMessageX962SHA256, dataToSign as CFData, &error) else {
+                                    return nil
+                                }
+                                return signed as NSData as Data
+                            }
+                        }
                     }
                 } else {
                     throw MyError.noValidKey ("The host references an SSH key that is no longer set")

@@ -73,7 +73,10 @@ class SshUtil {
         }
         return copy
     }
-    
+
+    static let headerOpenSshPrivateKey = "-----BEGIN OPENSSH PRIVATE KEY-----\n"
+    static let footerOpenSshPrivateKey = "\n-----END OPENSSH PRIVATE KEY-----\n"
+
     ///
     /// WARNING: this does not use passphrases, nor does it attempt to encrypt the content with the passphrase.
     ///
@@ -84,8 +87,6 @@ class SshUtil {
     /// enclave, and can be used to debug the SSH authentication workflow, and nothing more.
     ///
     public static func generateSshPrivateKey (pub: SecKey, priv: SecKey, comment: String) -> String? {
-        let header = "-----BEGIN OPENSSH PRIVATE KEY-----\n"
-        let footer = "\n-----END OPENSSH PRIVATE KEY-----\n"
         var content: Data
         guard let pubEncoded = generateSshPublicKeyData(k: pub) else {
             return nil
@@ -135,7 +136,7 @@ class SshUtil {
             padding += 1
         }
         content.append(encode (data: subBlock))
-        return header + content.base64EncodedString(options: .lineLength76Characters) + footer
+        return headerOpenSshPrivateKey + content.base64EncodedString(options: .lineLength76Characters) + footerOpenSshPrivateKey
     }
 
     /// Given a host key as returned by session.hostKey, returns the type of the key
@@ -154,4 +155,24 @@ class SshUtil {
         return String (data: data [4..<last], encoding: .utf8)
     }
 
+    public static func openSSHKeyRequiresPassword (key: String) -> Bool {
+        guard key.contains(headerOpenSshPrivateKey) && key.contains (footerOpenSshPrivateKey) else {
+            return false
+        }
+        let sub = key.replacingOccurrences(of: headerOpenSshPrivateKey, with: "").replacingOccurrences(of: footerOpenSshPrivateKey, with: "")
+        guard let key = Data (base64Encoded: sub) else {
+            return false
+        }
+        guard key.count > 64 else {
+            return false
+        }
+        guard String (bytes: key [0...14], encoding: .utf8) == "openssh-key-v1\u{0}" else {
+            return false
+        }
+        let n = key [15] << 24 | key [16] << 16 | key [17] << 8 | key [18]
+        if n == 4 && String (bytes: key [19..<23], encoding: .utf8) == "none" {
+            return false
+        }
+        return true
+    }
 }

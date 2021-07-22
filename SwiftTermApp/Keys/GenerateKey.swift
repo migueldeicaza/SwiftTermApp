@@ -10,9 +10,20 @@ import SwiftUI
 import CryptoKit
 import Security
 
-enum KeyType {
-    case ecdsa
-    case rsa(Int)
+enum KeyType: Codable, CustomStringConvertible {
+    var description: String {
+        get {
+            switch self {
+            case .ecdsa(let inEnclave):
+                return inEnclave ? "ECDSA/Secure Enclave" : "ECDSA"
+            case .rsa(let bits):
+                return "RSA \(bits)"
+            }
+        }
+    }
+    
+    case ecdsa(inEnclave: Bool)
+    case rsa(Int)    
 }
 
 //
@@ -47,8 +58,8 @@ struct GenerateKey: View {
     @State var generated = ""
     func callGenerateKey ()
     {
-        let v: KeyType = keyStyle == 0 ? .ecdsa : .rsa(keyBits == 0 ? 1024 : keyBits == 1 ? 2048 : 4096)
-        if let generated = KeyTools.generateKey (type: v, secureEnclaveKeyTag: "", comment: title, passphrase: passphrase, inSecureEnclave: false) {
+        let v: KeyType = keyStyle == 0 ? .ecdsa(inEnclave: false) : .rsa(keyBits == 0 ? 1024 : keyBits == 1 ? 2048 : 4096)
+        if let generated = KeyTools.generateKey (type: v, secureEnclaveKeyTag: "", comment: title, passphrase: passphrase) {
             DataStore.shared.save(key: generated)
         } else {
             

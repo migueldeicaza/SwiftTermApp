@@ -9,11 +9,11 @@
 import Foundation
 
 class KeyTools {
-    static func generateKey (type: KeyType, secureEnclaveKeyTag: String, comment: String, passphrase: String, inSecureEnclave: Bool)-> Key?
+    static func generateKey (type: KeyType, secureEnclaveKeyTag: String, comment: String, passphrase: String)-> Key?
 
     {
         switch type {
-        case .ecdsa:
+        case .ecdsa (let inSecureEnclave):
             let access =
             SecAccessControlCreateWithFlags(
                 kCFAllocatorDefault,
@@ -64,13 +64,12 @@ class KeyTools {
                 privateText = p
             }
             return Key(id: UUID(),
-                       type: inSecureEnclave ? "se-ecdsa" : "ecdsa",
+                       type: type,
                        name: comment,
                        privateKey: privateText,
                        publicKey: publicText,
                        passphrase: "")
             
-            // TODO: not yet implemented
         case .rsa(let bits):
             guard let (priv, pub) = try? CC.RSA.generateKeyPair(bits) else {
                 return nil
@@ -85,7 +84,7 @@ class KeyTools {
                 : PEM.EncryptedPrivateKey.toPEM(priv, passphrase: passphrase, mode: .aes256CBC)
             
             return Key (id: UUID (),
-                        type: "RSA/\(bits)",
+                        type: type,
                         name: comment,
                         privateKey: pemPrivate,
                         publicKey: pemPublic,

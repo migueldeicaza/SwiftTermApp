@@ -12,17 +12,42 @@ import SwiftUI
 struct EditKey: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @Binding var addKeyManuallyShown: Bool
-    @Binding var key: Key
+    var _key: Key
     @State var disableChangePassword = false
     @State var showingPassword = false
     
-   var disableSave: Bool {
-        key.name == "" || key.privateKey == ""
+    @State var type: KeyType = .rsa(4096)
+    @State var name: String = ""
+    @State var privateKey: String = ""
+    @State var publicKey: String = ""
+    @State var passphrase: String = ""
+    @State var keyTag: String = ""
+    
+    public init (addKeyManuallyShown: Binding<Bool>, key: Key, disableChangePassword: Bool)
+    {
+        self._key = key
+        self._addKeyManuallyShown = addKeyManuallyShown
+        self.disableChangePassword = disableChangePassword
+        
+        _type = State (initialValue: key.type)
+        _privateKey = State (initialValue: key.privateKey)
+        _publicKey = State (initialValue: key.publicKey)
+        _passphrase = State (initialValue: key.passphrase)
+        _keyTag = State (initialValue: key.keyTag)
+    }
+    
+    var disableSave: Bool {
+        name == "" || privateKey == ""
     }
     
     func saveAndLeave ()
     {
-        store.save (key: self.key)
+        _key.type = type
+        _key.privateKey = privateKey
+        _key.publicKey = publicKey
+        _key.passphrase = passphrase
+        _key.keyTag = keyTag
+        store.save (key: self._key)
         addKeyManuallyShown = false
     }
     
@@ -34,9 +59,9 @@ struct EditKey: View {
         if clip.hasStrings {
             if let value = clip.string {
                 if value.contains("BEGIN OPENSSH PRIVATE KEY") {
-                    key.privateKey = value
+                    privateKey = value
                 } else if value.starts(with: "ssh-rsa") || value.starts(with: "ssh-dss") || value.starts(with: "ecdsa-sha2-nistp256") || value.starts(with: "ssh-ed25519") {
-                    key.publicKey = value
+                    publicKey = value
                 }
             }
         }
@@ -57,17 +82,17 @@ struct EditKey: View {
                             Text ("Name")
                             Spacer ()
                         }
-                        TextField ("Required", text: self.$key.name)
+                        TextField ("Required", text: $name)
                     }
-                    Passphrase(passphrase: self.$key.passphrase, disabled: disableChangePassword)
+                    Passphrase(passphrase: $passphrase, disabled: disableChangePassword)
                     VStack {
                         HStack {
                             Text ("Private Key")
                             Spacer ()
-                            ContentsFromFile (target: self.$key.privateKey)
+                            ContentsFromFile (target: $privateKey)
                         }
                         HStack {
-                            TextEditor(text: self.$key.privateKey)
+                            TextEditor(text: $privateKey)
                                 //.frame(height: 80)
                                 .frame(minHeight: 80, maxHeight: 220)
                                 .lineLimit(20)
@@ -80,10 +105,10 @@ struct EditKey: View {
                         HStack {
                             Text ("Public Key")
                             Spacer ()
-                            ContentsFromFile (target: self.$key.privateKey)
+                            ContentsFromFile (target: $publicKey)
                         }
                         HStack {
-                            TextEditor (text: self.$key.publicKey)
+                            TextEditor (text: $publicKey)
                                 .frame(minHeight: 80, maxHeight: 220)
                                 .lineLimit(20)
                                 .autocapitalization(.none)
@@ -109,6 +134,7 @@ struct EditKey: View {
 }
 
 var sampleKey = Key(id: UUID(),
+                    type: .rsa(1024),
                     name: "Sample Key",
                     privateKey:
                                    """
@@ -161,7 +187,7 @@ struct AddKeyManually: View {
     @Binding var addKeyManuallyShown: Bool
     
     var body: some View {
-        EditKey(addKeyManuallyShown: $addKeyManuallyShown, key: $key, disableChangePassword: false)
+        EditKey(addKeyManuallyShown: $addKeyManuallyShown, key: key, disableChangePassword: false)
     }
 }
 
