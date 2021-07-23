@@ -197,6 +197,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
                 DispatchQueue.main.async {
                     if let error = error {
                         self.feed(text: "[ERROR] \(error)\n")
+                        connectionError (error: "\(error)")
                     } else {
                             checkHostIntegrity ()
                             
@@ -214,6 +215,27 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
         if let parent = getParentViewController() {
             var window: UIHostingController<HostConnectionClosed>!
             window = UIHostingController<HostConnectionClosed>(rootView: HostConnectionClosed(host: host, receivedEOF: receivedEOF, ok: {
+                window.dismiss(animated: true, completion: nil)
+            }))
+            
+            //if #available(iOS (15.0), *) {
+            
+                // Temporary workaround until beta2 https://developer.apple.com/forums/thread/682203
+                if let sheet = window.presentationController as? UISheetPresentationController {
+                    sheet.detents = [.medium()]
+                }
+            
+            
+            parent.present(window, animated: true, completion: nil)
+        }
+    }
+    
+    /// The connection has been closed, notify the user.
+    func connectionError (error: String) {
+        Connections.remove(self)
+        if let parent = getParentViewController() {
+            var window: UIHostingController<HostConnectionError>!
+            window = UIHostingController<HostConnectionError>(rootView: HostConnectionError(host: host, error: error, ok: {
                 window.dismiss(animated: true, completion: nil)
             }))
             

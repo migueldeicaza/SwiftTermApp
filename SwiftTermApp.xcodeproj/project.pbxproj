@@ -18,6 +18,7 @@
 		49011690245607F7002C1F85 /* Hosts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901168F245607F7002C1F85 /* Hosts.swift */; };
 		49011692245622C6002C1F85 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49011691245622C6002C1F85 /* DataStore.swift */; };
 		490A187526A7BE190034B2BF /* SwiftTermApp_UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490A187426A7BE190034B2BF /* SwiftTermApp_UITests.swift */; };
+		490A187D26AA60980034B2BF /* HostConnectionError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490A187C26AA60980034B2BF /* HostConnectionError.swift */; };
 		4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4911B3032463AD3E00816BAA /* GenerateKey.swift */; };
 		49148F99268AB0B0000AB718 /* InputKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49148F98268AB0B0000AB718 /* InputKeyboard.swift */; };
 		491769B62666BE8000D32353 /* SwiftSH in Frameworks */ = {isa = PBXBuildFile; productRef = 491769B52666BE8000D32353 /* SwiftSH */; };
@@ -89,6 +90,7 @@
 		490A187226A7BE190034B2BF /* SwiftTermApp.UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwiftTermApp.UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		490A187426A7BE190034B2BF /* SwiftTermApp_UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftTermApp_UITests.swift; sourceTree = "<group>"; };
 		490A187B26A8B09E0034B2BF /* SwiftSH */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftSH; path = ../SwiftSH; sourceTree = "<group>"; };
+		490A187C26AA60980034B2BF /* HostConnectionError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostConnectionError.swift; sourceTree = "<group>"; };
 		4911B3032463AD3E00816BAA /* GenerateKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateKey.swift; sourceTree = "<group>"; };
 		49148F98268AB0B0000AB718 /* InputKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputKeyboard.swift; sourceTree = "<group>"; };
 		49584D82248C3BEA0081D015 /* MetalHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalHost.swift; sourceTree = "<group>"; };
@@ -247,6 +249,7 @@
 				49B84C52268137C700B36066 /* HostAuthUnknown.swift */,
 				49B84C5426813F9400B36066 /* HostAuthKeyMismatch.swift */,
 				49A64C6026842A480069C7FA /* HostConnectionClosed.swift */,
+				490A187C26AA60980034B2BF /* HostConnectionError.swift */,
 			);
 			path = ConnectionUI;
 			sourceTree = "<group>";
@@ -525,6 +528,7 @@
 				49F0740C2481B3ED00A83CDC /* ColorLoader.swift in Sources */,
 				4901167A24553789002C1F85 /* Home.swift in Sources */,
 				499D8EBA268A690600CCEF9D /* ColumnSelector.swift in Sources */,
+				490A187D26AA60980034B2BF /* HostConnectionError.swift in Sources */,
 				4967BA07245A85F800A9D2A6 /* SwCrypt.swift in Sources */,
 				499D36FD2658A093004E307F /* ConfigurableTerminal.swift in Sources */,
 				499D36A62656B747004E307F /* QuickLauch.swift in Sources */,
