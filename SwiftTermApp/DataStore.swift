@@ -74,7 +74,7 @@ class Key: Codable, Identifiable {
 ///
 /// Possibly should add; Font and FontSize
 class Host: Codable, Identifiable {
-    internal init(id: UUID = UUID(), alias: String = "", hostname: String = "", backspaceAsControlH: Bool = false, port: Int = 22, usePassword: Bool = true, username: String = "", password: String = "", hostKindGuess: String = "", environmentVariables: [String] = [], startupScripts: [String] = [], sshKey: UUID? = nil, style: String = "", background: String = "", lastUsed: Date = Date.distantPast) {
+    internal init(id: UUID = UUID(), alias: String = "", hostname: String = "", backspaceAsControlH: Bool = false, port: Int = 22, usePassword: Bool = true, username: String = "", password: String = "", hostKind: String = "", environmentVariables: [String] = [], startupScripts: [String] = [], sshKey: UUID? = nil, style: String = "", background: String = "", lastUsed: Date = Date.distantPast) {
         self.id = id
         self.alias = alias
         self.hostname = hostname
@@ -83,7 +83,7 @@ class Host: Codable, Identifiable {
         self.usePassword = usePassword
         self.username = username
         self.password = password
-        self.hostKindGuess = hostKindGuess
+        self.hostKind = hostKind
         self.environmentVariables = environmentVariables
         self.startupScripts = startupScripts
         self.sshKey = sshKey
@@ -100,7 +100,7 @@ class Host: Codable, Identifiable {
     var usePassword: Bool = true
     var username: String = ""
     var password: String = ""
-    var hostKindGuess: String = ""
+    var hostKind: String = ""
     
     /// Environment variables to pass on the connection
     var environmentVariables: [String] = []
@@ -227,7 +227,12 @@ class DataStore: ObservableObject {
     // Records the new host in the data store
     func save (key: Key)
     {
-        keys.append(key)
+        if let idx = keys.firstIndex(where: { $0.id == key.id }) {
+            keys.remove(at: idx)
+            keys.insert(key, at: idx)
+        } else {
+            keys.append(key)
+        }
         saveState ()
     }
 
@@ -246,7 +251,7 @@ class DataStore: ObservableObject {
     {
         for i in 0..<hosts.count {
             if hosts [i].id == target.id {
-                hosts [i].hostKindGuess = guess
+                hosts [i].hostKind = guess
             }
         }
     }

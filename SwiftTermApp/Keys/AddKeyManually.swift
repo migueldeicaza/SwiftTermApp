@@ -29,6 +29,7 @@ struct EditKey: View {
         self._addKeyManuallyShown = addKeyManuallyShown
         self.disableChangePassword = disableChangePassword
         
+        _name = State (initialValue: key.name)
         _type = State (initialValue: key.type)
         _privateKey = State (initialValue: key.privateKey)
         _publicKey = State (initialValue: key.publicKey)
@@ -42,6 +43,7 @@ struct EditKey: View {
     
     func saveAndLeave ()
     {
+        _key.name = name
         _key.type = type
         _key.privateKey = privateKey
         _key.publicKey = publicKey

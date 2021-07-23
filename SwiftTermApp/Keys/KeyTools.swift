@@ -78,6 +78,7 @@ class KeyTools {
             guard let pemPublic = try? publicPEMKeyToSSHFormat(data: pub) else {
                 return nil
             }
+            let publicKey = pemPublic.replacingOccurrences(of: "\n", with: " \(comment)\n")
             
             let pemPrivate = passphrase == ""
                 ? PEM.PrivateKey.toPEM(priv)
@@ -87,7 +88,7 @@ class KeyTools {
                         type: type,
                         name: comment,
                         privateKey: pemPrivate,
-                        publicKey: pemPublic,
+                        publicKey: publicKey,
                         passphrase: passphrase)
         }
     }

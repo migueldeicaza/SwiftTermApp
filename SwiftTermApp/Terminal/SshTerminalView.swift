@@ -30,6 +30,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
     var authenticationChallenge: AuthenticationChallenge!
     var sshQueue: DispatchQueue
     
+    var completeConnectSetup: () -> () = { }
+    
     override init (frame: CGRect, host: Host) throws
     {
         sshQueue = DispatchQueue.global(qos: .background)
@@ -50,10 +52,20 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
                 if let sshKey = DataStore.shared.keys.first(where: { $0.id == sshKeyId }) {
                     switch sshKey.type {
                     case .rsa(_), .ecdsa(inEnclave: false):
-                        authenticationChallenge = .byPublicKeyFromMemory(username: self.host.username,
+                        if SshUtil.openSSHKeyRequiresPassword(key: sshKey.privateKey) && sshKey.passphrase == "" {
+                            completeConnectSetup = {
+                                let password = self.passwordPrompt (challenge: "Key requires password")
+                                self.authenticationChallenge = .byPublicKeyFromMemory(username: self.host.username,
+                                                                                 password: password,
+                                                                                 publicKey: Data (sshKey.publicKey.utf8),
+                                                                                 privateKey: Data (sshKey.privateKey.utf8))
+                            }
+                        } else {
+                            authenticationChallenge = .byPublicKeyFromMemory(username: self.host.username,
                                                                          password: sshKey.passphrase,
                                                                          publicKey: Data (sshKey.publicKey.utf8),
                                                                          privateKey: Data (sshKey.privateKey.utf8))
+                        }
                     case .ecdsa(inEnclave: true):
                         if let keyHandle = sshKey.getKeyHandle() {
                             authenticationChallenge = .byCallback(username: self.host.username, publicKey: sshKey.getPublicKeyAsData()) { dataToSign in
@@ -134,6 +146,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
     
     func connect()
     {
+        completeConnectSetup ()
         if let s = shell {
             s.withCallback { [unowned self] (data: Data?, error: Data?) in
                 let receivedEOF = s.channel.receivedEOF
@@ -187,11 +200,6 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
                     } else {
                             checkHostIntegrity ()
                             
-                            if self.host.hostKindGuess == "" {
-                                if let guess = self.guessRemote(remoteBanner: s.remoteBanner) {
-                                     DataStore.shared.updateGuess (for: self.host, to: guess)
-                                }
-                            }
                             let t = self.getTerminal()
                             s.setTerminalSize(width: UInt (t.cols), height: UInt (t.rows))
                     }
@@ -293,30 +301,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
         }
         
     }
-
-    var remoteBannerToIcon : [String:String] = [
-        "SSH-2.0-OpenSSH_7.4p1 Raspbian-10+deb9u7":"raspberry-pi",
-        "SSH-2.0-OpenSSH_8.1": "apple", // 10.5
-        "SSH-2.0-OpenSSH_7.9": "apple", // 10.4
-        "Ubuntu":"ubuntu",
-        "Debian":"debian",
-        "Fedora":"fedora",
-        "Windows": "windows",
-        "Raspbian": "raspberri-pi",
-        //"SSH-2.0-OpenSSH_7.9": "redhat",
-    ]
     
-    // Returns either the icon name to use or the empty string
-    func guessRemote (remoteBanner: String?) -> String?
-    {
-        if remoteBanner == nil {
-            return nil
-        }
-        if let kv = remoteBannerToIcon.first(where: { $0.key.localizedCaseInsensitiveContains(remoteBanner!) }) {
-            return kv.value
-        }
-        return ""
-    }
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

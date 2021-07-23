@@ -62,7 +62,7 @@ struct GenerateKey: View {
         if let generated = KeyTools.generateKey (type: v, secureEnclaveKeyTag: "", comment: title, passphrase: passphrase) {
             DataStore.shared.save(key: generated)
         } else {
-            
+            // TODO
         }
     }
     

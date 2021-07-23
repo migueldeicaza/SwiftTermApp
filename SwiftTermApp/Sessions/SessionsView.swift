@@ -50,6 +50,7 @@ struct SessionDetailsView: View {
 ///
 /// This resizes the terminal
 struct SessionView: View {
+    @Environment(\.colorScheme) var colorScheme
     var terminalView: SshTerminalView
     var immediateController: SwiftUITerminal
     
@@ -77,12 +78,14 @@ struct SessionView: View {
                         .fill(Color.red.opacity(0.0))
                 }
                 SessionDetailsView (terminalView: terminalView)
-            }.padding (10)
+            }
+            .padding (10)
                 //.background(Color (terminalView.nativeBackgroundColor.cgColor))
-            .background(Color.black)
-                .mask(RoundedRectangle(cornerRadius: 10))
-                .padding (8)
-                .padding ([.leading, .trailing], 8)
+            // .background(Color.black)
+            .background(colorScheme == .dark ? Color (.systemGray4) : .black)
+            .mask(RoundedRectangle(cornerRadius: 10))
+            .padding (8)
+            .padding ([.leading, .trailing], 8)
         }.buttonStyle(PlainButtonStyle())
     }
 }

@@ -27,8 +27,9 @@ struct Passphrase: View {
                     .autocapitalization(.none)
                     .disabled(disabled)
             }
-            
-            Button (action: { self.showingPassword.toggle () }, label: {
+            Button (action: {
+                self.showingPassword.toggle ()
+            }, label: {
                 Image(systemName: self.showingPassword ? "eye.slash" : "eye")
                 
             })

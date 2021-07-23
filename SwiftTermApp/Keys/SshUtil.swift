@@ -160,7 +160,7 @@ class SshUtil {
             return false
         }
         let sub = key.replacingOccurrences(of: headerOpenSshPrivateKey, with: "").replacingOccurrences(of: footerOpenSshPrivateKey, with: "")
-        guard let key = Data (base64Encoded: sub) else {
+        guard let key = Data (base64Encoded: sub, options: .ignoreUnknownCharacters) else {
             return false
         }
         guard key.count > 64 else {

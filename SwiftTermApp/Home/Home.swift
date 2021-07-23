@@ -85,9 +85,9 @@ struct HomeView: View {
                         Spacer ()
                         Text ("\(connections.connections.count)")
                             .padding(4)
-                            .background(Color(#colorLiteral(red: 0.921431005, green: 0.9214526415, blue: 0.9214410186, alpha: 1)))
+                            .background(Color (.systemGray5))
                             .cornerRadius(3)
-                            .foregroundColor(Color(#colorLiteral(red: 0.5741485357, green: 0.5741624236, blue: 0.574154973, alpha: 1)))
+                            .foregroundColor(Color (.systemGray))
                     })
                 NavigationLink(
                     destination: KeyManagementView( ),

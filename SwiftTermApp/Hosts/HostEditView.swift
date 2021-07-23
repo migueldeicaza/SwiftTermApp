@@ -134,7 +134,7 @@ struct HostEditView: View {
     @State var backspaceAsControlH = false
     @State var style = ""
     @State var backgroundStyle = ""
-    @State var hostKindGuess = ""
+    @State var hostKind = ""
     @State var username = ""
     @State var password = ""
     @State var port = ""
@@ -153,7 +153,7 @@ struct HostEditView: View {
         _usePassword = State (initialValue: host.usePassword)
         _username = State (initialValue: host.username)
         _password = State (initialValue: host.password)
-        _hostKindGuess = State (initialValue: host.hostKindGuess)
+        _hostKind = State (initialValue: host.hostKind)
         _style = State (initialValue: host.style)
         _backgroundStyle = State (initialValue: host.background)
         _sshKey = State (initialValue: host.sshKey)
@@ -173,7 +173,7 @@ struct HostEditView: View {
         _host.usePassword = usePassword
         _host.username = username
         _host.password = password
-        _host.hostKindGuess = hostKindGuess
+        _host.hostKind = hostKind
         _host.background = backgroundStyle
         _host.style = style
         _host.sshKey = sshKey
@@ -277,7 +277,7 @@ struct HostEditView: View {
                     BackgroundSelector (backgroundStyle: self.$backgroundStyle, showDefault: true)
                     
                     //PlatformSelector(platformName: $platformName) {x in }
-                    HostIconSelector (platformName: $hostKindGuess)
+                    HostIconSelector (platformName: $hostKind)
                     
                 }
                 Section (header: Text ("Other Options")) {
