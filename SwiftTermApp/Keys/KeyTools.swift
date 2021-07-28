@@ -12,6 +12,8 @@ class KeyTools {
     static func generateKey (type: KeyType, secureEnclaveKeyTag: String, comment: String, passphrase: String)-> Key?
 
     {
+        let keyUuid = UUID()
+        
         switch type {
         case .ecdsa (let inSecureEnclave):
             let access =
@@ -22,7 +24,7 @@ class KeyTools {
                 nil)!   // Ignore error
 
             let attributes: [String: Any]
-            
+                        
             if inSecureEnclave {
                 attributes = [
                 kSecAttrKeyType as String:            kSecAttrKeyTypeECSECPrimeRandom,
@@ -31,7 +33,7 @@ class KeyTools {
                 kSecPrivateKeyAttrs as String: [
                     kSecAttrIsPermanent as String:     true,
                     kSecAttrApplicationTag as String:
-                        secureEnclaveKeyTag.data(using: .utf8)! as CFData,
+                        Key.getIdForKeychain(forId: keyUuid),
                     kSecAttrAccessControl as String:   access
                 ]
                 ]
@@ -53,6 +55,7 @@ class KeyTools {
                 print ("Could not produce the public key")
                 return nil
             }
+            
             let privateText: String
             if inSecureEnclave {
                 privateText = secureEnclaveKeyTag
@@ -63,12 +66,13 @@ class KeyTools {
                 }
                 privateText = p
             }
-            return Key(id: UUID(),
+            let key = Key(id: keyUuid,
                        type: type,
                        name: comment,
                        privateKey: privateText,
                        publicKey: publicText,
                        passphrase: "")
+            return key
             
         case .rsa(let bits):
             guard let (priv, pub) = try? CC.RSA.generateKeyPair(bits) else {
@@ -84,23 +88,13 @@ class KeyTools {
                 ? PEM.PrivateKey.toPEM(priv)
                 : PEM.EncryptedPrivateKey.toPEM(priv, passphrase: passphrase, mode: .aes256CBC)
             
-            return Key (id: UUID (),
+            return Key (id: keyUuid,
                         type: type,
                         name: comment,
                         privateKey: pemPrivate,
                         publicKey: publicKey,
                         passphrase: passphrase)
         }
-    }
-
-    static func haveSecureEnclaveKey (keyTag: String) -> Bool {
-        let lookupKey: [String:Any] = [
-            kSecClass as String: kSecClassKey,
-            kSecAttrApplicationTag as String: keyTag,
-            kSecReturnRef as String: true]
-        
-        var item: CFTypeRef?
-        return SecItemCopyMatching (lookupKey as CFDictionary, &item) == errSecSuccess && item != nil
     }
 }
 

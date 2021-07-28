@@ -31,7 +31,7 @@ struct KeyManagementView: View {
     
     func delete (at offsets: IndexSet)
     {
-        store.keys.remove(atOffsets: offsets)
+        store.removeKeys (atOffsets: offsets)
         store.saveState()
     }
     

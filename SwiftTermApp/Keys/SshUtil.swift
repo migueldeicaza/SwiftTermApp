@@ -102,7 +102,6 @@ class SshUtil {
             print ("Got \(String(describing: error)) while extracting the private key representation")
             return nil
         }
-        print ("Private is: \(privData.base64EncodedString())")
 
         let ciphername = "none"
         let kdfname = "none"

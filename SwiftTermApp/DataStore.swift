@@ -36,11 +36,7 @@ class Key: Codable, Identifiable {
     public func getKeyHandle () -> SecKey? {
         switch type  {
             case .ecdsa(inEnclave: true):
-                let query: [String:Any] = [
-                  kSecClass as String: kSecClassKey,
-                  kSecAttrApplicationTag as String: privateKey,
-                  kSecReturnRef as String: true
-                ]
+                let query = Key.getKeyQuery(forId: id)
                 var result: CFTypeRef!
                 
                 if SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess && result != nil {
@@ -61,6 +57,21 @@ class Key: Codable, Identifiable {
             }
         }
         return Data()
+    }
+    
+    /// Returns a CFData suitable to store on the keychain for the given UUID (which we use to identify the key).
+    public static func getIdForKeychain (forId: UUID) -> CFData {
+        return "SwiftTermApp-\(forId.uuidString)".data(using: .utf8)! as CFData
+    }
+    
+    /// Returns a dictionary array suitable to be used as a `query` parameter for the various SecKey operations on the keychain
+    public static func getKeyQuery (forId: UUID) -> CFDictionary {
+        let query: [String:Any] = [
+          kSecClass as String: kSecClassKey,
+          kSecAttrApplicationTag as String: getIdForKeychain(forId: forId),
+          kSecReturnRef as String: true
+        ]
+        return query as CFDictionary
     }
 }
 
@@ -217,6 +228,20 @@ class DataStore: ObservableObject {
         saveState ()
     }
 
+    func removeKeys (atOffsets offsets: IndexSet) {
+        for x in offsets {
+            let key = keys [x]
+            switch key.type {
+            case .ecdsa(inEnclave: true):
+                let query = Key.getKeyQuery(forId: key.id)
+                SecItemDelete(query)
+            default:
+                break
+            }
+        }
+        keys.remove(atOffsets: offsets)
+    }
+    
     func used (host: Host)
     {
         if let f = hosts.firstIndex(where: {$0.id == host.id}){
@@ -241,9 +266,8 @@ class DataStore: ObservableObject {
         hosts.contains { $0.alias == withAlias }
     }
     
-    func hostHasValidKey (host: Host) -> Bool {
-        
-        let c = keys.contains { $0.id == host.sshKey }
+    func keyExistsInStore (key: UUID) -> Bool {
+        let c = keys.contains { $0.id == key }
         return c
     }
 
@@ -257,8 +281,8 @@ class DataStore: ObservableObject {
     }
 
     // This for now returns the name, but if it is ambiguous, it could return a hash or something else
-    func getSshDisplayName (forHost: Host) -> String {
-        if let k = keys.first(where: { $0.id == forHost.sshKey }) {
+    func getKeyDisplayName (forKey: UUID) -> String {
+        if let k = keys.first(where: { $0.id == forKey }) {
             return k.name
         }
         return "none"

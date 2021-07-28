@@ -86,21 +86,31 @@ struct EditKey: View {
                         }
                         TextField ("Required", text: $name)
                     }
-                    Passphrase(passphrase: $passphrase, disabled: disableChangePassword)
-                    VStack {
-                        HStack {
-                            Text ("Private Key")
-                            Spacer ()
-                            ContentsFromFile (target: $privateKey)
-                        }
-                        HStack {
-                            TextEditor(text: $privateKey)
-                                //.frame(height: 80)
-                                .frame(minHeight: 80, maxHeight: 220)
-                                .lineLimit(20)
-                                .autocapitalization(.none)
-                                //.font(.custom("Menlo", fixedSize: 8.5))
-                                .font(.system(size: 8, weight: .light, design: .monospaced))
+                    HStack {
+                        Text ("Type")
+                        Spacer ()
+                        Text (type.description)
+                            .foregroundColor(Color (.systemGray))
+                    }
+                    if case .ecdsa(inEnclave: true) = type {
+                        
+                    } else {
+                        Passphrase(passphrase: $passphrase, disabled: disableChangePassword)
+                        VStack {
+                            HStack {
+                                Text ("Private Key")
+                                Spacer ()
+                                ContentsFromFile (target: $privateKey)
+                            }
+                            HStack {
+                                TextEditor(text: $privateKey)
+                                    //.frame(height: 80)
+                                    .frame(minHeight: 80, maxHeight: 220)
+                                    .lineLimit(20)
+                                    .autocapitalization(.none)
+                                    //.font(.custom("Menlo", fixedSize: 8.5))
+                                    .font(.system(size: 8, weight: .light, design: .monospaced))
+                            }
                         }
                     }
                     VStack {
@@ -115,7 +125,7 @@ struct EditKey: View {
                                 .lineLimit(20)
                                 .autocapitalization(.none)
                                 .font(.system(size: 8, weight: .light, design: .monospaced))
-                                
+                            
                         }
                     }
                 }

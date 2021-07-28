@@ -160,7 +160,7 @@ struct HostEditView: View {
     }
     
     var disableSave: Bool {
-        return alias == "" || hostname == "" || username == ""
+        return alias == "" || hostname == "" || username == "" || (usePassword == false && sshKey == nil)
     }
     
     func saveAndLeave ()
@@ -255,9 +255,9 @@ struct HostEditView: View {
                         HStack {
                             Text ("SSH Key")
                             
-                            if self.store.hostHasValidKey(host: self._host) {
+                            if sshKey != nil && self.store.keyExistsInStore(key: self.sshKey!) {
                                 Spacer ()
-                                Text (self.store.getSshDisplayName (forHost: _host))
+                                Text (self.store.getKeyDisplayName (forKey: sshKey!))
                                 Image (systemName: "multiply.circle.fill")
                                     .onTapGesture {
                                         self.sshKey = nil

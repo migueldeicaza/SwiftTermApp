@@ -10,7 +10,7 @@ import SwiftUI
 import CryptoKit
 import Security
 
-enum KeyType: Codable, CustomStringConvertible {
+enum KeyType: Codable, Equatable, CustomStringConvertible {
     var description: String {
         get {
             switch self {
