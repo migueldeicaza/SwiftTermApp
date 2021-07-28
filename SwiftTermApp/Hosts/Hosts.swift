@@ -25,6 +25,7 @@ func getImage (for host: Host) -> some View
 struct HostSummaryView: View {
     @Binding var host: Host
     @State var showingModal = false
+    //@Environment(\.editMode) var editMode
     
     var body: some View {
         NavigationLink (destination: ConfigurableUITerminal(host: host)) {
@@ -44,9 +45,9 @@ struct HostSummaryView: View {
                         .font(.footnote)
                 }
                 Button (action: {
-                    print ("Hello")
+                    //
                 }) {
-                    Image (systemName: "pencil")
+                    Image (systemName: "square.and.pencil")
                         .font(.system(size: 24))
                 }
                 .onTapGesture {
@@ -76,7 +77,7 @@ struct HostSummaryView: View {
 struct HostsView : View {
     @State var showHostEdit: Bool = false
     @ObservedObject var store: DataStore = DataStore.shared
-    @State private var editMode = EditMode.inactive
+    //@State private var editMode = EditMode.inactive
 
     func delete (at offsets: IndexSet)
     {
@@ -101,7 +102,7 @@ struct HostsView : View {
                 }
                 .onDelete(perform: delete)
                 .onMove(perform: move)
-                .environment(\.editMode, $editMode)
+                //.environment(\.editMode, $editMode)
             }
         }
         .listStyle(DefaultListStyle())
