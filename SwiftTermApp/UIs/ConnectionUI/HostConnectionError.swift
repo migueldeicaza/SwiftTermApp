@@ -30,7 +30,7 @@ struct HostConnectionError: View {
             .background(Color(UIColor.secondarySystemBackground))
             //.background(.yellow)
             VStack (alignment: .center){
-                Text ("Connection to \(host.hostname):\(host.port) encountered the error: \(error)")
+                Text ("Connection to \(host.hostname):\(host.port): \(error)")
                     .padding ([.bottom])
                 HStack (alignment: .center, spacing: 20) {
                     Button ("Ok") { ok () }

@@ -191,18 +191,26 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
                     #endif
                 }
             }
-            .connect ()
-            .authenticate(self.authenticationChallenge)
-            .open { [unowned self] (error) in
+            .connect()
+            .authenticate(self.authenticationChallenge) { opt_error in
                 DispatchQueue.main.async {
-                    if let error = error {
-                        self.feed(text: "[ERROR] \(error)\n")
-                        connectionError (error: "\(error)")
+                    if let error = opt_error {
+                        self.feed(text: "[ERROR] \(error)\n\r")
+                        self.connectionError (error: "\(error)")
                     } else {
-                            checkHostIntegrity ()
-                            
-                            let t = self.getTerminal()
-                            s.setTerminalSize(width: UInt (t.cols), height: UInt (t.rows))
+                        s.open { [unowned self] (error) in
+                            DispatchQueue.main.async {
+                                if let error = error {
+                                    self.feed(text: "[ERROR] \(error)\n\r")
+                                    connectionError (error: "\(error)")
+                                } else {
+                                    checkHostIntegrity ()
+                                    
+                                    let t = self.getTerminal()
+                                    s.setTerminalSize(width: UInt (t.cols), height: UInt (t.rows))
+                                }
+                            }
+                        }
                     }
                 }
             }
