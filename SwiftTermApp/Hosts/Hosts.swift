@@ -25,10 +25,11 @@ func getImage (for host: Host) -> some View
 struct HostSummaryView: View {
     @Binding var host: Host
     @State var showingModal = false
+    @State var createNewTerm = false
     //@Environment(\.editMode) var editMode
-    
+    @State var active = false
     var body: some View {
-        NavigationLink (destination: ConfigurableUITerminal(host: host)) {
+        NavigationLink (destination: ConfigurableUITerminal(host: host, createNew: createNewTerm), isActive: $active) {
             HStack (spacing: 12){
                 getImage (for: host)
                     .font (.system(size: 28))
@@ -57,11 +58,13 @@ struct HostSummaryView: View {
                 HostEditView(host: self.host, showingModal: self.$showingModal)
             }
             .contextMenu {
-                NavigationLink(destination: ConfigurableUITerminal (host: self.host, terminalView: nil, createNew: true, interactive: true)) {
+                Button(action: {
+                    createNewTerm = true
+                    active = true
+                }) {
                     Text("New Connection")
                     Image(systemName: "plus.circle")
                 }
-
                 Button(action: {
                     print ("wussup")
                 }) {
@@ -70,8 +73,12 @@ struct HostSummaryView: View {
                 }
             }
         }
+        .onAppear {
+            createNewTerm = false
+        }
     }
 }
+
 
 
 struct HostsView : View {
