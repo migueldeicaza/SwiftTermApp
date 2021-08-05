@@ -96,7 +96,15 @@ class TerminalViewController: UIViewController {
         
         // Now setup the keyboard tracking capabilities, try to use the new iOS 15 features if available.
         if #available(iOS 15.0, *) {
+            // This is here because otherwise, the resignFirstResponder will produce a crash on iPad when
+            // the terminal we are using is still visible, and we need to rehost the view in another place
+            //
+            // What I think I need to do is instead make it so that I can "transplant" the terminal from
+            // one terminalview host to another - but this will require also keeping other UIView and Ssh
+            // context separate.
+            terminalView.disableFirstResponderDuringViewRehosting = true
             view.addSubview(terminalView)
+            terminalView.disableFirstResponderDuringViewRehosting = false
             terminalView.translatesAutoresizingMaskIntoConstraints = false
             
             terminalView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true

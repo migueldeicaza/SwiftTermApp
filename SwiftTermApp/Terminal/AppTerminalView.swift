@@ -27,7 +27,7 @@ import Combine
 public class AppTerminalView: TerminalView {
     var id = UUID ()
     var host: Host
-    
+    var disableFirstResponderDuringViewRehosting: Bool = false
     /// This variable is turned on when the user has manually changed the size by pinching, and it used
     /// to ignore global changes after the user triggered the pinch change.
     var userOverrideSize = false
@@ -97,6 +97,10 @@ public class AppTerminalView: TerminalView {
     }
     
     override public func resignFirstResponder() -> Bool {
+        if disableFirstResponderDuringViewRehosting {
+            return true
+        }
+        
         addGestureRecognizer(keyboardTapRecognizer)
         if super.resignFirstResponder() {
             return true
@@ -161,6 +165,19 @@ public class AppTerminalView: TerminalView {
         }
         set {
             super.bounds = newValue
+            
+            if let ml = metalLayer {
+                ml.frame = CGRect (origin: CGPoint.zero, size: newValue.size)
+            }
+        }
+    }
+    
+    public override var frame: CGRect {
+        get {
+            return super.frame
+        }
+        set {
+            super.frame = newValue
             
             if let ml = metalLayer {
                 ml.frame = CGRect (origin: CGPoint.zero, size: newValue.size)

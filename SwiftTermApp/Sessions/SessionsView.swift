@@ -62,7 +62,7 @@ struct SessionView: View {
     
     var body: some View {
         NavigationLink (destination:
-                            ConfigurableUITerminal (host: nil, terminalView: terminalView, createNew: false, interactive: true)
+                            ConfigurableUITerminal (host: nil, terminalView: terminalView, createNew: false, interactive: false)
                 .navigationTitle (Text (terminalView.host.alias))
                 .navigationBarTitleDisplayMode(.inline)
 
@@ -75,7 +75,7 @@ struct SessionView: View {
                         .frame(minWidth: 300, minHeight: 240, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
                         //.frame(width: previewWidth(), height: 240, alignment: .center)
                     Rectangle ()
-                        .fill(Color.red.opacity(0.0))
+                        .fill(Color.black.opacity(0.01))
                 }
                 SessionDetailsView (terminalView: terminalView)
             }
