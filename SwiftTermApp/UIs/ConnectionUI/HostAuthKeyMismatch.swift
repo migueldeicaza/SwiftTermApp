@@ -36,9 +36,8 @@ struct HostAuthKeyMismatch: View {
                     .padding ([.bottom])
                 
                 Button ("Go Back", role: .cancel) { callback () }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.borderedProminent)
                     .controlSize(.large)
-                    .controlProminence(.increased)
                     .tint(Color.red)
             }
             .padding()
