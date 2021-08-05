@@ -65,12 +65,12 @@ struct HostSummaryView: View {
                     Text("New Connection")
                     Image(systemName: "plus.circle")
                 }
-                Button(action: {
-                    print ("wussup")
-                }) {
-                    Text("Close Connection")
-                    Image(systemName: "minus.circle")
-                }
+//                Button(action: {
+//                    print ("wussup")
+//                }) {
+//                    Text("Close Connection")
+//                    Image(systemName: "minus.circle")
+//                }
             }
         }
         .onAppear {
