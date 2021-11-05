@@ -11,9 +11,23 @@ import SwiftUI
 struct SampleApp: App {
     @State var dates = [Date]()
     
+    init () {
+        if settings.locationTrack {
+            locationTrackerStart()
+        }
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+                    if Connections.shared.connections.count > 0 {
+                        locationTrackerResume()
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                    locationTrackerSuspend()
+                }
         }
         .commands {
             TerminalCommands()

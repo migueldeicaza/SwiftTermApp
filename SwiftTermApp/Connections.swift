@@ -24,6 +24,8 @@ class Connections: ObservableObject {
         if let idx = shared.connections.firstIndex(of: terminal) {
             shared.connections.remove (at: idx)
         }
+        // This is used to track whether we should keep the display on, only when we have active terminals
+        settings.updateKeepOn()
     }
     
     public static var shared: Connections = Connections()
@@ -35,6 +37,9 @@ class Connections: ObservableObject {
             return
         }
         shared.connections.append(connection)
+        
+        // This is used to track whether we should keep the display on, only when we have active terminals
+        settings.updateKeepOn()
     }
     
     public static func lookupActive (host: Host) -> SshTerminalView?

@@ -70,7 +70,7 @@
       "size" : "20x20"
     },
     {
-      "filename" : "iPad_Mini_Notifications_20_2x.png",
+      "filename" : "iPad_Notifications_20_2x.png",
       "idiom" : "ipad",
       "scale" : "2x",
       "size" : "20x20"
@@ -82,18 +82,19 @@
       "size" : "29x29"
     },
     {
-      "filename" : "iPad_Mini_Settings_29_2x.png",
+      "filename" : "iPad_Settings_29_2x.png",
       "idiom" : "ipad",
       "scale" : "2x",
       "size" : "29x29"
     },
     {
+      "filename" : "iPad_Spotlight_40_1x.png",
       "idiom" : "ipad",
       "scale" : "1x",
       "size" : "40x40"
     },
     {
-      "filename" : "iPad_Mini_Spotlight_40_2x.png",
+      "filename" : "iPad_Spotlight_40_2x.png",
       "idiom" : "ipad",
       "scale" : "2x",
       "size" : "40x40"
@@ -274,6 +275,19 @@
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "512x512"
+    },
+    {
+      "filename" : "iPad_App_76_1x-1.png",
+      "idiom" : "universal",
+      "scale" : "1x",
+      "size" : "76x76"
+    },
+    {
+      "filename" : "iPad_App_76_2x-1.png",
+      "idiom" : "universal",
+      "scale" : "1x",
+      "size" : "76x76",
+      "unassigned" : true
     }
   ],
   "info" : {
