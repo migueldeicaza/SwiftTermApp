@@ -2,10 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Initial request: By tracking the location, iOS will keep the terminal running and your connection alive</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>By tracking the location, iOS will keep the terminal running and your connection alive</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDocumentTypes</key>
@@ -47,6 +43,16 @@
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<false/>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_ssh._tcp</string>
+	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Needed to connect to SSH servers on your local network</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>By tracking the location, iOS will keep the terminal running and your connection alive</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Initial request: By tracking the location, iOS will keep the terminal running and your connection alive</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
