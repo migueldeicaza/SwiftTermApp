@@ -10,10 +10,9 @@
 import Foundation
 import UIKit
 import SwiftTerm
-import SwiftSH
 import AudioToolbox
 import SwiftUI
-
+import SwiftSH
 enum MyError : Error {
     case noValidKey(String)
     case general
@@ -31,7 +30,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
     var sshQueue: DispatchQueue
     
     var completeConnectSetup: () -> () = { }
-    
+    var ss: SocketSession!
     override init (frame: CGRect, host: Host) throws
     {
         sshQueue = DispatchQueue.global(qos: .background)
@@ -85,6 +84,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
             }
         }
 
+        ss = SocketSession(host: host.hostname, port: UInt16 (host.port & 0xffff))
+        return
         if !useDefaultBackground {
             updateBackground(background: host.background)
         }
