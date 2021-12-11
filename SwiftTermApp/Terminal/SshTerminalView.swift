@@ -13,6 +13,7 @@ import SwiftTerm
 import AudioToolbox
 import SwiftUI
 import SwiftSH
+
 enum MyError : Error {
     case noValidKey(String)
     case general
@@ -21,7 +22,7 @@ enum MyError : Error {
 ///
 /// Extends the AppTerminalView with elements for the connection
 ///
-public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
+public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDelegate {
     /// The current directory as reported by the remote host.
     public var currentDirectory: String? = nil
     
@@ -31,6 +32,66 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
     
     var completeConnectSetup: () -> () = { }
     var ss: SocketSession!
+    var channel: Channel?
+    
+    // Delegate method invoked by the SocketSession to authenticate
+    func authenticate (session: Session) -> String? {
+        let authMethods = session.userAuthenticationList(username: host.username)
+        for m in authMethods {
+            switch m {
+            case "none":
+                return nil
+            case "publickey":
+                print ("Do not know how to do publickey yet")
+                break
+            case "password":
+                if host.usePassword && host.password != "" {
+                    // TODO: perhaps empty passwords are ok?
+                    if let error = ss.userAuthPassword (username: host.username, password: host.password) {
+                        return error
+                    }
+                    return nil
+                }
+                break
+            case "keyboard-interactive":
+                print ("Do not know how to do keyboard-interactive yet")
+                break
+            default:
+                break
+            }
+        }
+        return nil
+    }
+    
+    // Delegate method, invoked if the authentication fails
+    func loginFailed(session: Session, details: String) {
+        abort ()
+    }
+    
+    func setupReadingWriting () {
+        
+    }
+    
+    func setupChannel (session: Session) {
+        channel = session.openChannel(type: "session")
+        guard let channel = channel else {
+            // TODO Need to report to the user the failure
+            abort ()
+            return
+        }
+        setupReadingWriting ()
+        // TODO: should this be different based on the locale?
+        channel.setEnvironment(name: "LANG", value: "en_US.UTF-8")
+        let terminal = getTerminal()
+        channel.requestPseudoTerminal(name: "xterm-256color", cols: terminal.cols, rows: terminal.rows)
+        channel.processStartup(request: "shell", message: nil)
+        channel.setupIO()
+    }
+    
+    func loggedIn (session: Session) {
+        setupChannel (session: session)
+    }
+    
     override init (frame: CGRect, host: Host) throws
     {
         sshQueue = DispatchQueue.global(qos: .background)
@@ -84,24 +145,25 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate {
             }
         }
 
-        ss = SocketSession(host: host.hostname, port: UInt16 (host.port & 0xffff))
-        return
+        ss = SocketSession(host: host.hostname, port: UInt16 (host.port & 0xffff), delegate: self)
+        
         if !useDefaultBackground {
             updateBackground(background: host.background)
         }
-        terminalDelegate = self
-        shell = try? SSHShell(sshLibrary: Libssh2.self,
-                              host: host.hostname,
-                              port: UInt16 (host.port & 0xffff),
-                              environment: [Environment(name: "LANG", variable: "en_US.UTF-8")],
-                              terminal: "xterm-256color")
-        //shell?.log.enabled = true
-        //shell?.log.level = .debug
-        shell?.setCallbackQueue(queue: sshQueue)
-        
-        sshQueue.async {
-            self.connect ()
-        }        
+//        
+//        terminalDelegate = self
+//        shell = try? SSHShell(sshLibrary: Libssh2.self,
+//                              host: host.hostname,
+//                              port: UInt16 (host.port & 0xffff),
+//                              environment: [Environment(name: "LANG", variable: "en_US.UTF-8")],
+//                              terminal: "xterm-256color")
+//        //shell?.log.enabled = true
+//        //shell?.log.level = .debug
+//        shell?.setCallbackQueue(queue: sshQueue)
+//        
+//        sshQueue.async {
+//            self.connect ()
+//        }        
     }
   
     func getParentViewController () -> UIViewController? {

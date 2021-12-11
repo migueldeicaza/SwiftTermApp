@@ -16,7 +16,6 @@ extension Data {
     public func dump() {
         let res = self.withUnsafeBytes { data -> String in
             var hexstr = String()
-            var r = String()
             for i in data.bindMemory(to: UInt8.self) {
                 hexstr += String(format: "%02X ", i)
             }
@@ -26,9 +25,25 @@ extension Data {
     }
 }
 
+protocol SessionDelegate: AnyObject {
+    // Called to authenticate the user
+    func authenticate (session: Session) -> String?
+    
+    // Called if we failed to login
+    func loginFailed (session: Session, details: String)
+    
+    // Called when we are authenticated
+    func loggedIn (session: Session)
+}
+
 class Session: CustomDebugStringConvertible {
-    var handle: OpaquePointer!
-    var socket: Int32
+    var sessionHandle: OpaquePointer!
+    weak var delegate: SessionDelegate!
+    
+    typealias disconnectType = @convention(c) (UnsafeRawPointer, CInt,
+                                               UnsafePointer<CChar>, CInt,
+                                               UnsafePointer<CChar>, CInt, UnsafeRawPointer) -> Void
+    
     
     // Turns the libssh2 abstract pointer (which is a pointer to the value passed) into a strong type
     static func getSession (from abstract: UnsafeRawPointer) -> Session {
@@ -36,23 +51,16 @@ class Session: CustomDebugStringConvertible {
         return Unmanaged<Session>.fromOpaque(ptr.pointee).takeUnretainedValue()
     }
 
-    typealias disconnectType = @convention(c) (UnsafeRawPointer, CInt,
-                                               UnsafePointer<CChar>, CInt,
-                                               UnsafePointer<CChar>, CInt, UnsafeRawPointer) -> Void
-    
-    public init () {
+    public init (delegate: SessionDelegate) {
         libssh2_init(0)
-        socket = 0
+
+        self.delegate = delegate
         
-        // TODO: this should be passUnretained
-        let x = UnsafeMutableRawPointer(mutating: Unmanaged.passRetained(self).toOpaque())
-        let inverse = Unmanaged<SocketSession>.fromOpaque(x).takeRetainedValue ()
-        CFGetRetainCount(inverse)
-        print ("Got \(x) and \(inverse)")
-        handle = libssh2_session_init_ex(nil, nil, nil, x)
+        let opaqueHandle = UnsafeMutableRawPointer(mutating: Unmanaged.passUnretained(self).toOpaque())
+        sessionHandle = libssh2_session_init_ex(nil, nil, nil, opaqueHandle)
         let flags: Int32 = 0
-        libssh2_trace(handle, flags)
-        libssh2_trace_sethandler(handle, nil, { session, context, data, length in
+        libssh2_trace(sessionHandle, flags)
+        libssh2_trace_sethandler(sessionHandle, nil, { session, context, data, length in
             var str: String
             if let ptr = data {
                 str = String (cString: ptr)
@@ -68,7 +76,7 @@ class Session: CustomDebugStringConvertible {
             print ("On session: \(session)")
             print ("Disconnected")
         }
-        libssh2_session_callback_set(handle, LIBSSH2_CALLBACK_DISCONNECT, unsafeBitCast(callback, to: UnsafeMutableRawPointer.self))
+        libssh2_session_callback_set(sessionHandle, LIBSSH2_CALLBACK_DISCONNECT, unsafeBitCast(callback, to: UnsafeMutableRawPointer.self))
         // TODO: wish of mine: should set all the callbacjs, and handle every scenario
         setupCallbacks ()
     }
@@ -82,11 +90,21 @@ class Session: CustomDebugStringConvertible {
     }
     
     func handshake () {
-        libssh2_session_handshake(handle, socket)
+        while libssh2_session_handshake(sessionHandle, 0) == LIBSSH2_ERROR_EAGAIN {
+            // Repeat while we get EAGAIN
+        }
+    }
+    
+    // Returns an array of authentication methods available for the specified user
+    public func userAuthenticationList (username: String) -> [String] {
+        guard let result = libssh2_userauth_list (sessionHandle, username, UInt32(username.utf8.count)) else {
+            return []
+        }
+        return String (validatingUTF8: result)?.components(separatedBy: ",") ?? []
     }
     
     public func getFingerprintBytes () -> [UInt8]? {
-        guard let hashPointer = libssh2_hostkey_hash(handle, LIBSSH2_HOSTKEY_HASH_SHA256) else {
+        guard let hashPointer = libssh2_hostkey_hash(sessionHandle, LIBSSH2_HOSTKEY_HASH_SHA256) else {
             return nil
         }
         
@@ -106,13 +124,73 @@ class Session: CustomDebugStringConvertible {
     func setupSshConnection () {
         Task {
             handshake()
-            let res = String (cString: libssh2_session_banner_get(handle))
+            let res = String (cString: libssh2_session_banner_get(sessionHandle))
             print ("Got remote banner: \(res)")
             print ("Finger: \(getFingerprint ())")
+            let failureReason = delegate.authenticate(session: self)
+            if authenticated {
+                delegate.loggedIn(session: self)
+            } else {
+                delegate.loginFailed (session: self, details: failureReason ?? "Internal error: authentication claims it worked, but libssh2 state indicates it is not authenticated")
+            }
         }
     }
     
+    public var authenticated: Bool {
+        get {
+            libssh2_userauth_authenticated(sessionHandle) == 1
+        }
+    }
     
+    /// <#Description#>
+    /// - Returns: bil on success, or a user-visible description on error
+    public func userAuthPassword (username: String, password: String) -> String? {
+        // TODO: we should likely handle the password change callback requirement:
+        // The callback: If the host accepts authentication but requests that the password be changed,
+        // this callback will be issued. If no callback is defined, but server required password change,
+        // authentication will fail.
+        
+        // Attempt basic password authentication. Note that many SSH servers which appear to support
+        // ordinary password authentication actually have it disabled and use Keyboard Interactive
+        // authentication (routed via PAM or another authentication backed) instead.
+        var ret: CInt
+        repeat {
+            ret = libssh2_userauth_password_ex (sessionHandle, username, UInt32(username.utf8.count), password, UInt32(password.utf8.count), nil)
+        } while ret == LIBSSH2_ERROR_EAGAIN
+        switch ret {
+        case 0:
+            // We are fine, return
+            return nil
+        case LIBSSH2_ERROR_ALLOC:
+            // WE are doomed, return
+            return "Memory allocation failure"
+        case LIBSSH2_ERROR_SOCKET_SEND:
+            // We are doomed return, upper Network layer will notify of this problem
+            return "Unable to send data to remote host"
+        case LIBSSH2_ERROR_PASSWORD_EXPIRED:
+            // the password expired, but we failed to change it (to fix, we will need to provide a callback)
+            return "Password expired"
+        case LIBSSH2_ERROR_AUTHENTICATION_FAILED:
+            // Failed, try the next password
+            return "Password authentication failed"
+        default:
+            // Unknown error, return
+            return "Unknown error during authentication"
+        }
+    }
+    
+
+    public func openChannel (type: String, windowSize: CUnsignedInt = 2*1024*1024, packetSize: CUnsignedInt = 32768)  -> Channel? {
+        var ret: OpaquePointer?
+        
+        repeat {
+            ret = libssh2_channel_open_ex(sessionHandle, type, UInt32(type.utf8.count), windowSize, packetSize, nil, 0)
+        } while ret == nil && libssh2_session_last_errno (sessionHandle) == LIBSSH2_ERROR_EAGAIN
+        guard let channelHandle = ret else {
+            return nil
+        }
+        return Channel (session: self, channelHandle: channelHandle)
+    }
 }
 
 // A session powered by sockets
@@ -122,19 +200,19 @@ class SocketSession: Session {
     var connection: NWConnection
     var sendQueue: DispatchQueue
     
-    public init (host: String, port: UInt16) {
+    public init (host: String, port: UInt16, delegate: SessionDelegate) {
         self.host = host
         self.port = port
         
         connection = NWConnection(host: NWEndpoint.Host (host), port: NWEndpoint.Port (integerLiteral: port), using: .tcp)
         sendQueue = DispatchQueue.global(qos: .userInitiated)
-        super.init ()
+        super.init (delegate: delegate)
         connection.stateUpdateHandler = connectionStateHandler
         connection.start (queue: DispatchQueue.main)
     }
     
     deinit{
-        print ("not good")
+        print ("SocketSession being disposed")
     }
     
     static func getSocketSession (from abstract: UnsafeRawPointer) -> SocketSession {
@@ -244,17 +322,18 @@ class SocketSession: Session {
         let recv: socketCbType = { socket, buffer, length, flags, abstract in
             SocketSession.recv_callback(socket: socket, buffer: buffer, length: length, flags: flags, abstract: abstract)
         }
-        libssh2_session_callback_set(handle, LIBSSH2_CALLBACK_SEND, unsafeBitCast(send, to: UnsafeMutableRawPointer.self))
-        libssh2_session_callback_set(handle, LIBSSH2_CALLBACK_RECV, unsafeBitCast(recv, to: UnsafeMutableRawPointer.self))
+        libssh2_session_callback_set(sessionHandle, LIBSSH2_CALLBACK_SEND, unsafeBitCast(send, to: UnsafeMutableRawPointer.self))
+        libssh2_session_callback_set(sessionHandle, LIBSSH2_CALLBACK_RECV, unsafeBitCast(recv, to: UnsafeMutableRawPointer.self))
     }
 }
 
 class ProxySession: Session {
-    public override init ()
+    public override init (delegate: SessionDelegate)
     {
-        super.init ()
+        super.init (delegate: delegate)
     }
     
     public override func setupCallbacks () {
     }
 }
+

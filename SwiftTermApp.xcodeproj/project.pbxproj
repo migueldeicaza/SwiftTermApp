@@ -25,6 +25,8 @@
 		4922DDAF26632E4600B7D2BE /* CSwiftSH in Frameworks */ = {isa = PBXBuildFile; productRef = 4922DDAE26632E4600B7D2BE /* CSwiftSH */; };
 		4923C56627319336000CC371 /* LocationTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4923C56527319336000CC371 /* LocationTracking.swift */; };
 		493F4F3027613F1B00838AC7 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493F4F2F27613F1B00838AC7 /* Session.swift */; };
+		493F4F3227650E7800838AC7 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493F4F3127650E7800838AC7 /* Errors.swift */; };
+		493F4F34276511CE00838AC7 /* Channel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493F4F33276511CE00838AC7 /* Channel.swift */; };
 		49584D83248C3BEA0081D015 /* MetalHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49584D82248C3BEA0081D015 /* MetalHost.swift */; };
 		49584D85248C3C500081D015 /* ShadersBase.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49584D84248C3C500081D015 /* ShadersBase.metal */; };
 		49584D87248C3C7F0081D015 /* PlasmaGlobe.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49584D86248C3C7F0081D015 /* PlasmaGlobe.metal */; };
@@ -96,6 +98,8 @@
 		49148F98268AB0B0000AB718 /* InputKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputKeyboard.swift; sourceTree = "<group>"; };
 		4923C56527319336000CC371 /* LocationTracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationTracking.swift; sourceTree = "<group>"; };
 		493F4F2F27613F1B00838AC7 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
+		493F4F3127650E7800838AC7 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
+		493F4F33276511CE00838AC7 /* Channel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channel.swift; sourceTree = "<group>"; };
 		49584D82248C3BEA0081D015 /* MetalHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalHost.swift; sourceTree = "<group>"; };
 		49584D84248C3C500081D015 /* ShadersBase.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ShadersBase.metal; sourceTree = "<group>"; };
 		49584D86248C3C7F0081D015 /* PlasmaGlobe.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = PlasmaGlobe.metal; sourceTree = "<group>"; };
@@ -237,6 +241,8 @@
 			isa = PBXGroup;
 			children = (
 				493F4F2F27613F1B00838AC7 /* Session.swift */,
+				493F4F3127650E7800838AC7 /* Errors.swift */,
+				493F4F33276511CE00838AC7 /* Channel.swift */,
 			);
 			path = Ssh;
 			sourceTree = "<group>";
@@ -517,6 +523,7 @@
 				493F4F3027613F1B00838AC7 /* Session.swift in Sources */,
 				49BA35A4267847E100B63510 /* PEMtoSSH.swift in Sources */,
 				4967BA04245A7AF300A9D2A6 /* SshUtil.swift in Sources */,
+				493F4F3227650E7800838AC7 /* Errors.swift in Sources */,
 				49584D89248C3D570081D015 /* StarNest.metal in Sources */,
 				49C1B6B72462611F00D54F6F /* SshTerminalView.swift in Sources */,
 				49A64C6126842A480069C7FA /* HostConnectionClosed.swift in Sources */,
@@ -532,6 +539,7 @@
 				49BA35F1267C3F2600B63510 /* CreditsView.swift in Sources */,
 				4973B42C24650B440087D978 /* UIViewController+SwiftUI.swift in Sources */,
 				49BA359C2676F15D00B63510 /* KeySummaryView.swift in Sources */,
+				493F4F34276511CE00838AC7 /* Channel.swift in Sources */,
 				4901168E2456058B002C1F85 /* KeyManagementView.swift in Sources */,
 				49148F99268AB0B0000AB718 /* InputKeyboard.swift in Sources */,
 				49BA35982676EEB600B63510 /* KeyTools.swift in Sources */,
