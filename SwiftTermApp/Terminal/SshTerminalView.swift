@@ -83,9 +83,54 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         // TODO: should this be different based on the locale?
         channel.setEnvironment(name: "LANG", value: "en_US.UTF-8")
         let terminal = getTerminal()
-        channel.requestPseudoTerminal(name: "xterm-256color", cols: terminal.cols, rows: terminal.rows)
-        channel.processStartup(request: "shell", message: nil)
-        channel.setupIO()
+        var a = channel.requestPseudoTerminal(name: "xterm-256color", cols: terminal.cols, rows: terminal.rows)
+        print ("requestPty: \(a)")
+        a = channel.processStartup(request: "shell", message: nil)
+        print ("processStartup: \(a)")
+        channel.setupIO { channel, data, error in
+            let receivedEOF = channel.receivedEOF
+            let socketClosed = (data == nil && error == nil)
+            if receivedEOF || socketClosed {
+                print ("here")
+                DispatchQueue.main.async {
+                    self.connectionClosed (receivedEOF: receivedEOF)
+                }
+            }
+            
+            if let d = data {
+                let sliced = Array(d) [0...]
+ 
+                // The first code causes problems, because the SSH library
+                // accumulates data, rather that sending it as it comes,
+                // so it can deliver blocks of 300k to 2megs of data
+                // which as far as the user is concerned, nothing happens
+                // while the terminal parsers proceses this.
+                //
+                // The solution was below, and it fed the data in chunks
+                // to the UI, but this caused the UI to not update chunks
+                // of the screen, for reasons that I do not understand yet.
+                #if true
+                DispatchQueue.main.sync {
+                    self.feed(byteArray: sliced)
+                }
+                #else
+                let blocksize = 1024
+                var next = 0
+                let last = sliced.endIndex
+                
+                while next < last {
+                    
+                    let end = min (next+blocksize, last)
+                    let chunk = sliced [next..<end]
+                
+                    DispatchQueue.main.sync {
+                        self.feed(byteArray: chunk)
+                    }
+                    next = end
+                }
+                #endif
+            }
+        }
     }
     
     func loggedIn (session: Session) {
@@ -150,8 +195,9 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         if !useDefaultBackground {
             updateBackground(background: host.background)
         }
+        terminalDelegate = self
 //        
-//        terminalDelegate = self
+
 //        shell = try? SSHShell(sshLibrary: Libssh2.self,
 //                              host: host.hostname,
 //                              port: UInt16 (host.port & 0xffff),
@@ -159,7 +205,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
 //                              terminal: "xterm-256color")
 //        //shell?.log.enabled = true
 //        //shell?.log.level = .debug
-//        shell?.setCallbackQueue(queue: sshQueue)
+        shell?.setCallbackQueue(queue: sshQueue)
 //        
 //        sshQueue.async {
 //            self.connect ()
@@ -409,6 +455,9 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     }
     
     public func sizeChanged(source: TerminalView, newCols: Int, newRows: Int) {
+        if let c = channel {
+            channel?.setTerminalSize(cols: Int(newCols), rows: Int(newRows), pixelWidth: 1, pixelHeight: 1)
+        }
         if let s = shell {
             //print ("SshTerminalView setting remote terminal to \(newCols)x\(newRows)")
             s.setTerminalSize(width: UInt (newCols), height: UInt (newRows))
@@ -429,12 +478,12 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
     }
     
-    public func send(source: TerminalView, data: ArraySlice<UInt8>) {
-        
-        shell?.write(Data (data)) { err in
-            if let e = err {
-                print ("Error sending \(e)")
-            }
+    public func send(source: TerminalView, data bytes: ArraySlice<UInt8>) {
+        guard let channel = channel else {
+            return
+        }
+        channel.send (Data (bytes)) { err in
+            print ("Error sending \(err)")
         }
     }
     

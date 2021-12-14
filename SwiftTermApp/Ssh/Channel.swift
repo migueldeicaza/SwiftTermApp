@@ -13,10 +13,20 @@ import CSwiftSH
 public class Channel {
     var channelHandle: OpaquePointer
     weak var session: Session!
+    var buffer, bufferError: UnsafeMutablePointer<Int8>
+    let bufferSize = 32*1024
+    var sendQueue = DispatchQueue (label: "channelSend", qos: .userInitiated)
     
     init (session: Session, channelHandle: OpaquePointer) {
         self.channelHandle = channelHandle
         self.session = session
+        
+        buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
+        bufferError = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
+    }
+    
+    deinit {
+        libssh2_channel_free(channelHandle)
     }
     
     public func setEnvironment (name: String, value: String) {
@@ -52,9 +62,48 @@ public class Channel {
         return ret == 0
     }
     
-    public func setupIO () {
-        
+    public var receivedEOF: Bool {
+        get {
+            libssh2_channel_eof(channelHandle) == 1
+        }
     }
     
+    var readCallback: (Channel, Data?, Data?)->() = { a, b, c in }
 
+    ///
+    /// - Parameter readCallback: a callback invoked on a background task that will get the channel,
+    /// the stdout and the stderr as Data? if the data is available, nil otherwise.   This is invoked on a background thread
+    public func setupIO (readCallback: @escaping (Channel, Data?, Data?)->()) {
+        libssh2_channel_set_blocking(channelHandle, 0)
+        self.readCallback = readCallback
+    }
+    
+    // Invoked when there is some data received on the session, and we try to fetch it for the channel
+    // if it is available, we dispatch it.
+    func ping () {
+        // standard channel
+        let streamId: Int32 = 0
+        var ret, retError: Int
+        
+        ret = libssh2_channel_read_ex (channelHandle, streamId, buffer, bufferSize)
+        retError = libssh2_channel_read_ex (channelHandle, SSH_EXTENDED_DATA_STDERR, bufferError, bufferSize)
+
+        let data = ret >= 0 ? Data (bytesNoCopy: buffer, count: ret, deallocator: .none) : nil
+        let error = retError >= 0 ? Data (bytesNoCopy: bufferError, count: retError, deallocator: .none) : nil
+        
+        readCallback (self, data, error)
+    }
+    
+    func send (_ data: Data, callback: @escaping (Int)->()) {
+        sendQueue.async {
+            
+            data.withUnsafeBytes { (unsafeBytes) in
+                let bytes = unsafeBytes.bindMemory(to: CChar.self).baseAddress!
+                let ret = libssh2_channel_write_ex(self.channelHandle, 0, bytes, data.count)
+                DispatchQueue.main.async {
+                    callback (ret)
+                }
+            }
+        }
+    }
 }

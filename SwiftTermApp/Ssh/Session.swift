@@ -5,6 +5,9 @@
 //  Created by Miguel de Icaza on 12/8/21.
 //  Copyright © 2021 Miguel de Icaza. All rights reserved.
 //
+// TODO:
+//   Explore using libssh2_session blocking to avoid the manual timeout implementation in read
+//   Explore removing all the DispatchQueues that I used while debugging this
 
 import Foundation
 import CSwiftSH
@@ -13,15 +16,28 @@ import Network
 @_implementationOnly import CSSH
 
 extension Data {
-    public func dump() {
+    public func getDump(indent: String = "") -> String {
         let res = self.withUnsafeBytes { data -> String in
             var hexstr = String()
+            var txt = String ()
+            var n = 0
             for i in data.bindMemory(to: UInt8.self) {
+                if (n % 16) == 0 {
+                    hexstr += " \(txt)\n" + String (format: "%04x: ", n)
+                    txt = ""
+                }
+                n += 1
                 hexstr += String(format: "%02X ", i)
+                txt += (i > 32 && i < 127 ? String (Unicode.Scalar (i)) : ".")
             }
-            return hexstr
+            hexstr += " \(txt)"
+            return hexstr.replacingOccurrences(of: "\n", with: "\n\(indent)")
         }
-        print (res)
+        return res
+    }
+    
+    public func dump() {
+        print (getDump ())
     }
 }
 
@@ -37,7 +53,10 @@ protocol SessionDelegate: AnyObject {
 }
 
 class Session: CustomDebugStringConvertible {
+    // Handle to the libssh2 Session
     var sessionHandle: OpaquePointer!
+    
+    // Where we post interesting events about this session
     weak var delegate: SessionDelegate!
     
     typealias disconnectType = @convention(c) (UnsafeRawPointer, CInt,
@@ -82,7 +101,7 @@ class Session: CustomDebugStringConvertible {
     }
     
     var debugDescription: String {
-        get { "<Invalid Session>" }
+        get { "<Invalid session: use a subclass>" }
     }
     
     // Should setup the read/write callbacks
@@ -97,7 +116,14 @@ class Session: CustomDebugStringConvertible {
     
     // Returns an array of authentication methods available for the specified user
     public func userAuthenticationList (username: String) -> [String] {
-        guard let result = libssh2_userauth_list (sessionHandle, username, UInt32(username.utf8.count)) else {
+        var result: UnsafeMutablePointer<CChar>!
+        
+        timeout = Date (timeIntervalSinceNow: 2)
+        result = libssh2_userauth_list (sessionHandle, username, UInt32(username.utf8.count))
+        timeout = nil
+        if result == nil {
+            let code = libssh2_session_last_errno(sessionHandle)
+            print ("Got error: ssh2error: \(code)")
             return []
         }
         return String (validatingUTF8: result)?.components(separatedBy: ",") ?? []
@@ -121,18 +147,26 @@ class Session: CustomDebugStringConvertible {
         return "SHA256:" + d.base64EncodedString()
     }
     
+    // TODO still needed?
+    var x:DispatchQueue!
     func setupSshConnection () {
-        Task {
-            handshake()
-            let res = String (cString: libssh2_session_banner_get(sessionHandle))
-            print ("Got remote banner: \(res)")
-            print ("Finger: \(getFingerprint ())")
-            let failureReason = delegate.authenticate(session: self)
-            if authenticated {
-                delegate.loggedIn(session: self)
-            } else {
-                delegate.loginFailed (session: self, details: failureReason ?? "Internal error: authentication claims it worked, but libssh2 state indicates it is not authenticated")
-            }
+        x = DispatchQueue (label: "ssh-setup-connection", qos: .userInitiated)
+        x.async { self.realSetupSshConnection() }
+    }
+    
+    var timeout: Date?
+    
+    func realSetupSshConnection ()
+    {
+        handshake()
+        let res = String (cString: libssh2_session_banner_get(sessionHandle))
+        //print ("Got remote banner: \(res)")
+        //print ("Finger: \(getFingerprint ())")
+        let failureReason = delegate.authenticate(session: self)
+        if authenticated {
+            delegate.loggedIn(session: self)
+        } else {
+            delegate.loginFailed (session: self, details: failureReason ?? "Internal error: authentication claims it worked, but libssh2 state indicates it is not authenticated")
         }
     }
     
@@ -179,7 +213,8 @@ class Session: CustomDebugStringConvertible {
         }
     }
     
-
+    var channels: [Channel] = []
+    
     public func openChannel (type: String, windowSize: CUnsignedInt = 2*1024*1024, packetSize: CUnsignedInt = 32768)  -> Channel? {
         var ret: OpaquePointer?
         
@@ -189,7 +224,9 @@ class Session: CustomDebugStringConvertible {
         guard let channelHandle = ret else {
             return nil
         }
-        return Channel (session: self, channelHandle: channelHandle)
+        let channel = Channel (session: self, channelHandle: channelHandle)
+        channels.append(channel)
+        return channel
     }
 }
 
@@ -198,17 +235,17 @@ class SocketSession: Session {
     var host: String
     var port: UInt16
     var connection: NWConnection
-    var sendQueue: DispatchQueue
+    var networkQueue: DispatchQueue
     
     public init (host: String, port: UInt16, delegate: SessionDelegate) {
         self.host = host
         self.port = port
         
         connection = NWConnection(host: NWEndpoint.Host (host), port: NWEndpoint.Port (integerLiteral: port), using: .tcp)
-        sendQueue = DispatchQueue.global(qos: .userInitiated)
+        networkQueue = DispatchQueue.global(qos: .userInitiated)
         super.init (delegate: delegate)
         connection.stateUpdateHandler = connectionStateHandler
-        connection.start (queue: DispatchQueue.main)
+        connection.start (queue: networkQueue)
     }
     
     deinit{
@@ -230,6 +267,48 @@ class SocketSession: Session {
         print ("SOCKET_SESSION_STATE: \(msg)")
     }
     
+    var buffer: Data = Data ()
+    var bufferEOF = false
+    var bufferLock = NSLock ()
+    var bufferError: NWError? = nil
+    
+    // Starts the Network IO, accumultates data into buffer, and tracks
+    // the end of data in bufferEof ("no more data after it is consumed"
+    func startIO () {
+        print ("Awaiting more data")
+        connection.receive(minimumIncompleteLength: 0, maximumLength: 32*1024) { data, context, isComplete, error in
+            var restart = true
+            
+            self.bufferLock.lock()
+            if let received = data {
+                print ("Got data \(data?.count ?? -1) appending to \(self.buffer.count)")
+                //print (data!.getDump(indent: "   IO> "))
+                self.buffer.append(received)
+            } else {
+                print ("Data is null")
+            }
+            self.bufferError = error
+            
+            if let ctxt = context {
+                if isComplete && ctxt.isFinal {
+                    self.bufferEOF = true
+                    restart = false
+                }
+            }
+            self.bufferLock.unlock()
+            if restart {
+                self.startIO()
+            } else {
+                abort()
+            }
+            for channel in self.channels {
+                channel.ping()
+            }
+        }
+    }
+       
+    // TODO: still needed?
+    var ioqueue = DispatchQueue(label: "IO", qos: .background)
     func connectionStateHandler (state: NWConnection.State) {
         switch state {
             
@@ -241,6 +320,7 @@ class SocketSession: Session {
             log ("preparing")
         case .ready:
             log ("ready")
+            ioqueue.async { self.startIO () }
             setupSshConnection ()
         case .failed(_):
             log ("failed")
@@ -272,15 +352,18 @@ class SocketSession: Session {
         return n
     }
     
+    // Callback invoked by libssh2 to send data over our connection
     static func send_callback(socket: libssh2_socket_t, buffer: UnsafeRawPointer, length: size_t, flags: CInt, abstract: UnsafeRawPointer) -> ssize_t {
         let session = SocketSession.getSocketSession(from: abstract)
         
         let connection = session.connection
         let data = Data (bytes: buffer, count: length)
-        print ("Send On session: \(session), data: \(data.hexadecimalString())")
+        //print ("Sending \(data.count) bytes on \(session)")
+        //print (data.getDump(indent: "   sending>"))
         let semaphore = DispatchSemaphore(value: 0)
         var sendError: NWError? = nil
         connection.send (content: data, completion: .contentProcessed { error in
+            //print ("Send completed for \(data.count) bytes")
             sendError = error
             semaphore.signal()
         })
@@ -290,26 +373,55 @@ class SocketSession: Session {
     
     static func recv_callback(socket: libssh2_socket_t, buffer: UnsafeRawPointer, length: size_t, flags: CInt, abstract: UnsafeRawPointer) -> ssize_t {
         let session = SocketSession.getSocketSession(from: abstract)
-        let connection = session.connection
-        print ("Recv On session: \(session)")
-        
-        let semaphore = DispatchSemaphore(value: 0)
-        var recvError: NWError? = nil
-        var count = 0
-        connection.receive(minimumIncompleteLength: 0, maximumLength: length) { data, context, isComplete, error in
-            recvError = error
-            if let data = data {
-                let x = UnsafeMutablePointer<UInt8> (OpaquePointer (buffer))
-                
-                
-                data.copyBytes(to: x, count: data.count)
-                print ("Received: \(data.count) \(data.hexadecimalString())")
-                count = data.count
+        //var blocking = libssh2_session_get_blocking(session.sessionHandle)
+        //print ("Recv On session: \(session), blocking: \(blocking) max: \(length)")
+
+        let x = UnsafeMutablePointer<UInt8> (OpaquePointer (buffer))
+        var consumedBytes = 0
+        var wasError: NWError? = nil
+        var i = 0
+        var left: Int = 0
+        while true {
+            session.bufferLock.lock ()
+            consumedBytes = min (length, session.buffer.count)
+            session.buffer.copyBytes(to: x, count: consumedBytes)
+            session.buffer = session.buffer.dropFirst(consumedBytes)
+            wasError = session.buffer.count == 0 && session.bufferError != nil ? session.bufferError : nil
+            left = session.buffer.count
+            session.bufferLock.unlock()
+            i += 1
+            
+            // This is necessary for certain APIs in libssh2 that expect data to be received,
+            // and do not cope with retrying properly: userauth_list for instance will happily
+            // return EAGAIN, but if invoked at a later point again, it will resent the request
+            // to the server, confusing the server.
+            //
+            // so we setup a timeout system that will guarantee data delivery within that timeout
+            // rather than returning "I do not have data yet"
+            if consumedBytes == 0 {
+                if let sessTimeout = session.timeout {
+                    //print ("Waiting for timeout \(sessTimeout) at \(Date())")
+                    if Date () < sessTimeout {
+                        //print ("Waiting \(i)")
+                        Thread.sleep(forTimeInterval: 0.02)
+                    } else {
+                        break
+                    }
+                } else {
+                    break
+                }
+            } else {
+                break
             }
-            semaphore.signal ()
         }
-        semaphore.wait ()
-        return successOrError(recvError, n: count)
+        
+        if consumedBytes == 0 {
+            //print ("Returning -EAGAIN")
+            return Int (-EAGAIN)
+        }
+        let ret = successOrError(wasError, n: consumedBytes)
+        //print ("Returning \(ret) bytes left = \(left)")
+        return ret;
     }
     
     typealias socketCbType = @convention(c) (libssh2_socket_t, UnsafeRawPointer, size_t, CInt, UnsafeRawPointer) -> ssize_t
@@ -322,6 +434,7 @@ class SocketSession: Session {
         let recv: socketCbType = { socket, buffer, length, flags, abstract in
             SocketSession.recv_callback(socket: socket, buffer: buffer, length: length, flags: flags, abstract: abstract)
         }
+        libssh2_session_set_blocking (sessionHandle, 0)
         libssh2_session_callback_set(sessionHandle, LIBSSH2_CALLBACK_SEND, unsafeBitCast(send, to: UnsafeMutableRawPointer.self))
         libssh2_session_callback_set(sessionHandle, LIBSSH2_CALLBACK_RECV, unsafeBitCast(recv, to: UnsafeMutableRawPointer.self))
     }
