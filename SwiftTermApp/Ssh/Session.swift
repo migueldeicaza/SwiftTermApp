@@ -307,6 +307,7 @@ class SocketSession: Session {
         }
     }
        
+    static var oldStyle = false
     // TODO: still needed?
     var ioqueue = DispatchQueue(label: "IO", qos: .background)
     func connectionStateHandler (state: NWConnection.State) {
@@ -320,7 +321,9 @@ class SocketSession: Session {
             log ("preparing")
         case .ready:
             log ("ready")
-            ioqueue.async { self.startIO () }
+            if SocketSession.oldStyle {
+                ioqueue.async { self.startIO () }
+            }
             setupSshConnection ()
         case .failed(_):
             log ("failed")
@@ -369,6 +372,31 @@ class SocketSession: Session {
         })
         semaphore.wait()
         return successOrError (sendError, n: data.count)
+    }
+
+    static func recv_callback_new(socket: libssh2_socket_t, buffer: UnsafeRawPointer, length: size_t, flags: CInt, abstract: UnsafeRawPointer) -> ssize_t {
+        let session = SocketSession.getSocketSession(from: abstract)
+        //var blocking = libssh2_session_get_blocking(session.sessionHandle)
+        //print ("Recv On session: \(session), blocking: \(blocking) max: \(length)")
+
+        let semaphore = DispatchSemaphore(value: 0)
+        let connection = session.connection
+        var recvError: NWError? = nil
+        var count = 0
+        connection.receive(minimumIncompleteLength: 0, maximumLength: length) { data, context, isComplete, error in
+            recvError = error
+            if let data = data {
+                let x = UnsafeMutablePointer<UInt8> (OpaquePointer (buffer))
+
+
+                data.copyBytes(to: x, count: data.count)
+                print ("Received: \(data.count) \(data.hexadecimalString())")
+                count = data.count
+            }
+            semaphore.signal()
+        }
+        semaphore.wait ()
+        return successOrError(recvError, n: count)
     }
     
     static func recv_callback(socket: libssh2_socket_t, buffer: UnsafeRawPointer, length: size_t, flags: CInt, abstract: UnsafeRawPointer) -> ssize_t {
@@ -432,7 +460,11 @@ class SocketSession: Session {
         }
         
         let recv: socketCbType = { socket, buffer, length, flags, abstract in
-            SocketSession.recv_callback(socket: socket, buffer: buffer, length: length, flags: flags, abstract: abstract)
+            if SocketSession.oldStyle {
+                return SocketSession.recv_callback(socket: socket, buffer: buffer, length: length, flags: flags, abstract: abstract)
+            } else {
+                return SocketSession.recv_callback_new(socket: socket, buffer: buffer, length: length, flags: flags, abstract: abstract)
+            }
         }
         libssh2_session_set_blocking (sessionHandle, 0)
         libssh2_session_callback_set(sessionHandle, LIBSSH2_CALLBACK_SEND, unsafeBitCast(send, to: UnsafeMutableRawPointer.self))

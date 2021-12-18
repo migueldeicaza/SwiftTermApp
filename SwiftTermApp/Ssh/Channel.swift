@@ -23,6 +23,7 @@ public class Channel {
         
         buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
         bufferError = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
+        libssh2_channel_set_blocking(channelHandle, 0)
     }
     
     deinit {
