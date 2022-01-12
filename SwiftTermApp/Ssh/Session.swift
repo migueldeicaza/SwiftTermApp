@@ -147,21 +147,12 @@ class Session: CustomDebugStringConvertible {
         return "SHA256:" + d.base64EncodedString()
     }
     
-    // TODO still needed?
-    var x:DispatchQueue!
-    func setupSshConnection () {
-        x = DispatchQueue (label: "ssh-setup-connection", qos: .userInitiated)
-        x.async { self.realSetupSshConnection() }
-    }
-    
     var timeout: Date?
     
-    func realSetupSshConnection ()
+    func setupSshConnection ()
     {
         handshake()
         let res = String (cString: libssh2_session_banner_get(sessionHandle))
-        //print ("Got remote banner: \(res)")
-        //print ("Finger: \(getFingerprint ())")
         let failureReason = delegate.authenticate(session: self)
         if authenticated {
             delegate.loggedIn(session: self)
@@ -275,13 +266,13 @@ class SocketSession: Session {
     // Starts the Network IO, accumultates data into buffer, and tracks
     // the end of data in bufferEof ("no more data after it is consumed"
     func startIO () {
-        print ("Awaiting more data")
+        //print ("startIO: Awaiting more data")
         connection.receive(minimumIncompleteLength: 0, maximumLength: 32*1024) { data, context, isComplete, error in
             var restart = true
             
             self.bufferLock.lock()
             if let received = data {
-                print ("Got data \(data?.count ?? -1) appending to \(self.buffer.count)")
+                //print ("StartIO: Got data \(data?.count ?? -1) appending to \(self.buffer.count)")
                 //print (data!.getDump(indent: "   IO> "))
                 self.buffer.append(received)
             } else {
@@ -296,18 +287,20 @@ class SocketSession: Session {
                 }
             }
             self.bufferLock.unlock()
+            DispatchQueue.main.sync {
+                for channel in self.channels {
+                    channel.ping()
+                }
+            }
             if restart {
                 self.startIO()
             } else {
                 abort()
             }
-            for channel in self.channels {
-                channel.ping()
-            }
         }
     }
        
-    static var oldStyle = false
+    static var oldStyle = true
     // TODO: still needed?
     var ioqueue = DispatchQueue(label: "IO", qos: .background)
     func connectionStateHandler (state: NWConnection.State) {
@@ -390,7 +383,7 @@ class SocketSession: Session {
 
 
                 data.copyBytes(to: x, count: data.count)
-                print ("Received: \(data.count) \(data.hexadecimalString())")
+                //print ("Received: \(data.count) \(data.hexadecimalString())")
                 count = data.count
             }
             semaphore.signal()

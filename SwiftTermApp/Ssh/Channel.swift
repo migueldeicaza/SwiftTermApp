@@ -69,10 +69,10 @@ public class Channel {
         }
     }
     
-    var readCallback: (Channel, Data?, Data?)->() = { a, b, c in }
+    var readCallback: ((Channel, Data?, Data?)->())?
 
     ///
-    /// - Parameter readCallback: a callback invoked on a background task that will get the channel,
+    /// - Parameter readCallback: a callback to be invoked on the main thread when the data is available
     /// the stdout and the stderr as Data? if the data is available, nil otherwise.   This is invoked on a background thread
     public func setupIO (readCallback: @escaping (Channel, Data?, Data?)->()) {
         libssh2_channel_set_blocking(channelHandle, 0)
@@ -86,6 +86,10 @@ public class Channel {
         let streamId: Int32 = 0
         var ret, retError: Int
         
+        // We only perform reads once setupIO has been called, and readcallback has been configured
+        guard let readCallback = readCallback else {
+            return
+        }
         ret = libssh2_channel_read_ex (channelHandle, streamId, buffer, bufferSize)
         retError = libssh2_channel_read_ex (channelHandle, SSH_EXTENDED_DATA_STDERR, bufferError, bufferSize)
 

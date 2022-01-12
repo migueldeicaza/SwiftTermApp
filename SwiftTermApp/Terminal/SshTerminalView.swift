@@ -87,14 +87,15 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         print ("requestPty: \(a)")
         a = channel.processStartup(request: "shell", message: nil)
         print ("processStartup: \(a)")
+        
         channel.setupIO { channel, data, error in
+            // This code is invoked in the UI thread
+            
             let receivedEOF = channel.receivedEOF
             let socketClosed = (data == nil && error == nil)
             if receivedEOF || socketClosed {
                 print ("here")
-                DispatchQueue.main.async {
-                    self.connectionClosed (receivedEOF: receivedEOF)
-                }
+                self.connectionClosed (receivedEOF: receivedEOF)
             }
             
             if let d = data {
@@ -110,9 +111,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                 // to the UI, but this caused the UI to not update chunks
                 // of the screen, for reasons that I do not understand yet.
                 #if true
-                DispatchQueue.main.sync {
-                    self.feed(byteArray: sliced)
-                }
+                self.feed(byteArray: sliced)
                 #else
                 let blocksize = 1024
                 var next = 0
@@ -123,9 +122,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                     let end = min (next+blocksize, last)
                     let chunk = sliced [next..<end]
                 
-                    DispatchQueue.main.sync {
-                        self.feed(byteArray: chunk)
-                    }
+                    self.feed(byteArray: chunk)
                     next = end
                 }
                 #endif
@@ -482,8 +479,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         guard let channel = channel else {
             return
         }
-        channel.send (Data (bytes)) { err in
-            print ("Error sending \(err)")
+        channel.send (Data (bytes)) { count in
+            print ("sendResult: \(count)")
         }
     }
     
