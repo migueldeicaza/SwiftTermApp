@@ -100,6 +100,9 @@ public class Channel {
     }
     
     func send (_ data: Data, callback: @escaping (Int)->()) {
+        if data.count == 0 {
+            return
+        }
         sendQueue.async {
             
             data.withUnsafeBytes { (unsafeBytes) in
