@@ -301,8 +301,6 @@ class SocketSession: Session {
     }
        
     static var oldStyle = true
-    // TODO: still needed?
-    var ioqueue = DispatchQueue(label: "IO", qos: .background)
     func connectionStateHandler (state: NWConnection.State) {
         switch state {
             
@@ -315,7 +313,7 @@ class SocketSession: Session {
         case .ready:
             log ("ready")
             if SocketSession.oldStyle {
-                ioqueue.async { self.startIO () }
+                startIO()
             }
             setupSshConnection ()
         case .failed(_):
