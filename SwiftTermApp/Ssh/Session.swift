@@ -56,6 +56,7 @@ class Session: CustomDebugStringConvertible {
     // Handle to the libssh2 Session
     var sessionHandle: OpaquePointer!
     //var sshQueue: DispatchQueue
+    var channelsLock = NSLock ()
     
     // Where we post interesting events about this session
     weak var delegate: SessionDelegate!
@@ -75,7 +76,7 @@ class Session: CustomDebugStringConvertible {
         libssh2_init(0)
         //sshQueue = DispatchQueue.global(qos: .userInitiated)
         self.delegate = delegate
-        
+        channelsLock = NSLock ()
         let opaqueHandle = UnsafeMutableRawPointer(mutating: Unmanaged.passUnretained(self).toOpaque())
         sessionHandle = libssh2_session_init_ex(nil, nil, nil, opaqueHandle)
         let flags: Int32 = 0
@@ -218,8 +219,13 @@ class Session: CustomDebugStringConvertible {
             return nil
         }
         let channel = Channel (session: self, channelHandle: channelHandle, readCallback: readCallback)
-        channels.append(channel)
         return channel
+    }
+    
+    public func activate (channel: Channel) {
+        channelsLock.lock()
+        channels.append(channel)
+        channelsLock.unlock()
     }
 }
 
@@ -291,9 +297,11 @@ class SocketSession: Session {
             self.bufferLock.unlock()
             //self.sshQueue.sync {
             DispatchQueue.main.sync {
+                self.channelsLock.lock()
                 for channel in self.channels {
                     channel.ping()
                 }
+                self.channelsLock.unlock()
             }
             if restart {
                 self.startIO()

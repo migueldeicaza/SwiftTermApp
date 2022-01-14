@@ -96,7 +96,7 @@ public class Channel {
             let bytes = unsafeBytes.bindMemory(to: CChar.self).baseAddress!
             let ret = libssh2_channel_write_ex(self.channelHandle, 0, bytes, data.count)
             if ret < 0 {
-                print ("DEBUG Got: \(libSsh2ErrorToString(error:Int32(ret)))")
+                print ("DEBUG libssh2_channel_write_ex result: \(libSsh2ErrorToString(error:Int32(ret)))")
             }
             callback (ret)
         }

@@ -135,6 +135,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             print ("Failed to spawn process: \(libSsh2ErrorToString(error: status))")
             abort ()
         }
+        session.activate(channel: channel)
     }
     
     // Delegate SocketSessionDelegate.loggedIn: invoked when the connection has been authenticated
@@ -487,8 +488,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         guard let channel = channel else {
             return
         }
-        channel.send (Data (bytes)) { count in
-            print ("sendResult: \(count)")
+        channel.send (Data (bytes)) { code in
+            print ("sendResult: \(code)")
         }
     }
     
