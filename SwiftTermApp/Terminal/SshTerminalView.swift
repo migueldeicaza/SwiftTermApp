@@ -34,7 +34,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     var ss: SocketSession!
     var channel: Channel?
     
-    // Delegate method invoked by the SocketSession to authenticate
+    // Delegate SocketSessionDelegate.authenticate: invoked to trigger authentication
     func authenticate (session: Session) -> String? {
         let authMethods = session.userAuthenticationList(username: host.username)
         for m in authMethods {
@@ -63,7 +63,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         return nil
     }
     
-    // Delegate method, invoked if the authentication fails
+    // Delegate SocketSessionDelegate.loginFailed, invoked if the authentication fails
     func loginFailed(session: Session, details: String) {
         abort ()
     }
@@ -72,64 +72,72 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         
     }
     
+    func channelReader (channel: Channel, data: Data?, error: Data?) {
+        if channel.receivedEOF {
+            self.connectionClosed (receivedEOF: true)
+        }
+        
+        if let d = data {
+            let sliced = Array(d) [0...]
+
+            // The first code causes problems, because the SSH library
+            // accumulates data, rather that sending it as it comes,
+            // so it can deliver blocks of 300k to 2megs of data
+            // which as far as the user is concerned, nothing happens
+            // while the terminal parsers proceses this.
+            //
+            // The solution was below, and it fed the data in chunks
+            // to the UI, but this caused the UI to not update chunks
+            // of the screen, for reasons that I do not understand yet.
+            #if true
+            //DispatchQueue.main.sync {
+                self.feed(byteArray: sliced)
+            //}
+            #else
+            let blocksize = 1024
+            var next = 0
+            let last = sliced.endIndex
+            
+            while next < last {
+                
+                let end = min (next+blocksize, last)
+                let chunk = sliced [next..<end]
+            
+                DispatchQueue.main.sync {
+                    self.feed(byteArray: chunk)
+                }
+                next = end
+            }
+            #endif
+        }
+    }
+    
     func setupChannel (session: Session) {
-        channel = session.openChannel(type: "session")
+        channel = session.openChannel(type: "session", readCallback: channelReader)
+
         guard let channel = channel else {
+            print ("Failed to open channel")
             // TODO Need to report to the user the failure
             abort ()
-            return
         }
         setupReadingWriting ()
         // TODO: should this be different based on the locale?
         channel.setEnvironment(name: "LANG", value: "en_US.UTF-8")
         let terminal = getTerminal()
-        var a = channel.requestPseudoTerminal(name: "xterm-256color", cols: terminal.cols, rows: terminal.rows)
-        print ("requestPty: \(a)")
-        a = channel.processStartup(request: "shell", message: nil)
-        print ("processStartup: \(a)")
-        
-        channel.setupIO { channel, data, error in
-            // This code is invoked in the UI thread
-            
-            let receivedEOF = channel.receivedEOF
-            let socketClosed = (data == nil && error == nil)
-            if receivedEOF || socketClosed {
-                print ("here")
-                self.connectionClosed (receivedEOF: receivedEOF)
-            }
-            
-            if let d = data {
-                let sliced = Array(d) [0...]
- 
-                // The first code causes problems, because the SSH library
-                // accumulates data, rather that sending it as it comes,
-                // so it can deliver blocks of 300k to 2megs of data
-                // which as far as the user is concerned, nothing happens
-                // while the terminal parsers proceses this.
-                //
-                // The solution was below, and it fed the data in chunks
-                // to the UI, but this caused the UI to not update chunks
-                // of the screen, for reasons that I do not understand yet.
-                #if true
-                self.feed(byteArray: sliced)
-                #else
-                let blocksize = 1024
-                var next = 0
-                let last = sliced.endIndex
-                
-                while next < last {
-                    
-                    let end = min (next+blocksize, last)
-                    let chunk = sliced [next..<end]
-                
-                    self.feed(byteArray: chunk)
-                    next = end
-                }
-                #endif
-            }
+        var status: Int32
+        status = channel.requestPseudoTerminal(name: "xterm-256color", cols: terminal.cols, rows: terminal.rows)
+        if status != 0 {
+            print ("Failed to request PTY, code: \(libSsh2ErrorToString(error: status))")
+            abort ()
+        }
+        status = channel.processStartup(request: "shell", message: nil)
+        if status != 0 {
+            print ("Failed to spawn process: \(libSsh2ErrorToString(error: status))")
+            abort ()
         }
     }
     
+    // Delegate SocketSessionDelegate.loggedIn: invoked when the connection has been authenticated
     func loggedIn (session: Session) {
         setupChannel (session: session)
     }
@@ -202,7 +210,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
 //                              terminal: "xterm-256color")
 //        //shell?.log.enabled = true
 //        //shell?.log.level = .debug
-        shell?.setCallbackQueue(queue: sshQueue)
+        //shell?.setCallbackQueue(queue: sshQueue)
 //        
 //        sshQueue.async {
 //            self.connect ()
