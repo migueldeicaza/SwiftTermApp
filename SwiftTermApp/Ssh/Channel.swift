@@ -87,18 +87,22 @@ public class Channel {
         readCallback (self, data, error)
     }
     
-    /// Sends the provided data to the channel, and invokes the callback on the main thread upon completion
+    /// Sends the provided data to the channel, and invokes the callback with the status code when doneaaaa
     func send (_ data: Data, callback: @escaping (Int)->()) {
         if data.count == 0 {
             return
         }
-        data.withUnsafeBytes { (unsafeBytes) in
-            let bytes = unsafeBytes.bindMemory(to: CChar.self).baseAddress!
-            let ret = libssh2_channel_write_ex(self.channelHandle, 0, bytes, data.count)
-            if ret < 0 {
-                print ("DEBUG libssh2_channel_write_ex result: \(libSsh2ErrorToString(error:Int32(ret)))")
+        sshQueue.async {
+            data.withUnsafeBytes { (unsafeBytes) in
+                let bytes = unsafeBytes.bindMemory(to: CChar.self).baseAddress!
+                
+                let ret = libssh2_channel_write_ex(self.channelHandle, 0, bytes, data.count)
+                if ret < 0 {
+                    print ("DEBUG libssh2_channel_write_ex result: \(libSsh2ErrorToString(error:Int32(ret)))")
+                }
+                
+                callback (ret)
             }
-            callback (ret)
         }
     }
 }

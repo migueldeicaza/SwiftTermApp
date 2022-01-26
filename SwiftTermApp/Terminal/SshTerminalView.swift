@@ -12,7 +12,6 @@ import UIKit
 import SwiftTerm
 import AudioToolbox
 import SwiftUI
-import SwiftSH
 
 enum MyError : Error {
     case noValidKey(String)
@@ -26,14 +25,13 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     /// The current directory as reported by the remote host.
     public var currentDirectory: String? = nil
     
-    var shell: SSHShell?
-    var authenticationChallenge: AuthenticationChallenge!
+    //var shell: SSHShell?
     var sshQueue: DispatchQueue
     
     var completeConnectSetup: () -> () = { }
-    var ss: SocketSession!
-    var channel: Channel?
-    
+    var session: SocketSession!
+    var sessionChannel: Channel?
+
     // Delegate SocketSessionDelegate.authenticate: invoked to trigger authentication
     func authenticate (session: Session) -> String? {
         let authMethods = session.userAuthenticationList(username: host.username)
@@ -42,20 +40,55 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             case "none":
                 return nil
             case "publickey":
-                print ("Do not know how to do publickey yet")
+                if let sshKeyId = host.sshKey {
+                    if let sshKey = DataStore.shared.keys.first(where: { $0.id == sshKeyId }) {
+                        switch sshKey.type {
+                        case .rsa(_), .ecdsa(inEnclave: false):
+                            var password: String
+                            
+                            if SshUtil.openSSHKeyRequiresPassword(key: sshKey.privateKey) && sshKey.passphrase == "" {
+                                password = self.passwordPrompt (challenge: "Key requires password")
+                            } else {
+                                password = sshKey.passphrase
+                            }
+                            
+                            return session.userAuthPublicKeyFromMemory (username: host.username,
+                                                                   password: password,
+                                                                   publicKey: sshKey.publicKey,
+                                                                   privateKey: sshKey.privateKey)
+                        case .ecdsa(inEnclave: true):
+                            if let keyHandle = sshKey.getKeyHandle() {
+                                return session.userAuthWithCallback(username: host.username, publicKey: sshKey.getPublicKeyAsData()) { dataToSign in
+                                    var error: Unmanaged<CFError>?
+                                    guard let signed = SecKeyCreateSignature(keyHandle, .ecdsaSignatureMessageX962SHA256, dataToSign as CFData, &error) else {
+                                        return nil
+                                    }
+                                    return signed as NSData as Data
+                                }
+                            } else {
+                                print ("Did not get a handle to the sshKey")
+                                break
+                            }
+                        }
+                    } else {
+                        return "The host references an SSH key that is no longer set"
+                    }
+                }
                 break
             case "password":
                 if host.usePassword && host.password != "" {
                     // TODO: perhaps empty passwords are ok?
-                    if let error = ss.userAuthPassword (username: host.username, password: host.password) {
+                    if let error = session.userAuthPassword (username: host.username, password: host.password) {
                         return error
                     }
                     return nil
                 }
                 break
             case "keyboard-interactive":
-                print ("Do not know how to do keyboard-interactive yet")
-                break
+                if let error = session.userAuthKeyboardInteractive(username: host.username, prompt: passwordPrompt) {
+                    return error
+                }
+                return nil
             default:
                 break
             }
@@ -80,19 +113,11 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         if let d = data {
             let sliced = Array(d) [0...]
 
-            // The first code causes problems, because the SSH library
-            // accumulates data, rather that sending it as it comes,
-            // so it can deliver blocks of 300k to 2megs of data
-            // which as far as the user is concerned, nothing happens
-            // while the terminal parsers proceses this.
-            //
-            // The solution was below, and it fed the data in chunks
-            // to the UI, but this caused the UI to not update chunks
-            // of the screen, for reasons that I do not understand yet.
-            #if true
-            //DispatchQueue.main.sync {
+            #if false
+            // Process in one go, but results in ugly and slow rendering
+            DispatchQueue.main.sync {
                 self.feed(byteArray: sliced)
-            //}
+            }
             #else
             let blocksize = 1024
             var next = 0
@@ -113,12 +138,15 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     }
     
     func setupChannel (session: Session) {
-        channel = session.openChannel(type: "session", readCallback: channelReader)
+        sessionChannel = session.openChannel(type: "session", readCallback: channelReader)
 
-        guard let channel = channel else {
+        guard let channel = sessionChannel else {
             print ("Failed to open channel")
             // TODO Need to report to the user the failure
             abort ()
+        }
+        if let error = checkHostIntegrity () {
+            print ("Got an error during integrity check: \(error)")
         }
         setupReadingWriting ()
         // TODO: should this be different based on the locale?
@@ -148,74 +176,13 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         sshQueue = DispatchQueue.global(qos: .background)
         
         try super.init (frame: frame, host: host)
-        
-        // Default, in case there is an error extracting the key from the secure enclave
-        authenticationChallenge = .byKeyboardInteractive(username: host.username, callback: passwordPrompt )
-        
-        if host.usePassword {
-            if host.password == "" {
-                authenticationChallenge = .byKeyboardInteractive(username: host.username, callback: passwordPrompt )
-            } else {
-                authenticationChallenge = .byPassword(username: host.username, password: host.password)
-            }
-        } else {
-            if let sshKeyId = host.sshKey {
-                if let sshKey = DataStore.shared.keys.first(where: { $0.id == sshKeyId }) {
-                    switch sshKey.type {
-                    case .rsa(_), .ecdsa(inEnclave: false):
-                        if SshUtil.openSSHKeyRequiresPassword(key: sshKey.privateKey) && sshKey.passphrase == "" {
-                            completeConnectSetup = {
-                                let password = self.passwordPrompt (challenge: "Key requires password")
-                                self.authenticationChallenge = .byPublicKeyFromMemory(username: self.host.username,
-                                                                                 password: password,
-                                                                                 publicKey: Data (sshKey.publicKey.utf8),
-                                                                                 privateKey: Data (sshKey.privateKey.utf8))
-                            }
-                        } else {
-                            authenticationChallenge = .byPublicKeyFromMemory(username: self.host.username,
-                                                                         password: sshKey.passphrase,
-                                                                         publicKey: Data (sshKey.publicKey.utf8),
-                                                                         privateKey: Data (sshKey.privateKey.utf8))
-                        }
-                    case .ecdsa(inEnclave: true):
-                        if let keyHandle = sshKey.getKeyHandle() {
-                            authenticationChallenge = .byCallback(username: self.host.username, publicKey: sshKey.getPublicKeyAsData()) { dataToSign in
-                                var error: Unmanaged<CFError>?
-                                guard let signed = SecKeyCreateSignature(keyHandle, .ecdsaSignatureMessageX962SHA256, dataToSign as CFData, &error) else {
-                                    return nil
-                                }
-                                return signed as NSData as Data
-                            }
-                        }
-                    }
-                } else {
-                    throw MyError.noValidKey ("The host references an SSH key that is no longer set")
-                }
-            } else {
-                throw MyError.noValidKey ("The host does not have an SSH key associated")
-            }
-        }
 
-        ss = SocketSession(host: host.hostname, port: UInt16 (host.port & 0xffff), delegate: self)
+        session = SocketSession(host: host.hostname, port: UInt16 (host.port & 0xffff), delegate: self)
         
         if !useDefaultBackground {
             updateBackground(background: host.background)
         }
         terminalDelegate = self
-//        
-
-//        shell = try? SSHShell(sshLibrary: Libssh2.self,
-//                              host: host.hostname,
-//                              port: UInt16 (host.port & 0xffff),
-//                              environment: [Environment(name: "LANG", variable: "en_US.UTF-8")],
-//                              terminal: "xterm-256color")
-//        //shell?.log.enabled = true
-//        //shell?.log.level = .debug
-        //shell?.setCallbackQueue(queue: sshQueue)
-//        
-//        sshQueue.async {
-//            self.connect ()
-//        }        
     }
   
     func getParentViewController () -> UIViewController? {
@@ -257,79 +224,6 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
         let _ = semaphore.wait(timeout: DispatchTime.distantFuture)
         return promptedPassword
-    }
-    
-    func connect()
-    {
-        completeConnectSetup ()
-        if let s = shell {
-            s.withCallback { [unowned self] (data: Data?, error: Data?) in
-                let receivedEOF = s.channel.receivedEOF
-                let socketClosed = (data == nil && error == nil)
-                if receivedEOF || socketClosed {
-                    DispatchQueue.main.async {
-                        connectionClosed (receivedEOF: receivedEOF)
-                    }
-                }
-                
-                if let d = data {
-                    let sliced = Array(d) [0...]
-     
-                    // The first code causes problems, because the SSH library
-                    // accumulates data, rather that sending it as it comes,
-                    // so it can deliver blocks of 300k to 2megs of data
-                    // which as far as the user is concerned, nothing happens
-                    // while the terminal parsers proceses this.
-                    //
-                    // The solution was below, and it fed the data in chunks
-                    // to the UI, but this caused the UI to not update chunks
-                    // of the screen, for reasons that I do not understand yet.
-                    #if true
-                    DispatchQueue.main.sync {
-                        self.feed(byteArray: sliced)
-                    }
-                    #else
-                    let blocksize = 1024
-                    var next = 0
-                    let last = sliced.endIndex
-                    
-                    while next < last {
-                        
-                        let end = min (next+blocksize, last)
-                        let chunk = sliced [next..<end]
-                    
-                        DispatchQueue.main.sync {
-                            self.feed(byteArray: chunk)
-                        }
-                        next = end
-                    }
-                    #endif
-                }
-            }
-            .connect()
-            .authenticate(self.authenticationChallenge) { opt_error in
-                DispatchQueue.main.async {
-                    if let error = opt_error {
-                        self.feed(text: "[ERROR] \(error)\n\r")
-                        self.connectionError (error: "\(error)")
-                    } else {
-                        s.open { [unowned self] (error) in
-                            DispatchQueue.main.async {
-                                if let error = error {
-                                    self.feed(text: "[ERROR] \(error)\n\r")
-                                    connectionError (error: "\(error)")
-                                } else {
-                                    checkHostIntegrity ()
-                                    
-                                    let t = self.getTerminal()
-                                    s.setTerminalSize(width: UInt (t.cols), height: UInt (t.rows))
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
     
     /// The connection has been closed, notify the user.
@@ -377,10 +271,13 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     /// Checks that we are connecting to the host we thought we were,
     /// this uses and updates the `known_hosts` database to track the
     /// known hosts
-    func checkHostIntegrity () {
-        let session = self.shell!.session
+    ///
+    /// Returns nil on success, otherwise a description of the problem
+    func checkHostIntegrity () -> String? {
 
-        let knownHosts = session.makeKnownHost()
+        guard let knownHosts = session.makeKnownHost() else {
+            return "Unable to create Known Hosts"
+        }
         
         func getHostName () -> String {
             if host.port != 22 {
@@ -395,12 +292,15 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             return "SHA256:" + d.base64EncodedString()
         }
         
-        func closeConnection () {
-            try? session.disconnect()
+        func closeConnection (reason: String) {
+            session.disconnect(reason: reason)
             Connections.remove(self)
         }
         
-        try? knownHosts.readFile(filename: DataStore.shared.knownHostsPath)
+        if let krerr = knownHosts.readFile (filename: DataStore.shared.knownHostsPath) {
+            return krerr
+        }
+        
         if let keyAndType = session.hostKey() {
             let res = knownHosts.check (hostName: host.hostname, port: Int32 (host.port), key: keyAndType.key)
             let hostKeyType = SshUtil.extractKeyType (keyAndType.key)
@@ -412,15 +312,17 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                     window = UIHostingController<HostAuthUnknown>(rootView: HostAuthUnknown(alias: host.alias, hostString: getHostName(), fingerprint: getFingerPrint(), cancelCallback: {
                             window.dismiss (animated: true, completion: nil)
                             
-                            closeConnection()
+                        closeConnection(reason: "User did not accept this host")
                         }, okCallback: {
-                            try? knownHosts.add(hostname: self.host.hostname, port: Int32 (self.host.port), key: keyAndType.key, keyType: hostKeyType ?? "", comment: self.host.alias)
-                            do {
-                                try knownHosts.writeFile(filename: DataStore.shared.knownHostsPath)
-                                DataStore.shared.loadKnownHosts()
-                            } catch {
-                                print ("Error writing knownhosts file \(error)")
+                            if let addError = knownHosts.add(hostname: self.host.hostname, port: Int32 (self.host.port), key: keyAndType.key, keyType: hostKeyType ?? "", comment: self.host.alias) {
+                                print ("Error adding host to knownHosts: \(addError)")
+                                return
                             }
+                            if let writeError = knownHosts.writeFile(filename: DataStore.shared.knownHostsPath) {
+                                print ("Error writing knownhosts file \(writeError)")
+                                return
+                            }
+                            DataStore.shared.loadKnownHosts()
                             window.dismiss (animated: true, completion: nil)
                         }))
                     parent.present(window, animated: true, completion: nil)
@@ -432,7 +334,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                     
                     window = UIHostingController<HostAuthKeyMismatch>(rootView: HostAuthKeyMismatch(alias: host.alias, hostString: getHostName(), fingerprint: getFingerPrint(), callback: {
                         window.dismiss(animated: true, completion: {
-                            closeConnection()
+                            closeConnection(reason: "Known host key mismatch")
                         })
                         
                     }))
@@ -444,7 +346,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                 break
             }
         }
-        
+        return nil
     }
     
     required init?(coder: NSCoder) {
@@ -461,12 +363,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     }
     
     public func sizeChanged(source: TerminalView, newCols: Int, newRows: Int) {
-        if let c = channel {
-            c.setTerminalSize(cols: Int(newCols), rows: Int(newRows), pixelWidth: 1, pixelHeight: 1)
-        }
-        if let s = shell {
-            //print ("SshTerminalView setting remote terminal to \(newCols)x\(newRows)")
-            s.setTerminalSize(width: UInt (newCols), height: UInt (newRows))
+        if let c = sessionChannel {
+            c.setTerminalSize(cols: newCols, rows: newRows, pixelWidth: 1, pixelHeight: 1)
         }
     }
     
@@ -485,11 +383,11 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     }
     
     public func send(source: TerminalView, data bytes: ArraySlice<UInt8>) {
-        guard let channel = channel else {
+        guard let channel = sessionChannel else {
             return
         }
         channel.send (Data (bytes)) { code in
-            print ("sendResult: \(code)")
+            //print ("sendResult: \(code)")
         }
     }
     

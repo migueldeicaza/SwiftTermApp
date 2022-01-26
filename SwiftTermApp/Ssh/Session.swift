@@ -12,6 +12,7 @@
 import Foundation
 import CSwiftSH
 import Network
+import CryptoKit
 
 @_implementationOnly import CSSH
 
@@ -52,10 +53,13 @@ protocol SessionDelegate: AnyObject {
     func loggedIn (session: Session)
 }
 
+var sshQueue: DispatchQueue = DispatchQueue.init(label: "ssh-queue", qos: .userInitiated)
+
 class Session: CustomDebugStringConvertible {
+    
     // Handle to the libssh2 Session
     var sessionHandle: OpaquePointer!
-    //var sshQueue: DispatchQueue
+    
     var channelsLock = NSLock ()
     
     // Where we post interesting events about this session
@@ -73,34 +77,37 @@ class Session: CustomDebugStringConvertible {
     }
 
     public init (delegate: SessionDelegate) {
-        libssh2_init(0)
-        //sshQueue = DispatchQueue.global(qos: .userInitiated)
         self.delegate = delegate
         channelsLock = NSLock ()
-        let opaqueHandle = UnsafeMutableRawPointer(mutating: Unmanaged.passUnretained(self).toOpaque())
-        sessionHandle = libssh2_session_init_ex(nil, nil, nil, opaqueHandle)
-        let flags: Int32 = 0
-        libssh2_trace(sessionHandle, flags)
-        libssh2_trace_sethandler(sessionHandle, nil, { session, context, data, length in
-            var str: String
-            if let ptr = data {
-                str = String (cString: ptr)
-            } else {
-                str = "<null>"
-            }
-            print ("Trace callback: \(str)")
-        })
-        
-        let callback: disconnectType = { sessionPtr, reason, message, messageLen, language, languageLen, abstract in
-            let session = Session.getSession(from: abstract)
+
+        sshQueue.sync {
+            libssh2_init (0)
+            let opaqueHandle = UnsafeMutableRawPointer(mutating: Unmanaged.passUnretained(self).toOpaque())
+            sessionHandle = libssh2_session_init_ex(nil, nil, nil, opaqueHandle)
+            let flags: Int32 = 0
+            libssh2_trace(sessionHandle, flags)
+            libssh2_trace_sethandler(sessionHandle, nil, { session, context, data, length in
+                var str: String
+                if let ptr = data {
+                    str = String (cString: ptr)
+                } else {
+                    str = "<null>"
+                }
+                print ("Trace callback: \(str)")
+            })
             
-            print ("On session: \(session)")
-            print ("Disconnected")
-            abort ()
+            let callback: disconnectType = { sessionPtr, reason, message, messageLen, language, languageLen, abstract in
+                let session = Session.getSession(from: abstract)
+                
+                print ("On session: \(session)")
+                print ("Disconnected")
+                abort ()
+            }
+            libssh2_session_callback_set(sessionHandle, LIBSSH2_CALLBACK_DISCONNECT, unsafeBitCast(callback, to: UnsafeMutableRawPointer.self))
+            // TODO: wish of mine: should set all the callbacjs, and handle every scenario
+            setupCallbacks ()
         }
-        libssh2_session_callback_set(sessionHandle, LIBSSH2_CALLBACK_DISCONNECT, unsafeBitCast(callback, to: UnsafeMutableRawPointer.self))
-        // TODO: wish of mine: should set all the callbacjs, and handle every scenario
-        setupCallbacks ()
+    
     }
     
     var debugDescription: String {
@@ -111,6 +118,19 @@ class Session: CustomDebugStringConvertible {
     public func setupCallbacks () {
     }
     
+    // Returns the key and type for the host
+    public func hostKey () -> (key: [Int8], type: Int32)? {
+        var len: Int = 0
+        var type: Int32 = 0
+
+        let ptr = libssh2_session_hostkey(sessionHandle, &len, &type)
+        if ptr == nil {
+            return nil
+        }
+        let data = UnsafeBufferPointer (start: ptr, count: len)
+        return (data.map { $0 }, type)
+    }
+
     func handshake () {
         while libssh2_session_handshake(sessionHandle, 0) == LIBSSH2_ERROR_EAGAIN {
             // Repeat while we get EAGAIN
@@ -151,11 +171,12 @@ class Session: CustomDebugStringConvertible {
     }
     
     var timeout: Date?
+    public private(set) var banner: String = ""
     
     func setupSshConnection ()
     {
         handshake()
-        let res = String (cString: libssh2_session_banner_get(sessionHandle))
+        banner = String (cString: libssh2_session_banner_get(sessionHandle))
         let failureReason = delegate.authenticate(session: self)
         if authenticated {
             delegate.loggedIn(session: self)
@@ -170,22 +191,9 @@ class Session: CustomDebugStringConvertible {
         }
     }
     
-    /// <#Description#>
-    /// - Returns: bil on success, or a user-visible description on error
-    public func userAuthPassword (username: String, password: String) -> String? {
-        // TODO: we should likely handle the password change callback requirement:
-        // The callback: If the host accepts authentication but requests that the password be changed,
-        // this callback will be issued. If no callback is defined, but server required password change,
-        // authentication will fail.
-        
-        // Attempt basic password authentication. Note that many SSH servers which appear to support
-        // ordinary password authentication actually have it disabled and use Keyboard Interactive
-        // authentication (routed via PAM or another authentication backed) instead.
-        var ret: CInt
-        repeat {
-            ret = libssh2_userauth_password_ex (sessionHandle, username, UInt32(username.utf8.count), password, UInt32(password.utf8.count), nil)
-        } while ret == LIBSSH2_ERROR_EAGAIN
-        switch ret {
+    // Returns nil on success, or a description of the code on error
+    func authErrorToString (code: CInt) -> String? {
+        switch code {
         case 0:
             // We are fine, return
             return nil
@@ -207,6 +215,104 @@ class Session: CustomDebugStringConvertible {
         }
     }
     
+    /// Performs a username/password authentication
+    /// - Returns: nil on success, or a user-visible description on error
+    public func userAuthPassword (username: String, password: String) -> String? {
+        // TODO: we should likely handle the password change callback requirement:
+        // The callback: If the host accepts authentication but requests that the password be changed,
+        // this callback will be issued. If no callback is defined, but server required password change,
+        // authentication will fail.
+        
+        // Attempt basic password authentication. Note that many SSH servers which appear to support
+        // ordinary password authentication actually have it disabled and use Keyboard Interactive
+        // authentication (routed via PAM or another authentication backed) instead.
+        var ret: CInt
+        repeat {
+            ret = libssh2_userauth_password_ex (sessionHandle, username, UInt32(username.utf8.count), password, UInt32(password.utf8.count), nil)
+        } while ret == LIBSSH2_ERROR_EAGAIN
+        return authErrorToString(code: ret)
+    }
+    
+    var promptFunc: ((String)->String)?
+    
+    /// Performs an interactive user authentication for the specified username
+    /// - Parameter prompt: method to invoke to present the prompt to the user
+    /// - Returns: nil on success, or a user-visible description on error
+    public func userAuthKeyboardInteractive (username: String, prompt: @escaping (String)->String) -> String? {
+        var ret: CInt
+        self.promptFunc = prompt
+        
+        repeat {
+            ret = libssh2_userauth_keyboard_interactive_ex(sessionHandle, username, UInt32 (username.utf8.count)) { name, nameLen, instruction, instructionLen, numPrompts, prompts, responses, abstract in
+                for i in 0..<Int(numPrompts) {
+                    guard let prompt = prompts?[i], let text = prompt.text else {
+                        continue
+                    }
+
+                    let data = Data (bytes: UnsafeRawPointer (text), count: Int(prompt.length))
+
+                    guard let challenge = String (data: data, encoding: .utf8) else {
+                        continue
+                    }
+
+                    let session = Session.getSession (from: abstract!)
+                    let password = session.promptFunc! (challenge)
+                    let response = password.withCString {
+                         LIBSSH2_USERAUTH_KBDINT_RESPONSE(text: strdup($0), length: UInt32(strlen(password)))
+                    }
+                    responses?[i] = response
+                }
+            }
+        } while ret == LIBSSH2_ERROR_EAGAIN
+        self.promptFunc = nil
+        return authErrorToString(code: ret)
+    }
+    
+    /// Authenticates using the provided public/private key pairs
+    /// - Returns: nil on success, or a user-visible description on error
+    public func userAuthPublicKeyFromMemory (username: String, password: String, publicKey: String, privateKey: String) -> String? {
+        var ret: CInt = 0
+        
+        // Use the withCString rather than going to Data and then to pointers, because libssh2 ignores in some paths the size of the
+        // parameters and instead relies on a NUL characters at the end of the string to determine the size.
+        
+        privateKey.withCString {
+            let privPtr = $0
+            
+            publicKey.withCString {
+                let pubPtr = $0
+                repeat {
+                    ret = libssh2_userauth_publickey_frommemory(sessionHandle, username, username.utf8.count, pubPtr, strlen(pubPtr), privPtr, strlen(privPtr), password)
+                } while ret == LIBSSH2_ERROR_EAGAIN
+            }
+        }
+        return authErrorToString(code: ret)
+    }
+    
+    
+    
+    /// Authenticates the session using a callback method
+    /// - Parameter signCallback: method that receives a Data to be signed, and returns the signed data on success, nil on error
+    /// - Returns:nil on success, or a user-visible description on error
+    public func userAuthWithCallback (username: String, publicKey: Data, signCallback: @escaping (Data)->Data?) -> String? {
+        var ret: CInt = 0
+        let cbData = callbackData (pub: publicKey, signCallback: signCallback)
+        let ptrCbData = UnsafeMutablePointer<UnsafeMutableRawPointer?>.allocate(capacity: 1)
+        ptrCbData.pointee = Unmanaged.passUnretained(cbData).toOpaque()
+
+        //libssh2_session_set_timeout (self.sessionHandle, 0)
+        
+        publicKey.withUnsafeBytes {
+            let pubPtr = $0.bindMemory(to: UInt8.self).baseAddress!
+
+            let count = publicKey.count
+            repeat {
+                ret = libssh2_userauth_publickey (sessionHandle, username, pubPtr, count, authenticateCallback, ptrCbData)
+            } while ret == LIBSSH2_ERROR_EAGAIN
+        }
+        return authErrorToString(code: ret)
+    }
+    
     var channels: [Channel] = []
     
     public func openChannel (type: String, windowSize: CUnsignedInt = 2*1024*1024, packetSize: CUnsignedInt = 32768, readCallback: @escaping (Channel, Data?, Data?)->())  -> Channel? {
@@ -226,6 +332,51 @@ class Session: CustomDebugStringConvertible {
         channelsLock.lock()
         channels.append(channel)
         channelsLock.unlock()
+    }
+    
+    public func makeKnownHost () -> LibsshKnownHost? {
+        guard let kh = libssh2_knownhost_init (sessionHandle) else {
+            return nil
+        }
+        return LibsshKnownHost (knownHost: kh)
+    }
+    
+    public enum FingerprintHashType {
+        case md5
+        case sha1
+        case sha256
+    }
+    
+    public func fingerprintBytes(_ hashType: FingerprintHashType) -> [UInt8]? {
+        let type: Int32
+        let length: Int
+
+        switch hashType {
+            case .md5:
+                type = LIBSSH2_HOSTKEY_HASH_MD5
+                length = 16
+            case .sha1:
+                type = LIBSSH2_HOSTKEY_HASH_SHA1
+                length = 20
+            case .sha256:
+                type = LIBSSH2_HOSTKEY_HASH_SHA256
+                length = 32
+        }
+
+        guard let hashPointer = libssh2_hostkey_hash(self.sessionHandle, type) else {
+            return nil
+        }
+        
+        let hash = UnsafeRawPointer(hashPointer).assumingMemoryBound(to: UInt8.self)
+        
+        return (0..<length).map({ UInt8(hash[$0]) })
+    }
+    
+    public func disconnect (reason: String) {
+        var ret: CInt
+        repeat {
+            ret = libssh2_session_disconnect_ex(sessionHandle, SSH_DISCONNECT_BY_APPLICATION, reason, "")
+        } while ret == LIBSSH2_ERROR_EAGAIN
     }
 }
 
@@ -295,17 +446,20 @@ class SocketSession: Session {
                 }
             }
             self.bufferLock.unlock()
-            //self.sshQueue.sync {
-            DispatchQueue.main.sync {
-                self.channelsLock.lock()
-                for channel in self.channels {
+            self.channelsLock.lock()
+            let copy = self.channels
+            self.channelsLock.unlock()
+            
+            for channel in copy {
+                sshQueue.sync {
                     channel.ping()
                 }
-                self.channelsLock.unlock()
+            
             }
             if restart {
                 self.startIO()
             } else {
+                // Handle, this happens if the connection is reset for example - 
                 abort()
             }
         }
@@ -323,9 +477,9 @@ class SocketSession: Session {
         case .ready:
             log ("ready")
             startIO()
-            //sshQueue.async {
+            sshQueue.sync {
                 self.setupSshConnection ()
-            //}
+            }
         case .failed(_):
             log ("failed")
         case .cancelled:
@@ -343,8 +497,10 @@ class SocketSession: Session {
             switch gotError {
             case .posix(let posix):
                 print ("Got posix: \(posix)")
+                return ssize_t (-posix.rawValue)
             case .dns(let dns):
                 print ("Got dns: \(dns)")
+                return -1
             case .tls(let tls):
                 print ("Tls, should never happen \(tls)")
             default:
@@ -409,14 +565,15 @@ class SocketSession: Session {
         var consumedBytes = 0
         var wasError: NWError? = nil
         var i = 0
-        var left: Int = 0
+        //var left: Int = 0
+        
         while true {
             session.bufferLock.lock ()
             consumedBytes = min (length, session.buffer.count)
             session.buffer.copyBytes(to: x, count: consumedBytes)
             session.buffer = session.buffer.dropFirst(consumedBytes)
             wasError = session.buffer.count == 0 && session.bufferError != nil ? session.bufferError : nil
-            left = session.buffer.count
+            //left = session.buffer.count
             session.bufferLock.unlock()
             i += 1
             
@@ -467,6 +624,11 @@ class SocketSession: Session {
         libssh2_session_callback_set(sessionHandle, LIBSSH2_CALLBACK_SEND, unsafeBitCast(send, to: UnsafeMutableRawPointer.self))
         libssh2_session_callback_set(sessionHandle, LIBSSH2_CALLBACK_RECV, unsafeBitCast(recv, to: UnsafeMutableRawPointer.self))
     }
+    
+    public override func disconnect (reason: String) {
+        super.disconnect(reason: reason)
+        connection.forceCancel()
+    }
 }
 
 class ProxySession: Session {
@@ -479,3 +641,79 @@ class ProxySession: Session {
     }
 }
 
+// Used to pass data into the authenticateCallback
+class callbackData {
+    internal init(pub: Data, signCallback: @escaping (Data)->Data?) {
+        self.pub = pub
+        self.signCallback = signCallback
+    }
+
+    var pub: Data
+    var signCallback: (_ data: Data) -> Data?
+}
+
+// Support function for authenticating by callback
+func authenticateCallback (session: OpaquePointer?,
+                           sig: UnsafeMutablePointer<UnsafeMutablePointer<UInt8>?>?,
+                           sig_len: UnsafeMutablePointer<Int>?,
+                           data: UnsafePointer<UInt8>?,
+                           data_len: Int,
+                           abstract: UnsafeMutablePointer<UnsafeMutableRawPointer?>?) -> Int32 {
+
+    func encode (_ int: Int) -> Data {
+        var bigEndianInt = Int32 (int).bigEndian
+        return Data (bytes: &bigEndianInt, count: 4)
+    }
+
+    func encode (data: Data) -> Data {
+        return encode (data.count) + data
+    }
+
+    let cbData: callbackData = Unmanaged.fromOpaque (abstract!.pointee!).takeUnretainedValue()
+
+    let data = Data(bytes: data!, count: data_len)
+    guard let signedData = cbData.signCallback (data) else {
+        return -1
+    }
+
+    // While malloc is technically correct, this is swappable by users of libssh2, since we
+    // own libssh2, we can use malloc.
+    guard let target = malloc (signedData.count) else {
+        print ("Not enough ram to allocate \(signedData.count)")
+        return -1
+    }
+   
+    var rawmaybe: Data? = nil
+    if #available(iOS 13.0, macOS 10.15, *) {
+        rawmaybe = try? CryptoKit.P256.Signing.ECDSASignature(derRepresentation: signedData).rawRepresentation
+    }
+   
+    guard let raw = rawmaybe else {
+        return -1
+    }
+    let rawLength = raw.count / 2
+
+    // Check if we need to pad with 0x00 to prevent certain
+    // ssh servers from thinking r or s is negative
+    let paddingRange: ClosedRange<UInt8> = 0x80...0xFF
+    var r = Data(raw[0..<rawLength])
+    if paddingRange ~= r.first! {
+        r.insert(0x00, at: 0)
+    }
+    var s = Data(raw[rawLength...])
+    if paddingRange ~= s.first! {
+        s.insert(0x00, at: 0)
+    }
+
+    let signature = encode(data: r) + encode(data: s)
+
+    let bound = target.bindMemory(to: UInt8.self, capacity: signature.count)
+    for x in 0..<signature.count {
+        bound [x] = signature [x]
+    }
+
+    sig?.pointee = bound
+    sig_len?.pointee = signature.count
+
+    return 0
+}
