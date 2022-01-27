@@ -101,7 +101,7 @@ class Session: CustomDebugStringConvertible {
                 
                 print ("On session: \(session)")
                 print ("Disconnected")
-                abort ()
+                session.disconnect(reason: SSH_DISCONNECT_CONNECTION_LOST, description: "")
             }
             libssh2_session_callback_set(sessionHandle, LIBSSH2_CALLBACK_DISCONNECT, unsafeBitCast(callback, to: UnsafeMutableRawPointer.self))
             // TODO: wish of mine: should set all the callbacjs, and handle every scenario
@@ -371,11 +371,11 @@ class Session: CustomDebugStringConvertible {
         
         return (0..<length).map({ UInt8(hash[$0]) })
     }
-    
-    public func disconnect (reason: String) {
+
+    public func disconnect (reason: Int32 = SSH_DISCONNECT_BY_APPLICATION, description: String) {
         var ret: CInt
         repeat {
-            ret = libssh2_session_disconnect_ex(sessionHandle, SSH_DISCONNECT_BY_APPLICATION, reason, "")
+            ret = libssh2_session_disconnect_ex(sessionHandle, reason, description, "")
         } while ret == LIBSSH2_ERROR_EAGAIN
     }
 }
@@ -625,8 +625,8 @@ class SocketSession: Session {
         libssh2_session_callback_set(sessionHandle, LIBSSH2_CALLBACK_RECV, unsafeBitCast(recv, to: UnsafeMutableRawPointer.self))
     }
     
-    public override func disconnect (reason: String) {
-        super.disconnect(reason: reason)
+    public override func disconnect (reason: Int32 = SSH_DISCONNECT_BY_APPLICATION, description: String) {
+        super.disconnect(reason: reason, description: description)
         connection.forceCancel()
     }
 }

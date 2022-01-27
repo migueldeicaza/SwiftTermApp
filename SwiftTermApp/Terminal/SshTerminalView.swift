@@ -107,7 +107,9 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     
     func channelReader (channel: Channel, data: Data?, error: Data?) {
         if channel.receivedEOF {
-            self.connectionClosed (receivedEOF: true)
+            DispatchQueue.main.async {
+                self.connectionClosed (receivedEOF: true)
+            }
         }
         
         if let d = data {
@@ -292,8 +294,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             return "SHA256:" + d.base64EncodedString()
         }
         
-        func closeConnection (reason: String) {
-            session.disconnect(reason: reason)
+        func closeConnection (description: String) {
+            session.disconnect(description: description)
             Connections.remove(self)
         }
         
@@ -312,7 +314,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                     window = UIHostingController<HostAuthUnknown>(rootView: HostAuthUnknown(alias: host.alias, hostString: getHostName(), fingerprint: getFingerPrint(), cancelCallback: {
                             window.dismiss (animated: true, completion: nil)
                             
-                        closeConnection(reason: "User did not accept this host")
+                        closeConnection(description: "User did not accept this host")
                         }, okCallback: {
                             if let addError = knownHosts.add(hostname: self.host.hostname, port: Int32 (self.host.port), key: keyAndType.key, keyType: hostKeyType ?? "", comment: self.host.alias) {
                                 print ("Error adding host to knownHosts: \(addError)")
@@ -334,7 +336,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                     
                     window = UIHostingController<HostAuthKeyMismatch>(rootView: HostAuthKeyMismatch(alias: host.alias, hostString: getHostName(), fingerprint: getFingerPrint(), callback: {
                         window.dismiss(animated: true, completion: {
-                            closeConnection(reason: "Known host key mismatch")
+                            closeConnection(description: "Known host key mismatch")
                         })
                         
                     }))
