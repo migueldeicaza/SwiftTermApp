@@ -11,7 +11,7 @@ import Foundation
 import CSwiftSH
 
 /// Surfaces operations on channels
-public class Channel {
+public class Channel: Equatable {
     var channelHandle: OpaquePointer
     weak var session: Session!
     var buffer, bufferError: UnsafeMutablePointer<Int8>
@@ -19,6 +19,7 @@ public class Channel {
     var sendQueue = DispatchQueue (label: "channelSend", qos: .userInitiated)
     var readCallback: ((Channel, Data?, Data?)->())
 
+    
     init (session: Session, channelHandle: OpaquePointer, readCallback: @escaping (Channel, Data?, Data?)->()) {
         self.channelHandle = channelHandle
         self.session = session
@@ -31,7 +32,13 @@ public class Channel {
     deinit {
         libssh2_channel_free(channelHandle)
     }
+
+    // Equatable.func == 
+    public static func == (lhs: Channel, rhs: Channel) -> Bool {
+        lhs.channelHandle == rhs.channelHandle
+    }
     
+
     public func setEnvironment (name: String, value: String) {
         var ret: CInt = 0
         
@@ -74,6 +81,7 @@ public class Channel {
     // Invoked when there is some data received on the session, and we try to fetch it for the channel
     // if it is available, we dispatch it.
     func ping () {
+        dispatchPrecondition(condition: .onQueue(sshQueue))
         // standard channel
         let streamId: Int32 = 0
         var ret, retError: Int
@@ -84,7 +92,20 @@ public class Channel {
         let data = ret >= 0 ? Data (bytesNoCopy: buffer, count: ret, deallocator: .none) : nil
         let error = retError >= 0 ? Data (bytesNoCopy: bufferError, count: retError, deallocator: .none) : nil
         
-        readCallback (self, data, error)
+        if receivedEOF {
+            session.unregister(channel: self)
+        }
+        if ret >= 0 || retError >= 0 {
+            readCallback (self, data, error)
+        } else {
+            // Nothing read
+        }
+    }
+    
+    func close () {
+        while libssh2_channel_close(channelHandle) == LIBSSH2_ERROR_EAGAIN {
+            // Wait
+        }
     }
     
     /// Sends the provided data to the channel, and invokes the callback with the status code when doneaaaa
@@ -104,5 +125,13 @@ public class Channel {
                 callback (ret)
             }
         }
+    }
+    
+    func exec (_ command: String) -> Int32 {
+        var ret: Int32 = 0
+        repeat {
+            ret = libssh2_channel_process_startup (channelHandle, "exec", 4, command, UInt32(command.utf8.count))
+        } while ret == LIBSSH2_ERROR_EAGAIN
+        return ret
     }
 }

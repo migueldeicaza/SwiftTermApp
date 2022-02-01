@@ -25,9 +25,6 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     /// The current directory as reported by the remote host.
     public var currentDirectory: String? = nil
     
-    //var shell: SSHShell?
-    var sshQueue: DispatchQueue
-    
     var completeConnectSetup: () -> () = { }
     var session: SocketSession!
     var sessionChannel: Channel?
@@ -53,7 +50,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                             }
                             
                             return session.userAuthPublicKeyFromMemory (username: host.username,
-                                                                   password: password,
+                                                                   passPhrase: password,
                                                                    publicKey: sshKey.publicKey,
                                                                    privateKey: sshKey.privateKey)
                         case .ecdsa(inEnclave: true):
@@ -101,17 +98,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         abort ()
     }
     
-    func setupReadingWriting () {
-        
-    }
-    
     func channelReader (channel: Channel, data: Data?, error: Data?) {
-        if channel.receivedEOF {
-            DispatchQueue.main.async {
-                self.connectionClosed (receivedEOF: true)
-            }
-        }
-        
         if let d = data {
             let sliced = Array(d) [0...]
 
@@ -137,10 +124,16 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             }
             #endif
         }
+        if channel.receivedEOF {
+            DispatchQueue.main.async {
+                self.connectionClosed (receivedEOF: true)
+            }
+        }
     }
     
     func setupChannel (session: Session) {
-        sessionChannel = session.openChannel(type: "session", readCallback: channelReader)
+        // TODO: should this be different based on the locale?
+        sessionChannel = session.openSessionChannel(lang: "en_US.UTF-8", readCallback: channelReader)
 
         guard let channel = sessionChannel else {
             print ("Failed to open channel")
@@ -150,9 +143,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         if let error = checkHostIntegrity () {
             print ("Got an error during integrity check: \(error)")
         }
-        setupReadingWriting ()
-        // TODO: should this be different based on the locale?
-        channel.setEnvironment(name: "LANG", value: "en_US.UTF-8")
+        
         let terminal = getTerminal()
         var status: Int32
         status = channel.requestPseudoTerminal(name: "xterm-256color", cols: terminal.cols, rows: terminal.rows)
@@ -171,12 +162,23 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     // Delegate SocketSessionDelegate.loggedIn: invoked when the connection has been authenticated
     func loggedIn (session: Session) {
         setupChannel (session: session)
+
+#if false
+        sshQueue.async {
+            dispatchPrecondition(condition: .onQueue(sshQueue))
+            
+            session.run(command: "/usr/bin/uname", lang: "en_US.UTF_8") { stdout, stderr in
+                let s = String (bytes: stdout, encoding: .utf8) ?? "<empty>"
+                let e = String (bytes: stderr, encoding: .utf8) ?? "<empty>"
+                
+                print ("Uname: \(s) err: \(e)")
+            }
+        }
+#endif
     }
     
     override init (frame: CGRect, host: Host) throws
     {
-        sshQueue = DispatchQueue.global(qos: .background)
-        
         try super.init (frame: frame, host: host)
 
         session = SocketSession(host: host.hostname, port: UInt16 (host.port & 0xffff), delegate: self)
@@ -268,6 +270,13 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             
             parent.present(window, animated: true, completion: nil)
         }
+    }
+        
+    var debugLog: [(Date,String)] = []
+    func debug(session: Session, alwaysDisplay: Bool, message: Data, language: Data) {
+        let msg = String (bytes: message, encoding: .utf8) ?? "<invalid encoding>"
+        print ("debug: \(msg)")
+        debugLog.append ((Date (),msg))
     }
     
     /// Checks that we are connecting to the host we thought we were,
