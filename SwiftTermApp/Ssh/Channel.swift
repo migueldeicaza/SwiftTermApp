@@ -21,6 +21,8 @@ public class Channel: Equatable {
 
     
     init (session: Session, channelHandle: OpaquePointer, readCallback: @escaping (Channel, Data?, Data?)->()) {
+        dispatchPrecondition(condition: .onQueue(sshQueue))
+
         self.channelHandle = channelHandle
         self.session = session
         self.readCallback = readCallback
@@ -30,6 +32,8 @@ public class Channel: Equatable {
     }
     
     deinit {
+        dispatchPrecondition(condition: .onQueue(sshQueue))
+
         libssh2_channel_free(channelHandle)
     }
 
@@ -40,6 +44,8 @@ public class Channel: Equatable {
     
 
     public func setEnvironment (name: String, value: String) {
+        dispatchPrecondition(condition: .onQueue(sshQueue))
+
         var ret: CInt = 0
         
         repeat {
@@ -49,6 +55,8 @@ public class Channel: Equatable {
     
     // Returns 0 on success, or a LIBSSH2 error otherwise, always retries operations, so EAGAIN is never returned
     public func requestPseudoTerminal (name: String, cols: Int, rows: Int) -> Int32 {
+        dispatchPrecondition(condition: .onQueue(sshQueue))
+
         var ret: Int32 = 0
         repeat {
             ret = libssh2_channel_request_pty_ex(channelHandle, name, UInt32(name.utf8.count), nil, 0, Int32(cols), Int32(rows), LIBSSH2_TERM_WIDTH_PX, LIBSSH2_TERM_HEIGHT_PX)
@@ -57,6 +65,8 @@ public class Channel: Equatable {
     }
     
     public func setTerminalSize (cols: Int, rows: Int, pixelWidth: Int, pixelHeight: Int) {
+        dispatchPrecondition(condition: .onQueue(sshQueue))
+
         var ret: Int32 = 0
         repeat {
             ret = libssh2_channel_request_pty_size_ex(channelHandle, Int32(cols), Int32(rows), Int32(pixelWidth), Int32(pixelHeight))
@@ -65,6 +75,8 @@ public class Channel: Equatable {
 
     // Returns 0 on success, or a LIBSSH2 error otherwise, always retries operations, so EAGAIN is never returned
     public func processStartup (request: String, message: String?) -> Int32 {
+        dispatchPrecondition(condition: .onQueue(sshQueue))
+
         var ret: Int32 = 0
         repeat {
             ret = libssh2_channel_process_startup (channelHandle, request, UInt32(request.utf8.count), message, message == nil ? 0 : UInt32(message!.utf8.count))
@@ -74,7 +86,9 @@ public class Channel: Equatable {
     
     public var receivedEOF: Bool {
         get {
-            libssh2_channel_eof(channelHandle) == 1
+            dispatchPrecondition(condition: .onQueue(sshQueue))
+
+            return libssh2_channel_eof(channelHandle) == 1
         }
     }
     
@@ -103,6 +117,8 @@ public class Channel: Equatable {
     }
     
     func close () {
+        dispatchPrecondition(condition: .onQueue(sshQueue))
+
         while libssh2_channel_close(channelHandle) == LIBSSH2_ERROR_EAGAIN {
             // Wait
         }
@@ -128,6 +144,8 @@ public class Channel: Equatable {
     }
     
     func exec (_ command: String) -> Int32 {
+        dispatchPrecondition(condition: .onQueue(sshQueue))
+
         var ret: Int32 = 0
         repeat {
             ret = libssh2_channel_process_startup (channelHandle, "exec", 4, command, UInt32(command.utf8.count))

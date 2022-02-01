@@ -23,6 +23,8 @@ public enum KnownHostStatus {
 
 class LibsshKnownHost {
     func check(hostName: String, port: Int32, key: [Int8]) -> (status: KnownHostStatus, key: String?) { // (status: KnownHostStatus, knownHost: libssh2_knownhost?) {
+        dispatchPrecondition(condition: .onQueue(sshQueue))
+
         var ptr: UnsafeMutablePointer<libssh2_knownhost>? = UnsafeMutablePointer<libssh2_knownhost>.allocate(capacity: 1)
         var kcopy = key
         
@@ -54,6 +56,8 @@ class LibsshKnownHost {
     
     // returns nil on success, otherwise an error description
     func readFile (filename: String) -> String? {
+        dispatchPrecondition(condition: .onQueue(sshQueue))
+
         let ret = libssh2_knownhost_readfile(khHandle, filename, LIBSSH2_KNOWNHOST_FILE_OPENSSH)
         if ret < 0 {
             return libSsh2ErrorToString(error: ret)
@@ -63,6 +67,8 @@ class LibsshKnownHost {
     
     // returns nil on success, otherwise an error description
     func writeFile (filename: String) -> String? {
+        dispatchPrecondition(condition: .onQueue(sshQueue))
+
         let ret = libssh2_knownhost_writefile(khHandle, filename, LIBSSH2_KNOWNHOST_FILE_OPENSSH)
         if ret < 0 {
             return libSsh2ErrorToString (error: ret)
@@ -72,6 +78,8 @@ class LibsshKnownHost {
     
     /// Returns nil on success, otherwise a string describing the error
     func add(hostname: String, port: Int32? = nil, key: [Int8], keyType: String, comment: String) -> String? {
+        dispatchPrecondition(condition: .onQueue(sshQueue))
+
         let fullhostname: String
         if let p = port {
             fullhostname = "[\(hostname)]:\(p)"
