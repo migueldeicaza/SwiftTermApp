@@ -8,7 +8,7 @@
 
 import Foundation
 import SwiftUI
-import SwiftSH
+
 struct HostConnectionError: View {
     @State var host: Host
     @State var error: String
