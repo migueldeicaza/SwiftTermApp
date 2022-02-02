@@ -212,7 +212,7 @@ class DataStore: ObservableObject {
         if let keyData = try? coder.encode (keys) {
             d.set (keyData, forKey: keysArrayKey)
         }
-        
+        d.synchronize()
         saveKnownHosts ()
     }
     
@@ -271,13 +271,14 @@ class DataStore: ObservableObject {
         return c
     }
 
-    func updateGuess (for target: Host, to guess: String)
+    func updateKind (for target: Host, to guess: String)
     {
         for i in 0..<hosts.count {
             if hosts [i].id == target.id {
                 hosts [i].hostKind = guess
             }
         }
+        saveState()
     }
 
     // This for now returns the name, but if it is ambiguous, it could return a hash or something else

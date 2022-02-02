@@ -278,8 +278,10 @@ class Session: CustomDebugStringConvertible {
         // ordinary password authentication actually have it disabled and use Keyboard Interactive
         // authentication (routed via PAM or another authentication backed) instead.
         var ret: CInt
+        let usernameCount = UInt32(username.utf8.count)
+        let passwordCount = UInt32(password.utf8.count)
         repeat {
-            ret = libssh2_userauth_password_ex (sessionHandle, username, UInt32(username.utf8.count), password, UInt32(password.utf8.count), nil)
+            ret = libssh2_userauth_password_ex (sessionHandle, username, usernameCount, password, passwordCount, nil)
         } while ret == LIBSSH2_ERROR_EAGAIN
         return authErrorToString(code: ret)
     }
@@ -295,8 +297,9 @@ class Session: CustomDebugStringConvertible {
         var ret: CInt
         self.promptFunc = prompt
         
+        let usernameCount = UInt32 (username.utf8.count)
         repeat {
-            ret = libssh2_userauth_keyboard_interactive_ex(sessionHandle, username, UInt32 (username.utf8.count)) { name, nameLen, instruction, instructionLen, numPrompts, prompts, responses, abstract in
+            ret = libssh2_userauth_keyboard_interactive_ex(sessionHandle, username, usernameCount) { name, nameLen, instruction, instructionLen, numPrompts, prompts, responses, abstract in
                 for i in 0..<Int(numPrompts) {
                     guard let prompt = prompts?[i], let text = prompt.text else {
                         continue
@@ -336,13 +339,14 @@ class Session: CustomDebugStringConvertible {
         // Use the withCString rather than going to Data and then to pointers, because libssh2 ignores in some paths the size of the
         // parameters and instead relies on a NUL characters at the end of the string to determine the size.
         
+        let usernameCount = username.utf8.count
         privateKey.withCString {
             let privPtr = $0
             
             publicKey.withCString {
                 let pubPtr = $0
                 repeat {
-                    ret = libssh2_userauth_publickey_frommemory(sessionHandle, username, username.utf8.count, pubPtr, strlen(pubPtr), privPtr, strlen(privPtr), passPhrase)
+                    ret = libssh2_userauth_publickey_frommemory(sessionHandle, username, usernameCount, pubPtr, strlen(pubPtr), privPtr, strlen(privPtr), passPhrase)
                 } while ret == LIBSSH2_ERROR_EAGAIN
             }
         }
@@ -390,8 +394,9 @@ class Session: CustomDebugStringConvertible {
     public func openChannel (type: String, windowSize: CUnsignedInt = 2*1024*1024, packetSize: CUnsignedInt = 32768, readCallback: @escaping (Channel, Data?, Data?)->())  -> Channel? {
         var ret: OpaquePointer?
         dispatchPrecondition(condition: .onQueue(sshQueue))
+        let typeCount = UInt32(type.utf8.count)
         repeat {
-            ret = libssh2_channel_open_ex(sessionHandle, type, UInt32(type.utf8.count), windowSize, packetSize, nil, 0)
+            ret = libssh2_channel_open_ex(sessionHandle, type, typeCount, windowSize, packetSize, nil, 0)
         } while ret == nil && libssh2_session_last_errno (sessionHandle) == LIBSSH2_ERROR_EAGAIN
         guard let channelHandle = ret else {
             return nil
@@ -455,6 +460,57 @@ class Session: CustomDebugStringConvertible {
                 return
             }
         }
+    }
+    
+    /// Runs a command on the remote server using the specified language, and delivers the data to the callback as strings
+    /// - Parameters:
+    ///  - command: the command to execute on the remote server
+    ///  - lang: The desired value for the LANG environment variable to be set on the remote end
+    ///  - resultCallback: method that is invoked when the command completes containing the stdout and stderr results as string parameters
+    public func runSimple (command: String, lang: String, resultCallback: @escaping (String?, String?)->()) {
+        var stdout = Data()
+        var stderr = Data()
+        
+        run (command: command, lang: lang) { channel, out, err in
+            //print ("Run callback for \(command) out=\(out?.count) err=\(err?.count) eof=\(channel.receivedEOF)")
+            if let gotOut = out {
+                stdout.append(gotOut)
+            }
+            if let gotErr = err {
+                stderr.append(gotErr)
+            }
+            if channel.receivedEOF {
+                //DispatchQueue.main.async {
+                    let s = String (bytes: stdout, encoding: .utf8)
+                    let e = String (bytes: stderr, encoding: .utf8)
+                    
+
+                    resultCallback (s, e)
+                //}
+                return
+            }
+        }
+    }
+
+    /// Opens a new channel with a specified type (session, direct-tcpip, or tcpip-forward)
+    /// - Parameters:
+    ///  - type: session, direct-tcpip, or tcpip-forward
+    ///  - windowSize: Maximum amount of unacknowledged data remote host is allowed to send before receiving an SSH_MSG_CHANNEL_WINDOW_ADJUST packet, defaults to 2 megabytes
+    ///  - packetSize: Maximum number of bytes remote host is allowed to send in a single SSH_MSG_CHANNEL_DATA or SSG_MSG_CHANNEL_EXTENDED_DATA packet, defaults to 32k
+    ///  - readCallback: method that is invoked when new data is available on the channel, it receives the channel source as a parameter, and two Data? parameters,
+    ///   one for standard output, and one for standard error.
+    public func openSftp () -> SFTP? {
+        var ret: OpaquePointer?
+        dispatchPrecondition(condition: .onQueue(sshQueue))
+        
+        repeat {
+            ret = libssh2_sftp_init(sessionHandle)
+        } while ret == nil && libssh2_session_last_errno (sessionHandle) == LIBSSH2_ERROR_EAGAIN
+        
+        guard let sftpHandle = ret else {
+            return nil
+        }
+        return SFTP (session: self, sftpHandle: sftpHandle)
     }
     
     /// Invoke this method to activate a channel - this will ensure that the channel will be notified of new data availability

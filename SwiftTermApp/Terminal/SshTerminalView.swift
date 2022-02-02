@@ -170,20 +170,14 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     func loggedIn (session: Session) {
         setupChannel (session: session)
 
-#if false
-        sshQueue.async {
-            dispatchPrecondition(condition: .onQueue(sshQueue))
-            
-            session.run(command: "/usr/bin/uname", lang: "en_US.UTF_8") { stdout, stderr in
-                let s = String (bytes: stdout, encoding: .utf8) ?? "<empty>"
-                let e = String (bytes: stderr, encoding: .utf8) ?? "<empty>"
-                
-                print ("Uname: \(s) err: \(e)")
+        // If the user did not set an icon
+        if host.hostKind == "" {
+            sshQueue.async {
+                self.guessOsIcon ()
             }
         }
-#endif
     }
-    
+
     override init (frame: CGRect, host: Host) throws
     {
         try super.init (frame: frame, host: host)
@@ -336,15 +330,6 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                             Connections.remove(self)
                             window.dismiss (animated: true) { semaphore.signal ()}
                         }, okCallback: {
-                            if let addError = knownHosts.add(hostname: self.host.hostname, port: Int32 (self.host.port), key: key, keyType: hostKeyType, comment: self.host.alias) {
-                                print ("Error adding host to knownHosts: \(addError)")
-                                return
-                            }
-                            if let writeError = knownHosts.writeFile(filename: DataStore.shared.knownHostsPath) {
-                                print ("Error writing knownhosts file \(writeError)")
-                                return
-                            }
-                            DataStore.shared.loadKnownHosts()
                             window.dismiss (animated: true) {
                                 semaphore.signal ()
                             }
@@ -353,6 +338,15 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                 }
             }
             let _ = semaphore.wait(timeout: DispatchTime.distantFuture)
+            if ok {
+                if let addError = knownHosts.add(hostname: self.host.hostname, port: Int32 (self.host.port), key: key, keyType: hostKeyType, comment: self.host.alias) {
+                    print ("Error adding host to knownHosts: \(addError)")
+                }
+                if let writeError = knownHosts.writeFile(filename: DataStore.shared.knownHostsPath) {
+                    print ("Error writing knownhosts file \(writeError)")
+                }
+                DataStore.shared.loadKnownHosts()
+            }
             return ok
         }
         
@@ -463,5 +457,59 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             }
         }
     }
+    
+    // Attempts to guess the kind of OS to update the icon displayed for the host.hostKind
+    func guessOsIcon () {
+        dispatchPrecondition(condition: .onQueue(sshQueue))
+        
+        let sftp = session.openSftp()
+        
+        // If this is a Linux system
+        if let _ = sftp?.stat(path: "/etc") {
+            session.runSimple (command: "/usr/bin/uname || /bin/uname", lang: "en_US.UTF_8") { stdout, stderr in
+                var os = ""
+                let stdout = stdout?.replacingOccurrences(of: "\n", with: "")
+                switch stdout {
+                case "Linux":
+                    os = "linux"
+                    if let content = sftp?.readFileAsString(path: "/etc/os-release", limit: 64*1024) {
+                        for line in  content.split(separator: "\n") {
+                            if line.starts(with: "ID=") {
+                                switch line  {
+                                case "ID=raspbian":
+                                    os = "raspberry-pi"
+                                case "ID=fedora":
+                                    os = "fedora"
+                                case "ID=rhel":
+                                    os = "redhat"
+                                case "ID=ubuntu":
+                                    os = "ubuntu"
+                                case "ID=opensuse", "ID=opensuse-leap", "ID=sles", "ID=sles_sap":
+                                    os = "suse"
+                                default:
+                                    break
+                                }
+                                break
+                            }
+                        }
+                    }
+                    
+                case "Darwin":
+                    os = "mac"
+                    
+                default:
+                    break
+                }
+                DispatchQueue.main.async {
+                    DataStore.shared.updateKind(for: self.host, to: os)
+                }
+            }
+        } else {
+            DispatchQueue.main.async {
+                DataStore.shared.updateKind(for: self.host, to: "windows")
+            }
+        }
+    }
+    
 }
 
