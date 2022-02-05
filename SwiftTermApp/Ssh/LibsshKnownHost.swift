@@ -23,7 +23,6 @@ public enum KnownHostStatus {
 
 class LibsshKnownHost {
     func check(hostName: String, port: Int32, key: [Int8]) -> (status: KnownHostStatus, key: String?) { // (status: KnownHostStatus, knownHost: libssh2_knownhost?) {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
 
         var ptr: UnsafeMutablePointer<libssh2_knownhost>? = UnsafeMutablePointer<libssh2_knownhost>.allocate(capacity: 1)
         var kcopy = key
@@ -49,20 +48,16 @@ class LibsshKnownHost {
     }
     
     var khHandle: OpaquePointer
+    weak var sessionActor: SessionActor?
     
-    init (knownHost: OpaquePointer){
+    init (sessionActor: SessionActor, knownHost: OpaquePointer){
+        self.sessionActor = sessionActor
         self.khHandle = knownHost
     }
     
     // returns nil on success, otherwise an error description
-    func readFile (filename: String) -> String? {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-
-        let ret = libssh2_knownhost_readfile(khHandle, filename, LIBSSH2_KNOWNHOST_FILE_OPENSSH)
-        if ret < 0 {
-            return libSsh2ErrorToString(error: ret)
-        }
-        return nil
+    func readFile (filename: String) async -> String? {
+        return await sessionActor!.readFile (khHandle, filename: filename)
     }
     
     // returns nil on success, otherwise an error description

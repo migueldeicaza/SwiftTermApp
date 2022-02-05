@@ -48,6 +48,7 @@
 		49A4466126A3D76200A636DC /* Commands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A4466026A3D76200A636DC /* Commands.swift */; };
 		49A64C6126842A480069C7FA /* HostConnectionClosed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A64C6026842A480069C7FA /* HostConnectionClosed.swift */; };
 		49B49D9C27A9B7F00031A9AE /* SFTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B49D9B27A9B7F00031A9AE /* SFTP.swift */; };
+		49B49DB127AC70B40031A9AE /* SessionActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B49DB027AC70B40031A9AE /* SessionActor.swift */; };
 		49B84C53268137C700B36066 /* HostAuthUnknown.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B84C52268137C700B36066 /* HostAuthUnknown.swift */; };
 		49B84C5526813F9400B36066 /* HostAuthKeyMismatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B84C5426813F9400B36066 /* HostAuthKeyMismatch.swift */; };
 		49BA359626751B2700B63510 /* GenerateSecureEnclave.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BA359526751B2700B63510 /* GenerateSecureEnclave.swift */; };
@@ -125,6 +126,7 @@
 		49A4466026A3D76200A636DC /* Commands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Commands.swift; sourceTree = "<group>"; };
 		49A64C6026842A480069C7FA /* HostConnectionClosed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostConnectionClosed.swift; sourceTree = "<group>"; };
 		49B49D9B27A9B7F00031A9AE /* SFTP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SFTP.swift; sourceTree = "<group>"; };
+		49B49DB027AC70B40031A9AE /* SessionActor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionActor.swift; sourceTree = "<group>"; };
 		49B84C512681215300B36066 /* es-419 */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "es-419"; path = "es-419.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
 		49B84C52268137C700B36066 /* HostAuthUnknown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostAuthUnknown.swift; sourceTree = "<group>"; };
 		49B84C5426813F9400B36066 /* HostAuthKeyMismatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostAuthKeyMismatch.swift; sourceTree = "<group>"; };
@@ -249,6 +251,7 @@
 				493F4F33276511CE00838AC7 /* Channel.swift */,
 				498DC727279A09FA003EC3CC /* LibsshKnownHost.swift */,
 				49B49D9B27A9B7F00031A9AE /* SFTP.swift */,
+				49B49DB027AC70B40031A9AE /* SessionActor.swift */,
 			);
 			path = Ssh;
 			sourceTree = "<group>";
@@ -543,6 +546,7 @@
 				49BA35ED267BE7AB00B63510 /* HostKeysList.swift in Sources */,
 				4967BA0224592D3600A9D2A6 /* SessionsView.swift in Sources */,
 				49BA35F1267C3F2600B63510 /* CreditsView.swift in Sources */,
+				49B49DB127AC70B40031A9AE /* SessionActor.swift in Sources */,
 				498DC728279A09FA003EC3CC /* LibsshKnownHost.swift in Sources */,
 				4973B42C24650B440087D978 /* UIViewController+SwiftUI.swift in Sources */,
 				49BA359C2676F15D00B63510 /* KeySummaryView.swift in Sources */,
