@@ -49,13 +49,13 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                                 password = sshKey.passphrase
                             }
                             
-                            return session.userAuthPublicKeyFromMemory (username: host.username,
+                            return await session.userAuthPublicKeyFromMemory (username: host.username,
                                                                    passPhrase: password,
                                                                    publicKey: sshKey.publicKey,
                                                                    privateKey: sshKey.privateKey)
                         case .ecdsa(inEnclave: true):
                             if let keyHandle = sshKey.getKeyHandle() {
-                                return session.userAuthWithCallback(username: host.username, publicKey: sshKey.getPublicKeyAsData()) { dataToSign in
+                                return await session.userAuthWithCallback(username: host.username, publicKey: sshKey.getPublicKeyAsData()) { dataToSign in
                                     var error: Unmanaged<CFError>?
                                     guard let signed = SecKeyCreateSignature(keyHandle, .ecdsaSignatureMessageX962SHA256, dataToSign as CFData, &error) else {
                                         return nil
@@ -75,7 +75,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             case "password":
                 if host.usePassword && host.password != "" {
                     // TODO: perhaps empty passwords are ok?
-                    if let error = session.userAuthPassword (username: host.username, password: host.password) {
+                    if let error = await session.userAuthPassword (username: host.username, password: host.password) {
                         return error
                     }
                     return nil
@@ -338,8 +338,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
         
         @MainActor
-        func getFingerPrint () -> String {
-            guard let bytes = session.fingerprintBytes(.sha256) else { return "Unknown" }
+        func getFingerPrint () async -> String {
+            guard let bytes = await session.getFingerprintBytes() else { return "Unknown" }
             let d = Data (bytes)
             return "SHA256:" + d.base64EncodedString()
         }
@@ -379,15 +379,15 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             
             switch res.status {
             case .notFound, .failure:
-                if confirmHostAuthUnknown(hostKeyType: hostKeyType ?? "", key: keyAndType.key, fingerprint: getFingerPrint(), knownHosts: knownHosts, host: host) {
+                if confirmHostAuthUnknown(hostKeyType: hostKeyType ?? "", key: keyAndType.key, fingerprint: await getFingerPrint(), knownHosts: knownHosts, host: host) {
                     return true
                 }
-                session.disconnect(description: "User did not accept this host")
+                await session.disconnect(description: "User did not accept this host")
                 return false
 
             case .keyMismatch:
-                showHostKeyMismatch (fingerprint: getFingerPrint())
-                session.disconnect(description: "Known host key mismatch")
+                showHostKeyMismatch (fingerprint: await getFingerPrint())
+                await session.disconnect(description: "Known host key mismatch")
                 return false
             case .match:
                 // We are good!
@@ -412,8 +412,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     
     public func sizeChanged(source: TerminalView, newCols: Int, newRows: Int) {
         if let c = sessionChannel {
-            sshQueue.async {
-                c.setTerminalSize(cols: newCols, rows: newRows, pixelWidth: 1, pixelHeight: 1)
+            Task {
+                await c.setTerminalSize(cols: newCols, rows: newRows, pixelWidth: 1, pixelHeight: 1)
             }
         }
     }
@@ -458,57 +458,57 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     
     // Attempts to guess the kind of OS to update the icon displayed for the host.hostKind
     func guessOsIcon () async {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-        
-        let sftp = session.openSftp()
-        
-        // If this is a Linux system
-        if let _ = sftp?.stat(path: "/etc") {
-            await session.runSimple (command: "/usr/bin/uname || /bin/uname", lang: "en_US.UTF_8") { stdout, stderr in
-                var os = ""
-                let stdout = stdout?.replacingOccurrences(of: "\n", with: "")
-                switch stdout {
-                case "Linux":
-                    os = "linux"
-                    if let content = sftp?.readFileAsString(path: "/etc/os-release", limit: 64*1024) {
-                        for line in  content.split(separator: "\n") {
-                            if line.starts(with: "ID=") {
-                                switch line  {
-                                case "ID=raspbian":
-                                    os = "raspberry-pi"
-                                case "ID=fedora":
-                                    os = "fedora"
-                                case "ID=rhel":
-                                    os = "redhat"
-                                case "ID=ubuntu":
-                                    os = "ubuntu"
-                                case "ID=opensuse", "ID=opensuse-leap", "ID=sles", "ID=sles_sap":
-                                    os = "suse"
-                                default:
-                                    break
-                                }
-                                break
-                            }
-                        }
-                    }
-                    
-                case "Darwin":
-                    os = "mac"
-                    
-                default:
-                    break
-                }
-                DispatchQueue.main.async {
-                    abort()
-                    // TODO: next line
-                    // DataStore.shared.updateKind(for: self.host, to: os)
-                }
-            }
-        } else {
-            DispatchQueue.main.async {
-                DataStore.shared.updateKind(for: self.host, to: "windows")
-            }
-        }
+//        dispatchPrecondition(condition: .onQueue(sshQueue))
+//
+//        let sftp = await session.openSftp()
+//
+//        // If this is a Linux system
+//        if let _ = sftp?.stat(path: "/etc") {
+//            await session.runSimple (command: "/usr/bin/uname || /bin/uname", lang: "en_US.UTF_8") { stdout, stderr in
+//                var os = ""
+//                let stdout = stdout?.replacingOccurrences(of: "\n", with: "")
+//                switch stdout {
+//                case "Linux":
+//                    os = "linux"
+//                    if let content = await sftp?.readFileAsString(path: "/etc/os-release", limit: 64*1024) {
+//                        for line in  content.split(separator: "\n") {
+//                            if line.starts(with: "ID=") {
+//                                switch line  {
+//                                case "ID=raspbian":
+//                                    os = "raspberry-pi"
+//                                case "ID=fedora":
+//                                    os = "fedora"
+//                                case "ID=rhel":
+//                                    os = "redhat"
+//                                case "ID=ubuntu":
+//                                    os = "ubuntu"
+//                                case "ID=opensuse", "ID=opensuse-leap", "ID=sles", "ID=sles_sap":
+//                                    os = "suse"
+//                                default:
+//                                    break
+//                                }
+//                                break
+//                            }
+//                        }
+//                    }
+//
+//                case "Darwin":
+//                    os = "mac"
+//
+//                default:
+//                    break
+//                }
+//                DispatchQueue.main.async {
+//                    abort()
+//                    // TODO: next line
+//                    // DataStore.shared.updateKind(for: self.host, to: os)
+//                }
+//            }
+//        } else {
+//            DispatchQueue.main.async {
+//                DataStore.shared.updateKind(for: self.host, to: "windows")
+//            }
+//        }
     }
     
 }

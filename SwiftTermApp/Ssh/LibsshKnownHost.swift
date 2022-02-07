@@ -48,7 +48,7 @@ class LibsshKnownHost {
     }
     
     var khHandle: OpaquePointer
-    weak var sessionActor: SessionActor?
+    weak var sessionActor: SessionActor!
     
     init (sessionActor: SessionActor, knownHost: OpaquePointer){
         self.sessionActor = sessionActor
@@ -57,7 +57,7 @@ class LibsshKnownHost {
     
     // returns nil on success, otherwise an error description
     func readFile (filename: String) async -> String? {
-        return await sessionActor!.readFile (khHandle, filename: filename)
+        return await sessionActor.readFile (khHandle, filename: filename)
     }
     
     // returns nil on success, otherwise an error description

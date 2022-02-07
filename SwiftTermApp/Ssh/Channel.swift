@@ -13,16 +13,18 @@ import CSwiftSH
 /// Surfaces operations on channels
 public class Channel: Equatable {
     var channelHandle: OpaquePointer
-    weak var sessionActor: SessionActor?
+    weak var sessionActor: SessionActor!
+    weak var session: Session!
     var buffer, bufferError: UnsafeMutablePointer<Int8>
     let bufferSize = 32*1024
     var sendQueue = DispatchQueue (label: "channelSend", qos: .userInitiated)
     var readCallback: ((Channel, Data?, Data?)->())
 
     
-    init (session: SessionActor, channelHandle: OpaquePointer, readCallback: @escaping (Channel, Data?, Data?)->()) {
+    init (session: Session, channelHandle: OpaquePointer, readCallback: @escaping (Channel, Data?, Data?)->()) {
         self.channelHandle = channelHandle
-        self.sessionActor = session
+        self.sessionActor = session.sessionActor
+        self.session = session
         self.readCallback = readCallback
         buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
         bufferError = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
@@ -42,26 +44,21 @@ public class Channel: Equatable {
     
 
     public func setEnvironment (name: String, value: String) async {
-        let _ = await sessionActor!.channelSetEnv (channelHandle, name: name, value: value)
+        let _ = await sessionActor.channelSetEnv (self, name: name, value: value)
     }
     
     // Returns 0 on success, or a LIBSSH2 error otherwise, always retries operations, so EAGAIN is never returned
     public func requestPseudoTerminal (name: String, cols: Int, rows: Int) async -> Int32 {
-        return await sessionActor!.requestPseudoTerminal(channelHandle, name: name, cols: cols, rows: rows)
+        return await sessionActor.requestPseudoTerminal(self, name: name, cols: cols, rows: rows)
     }
     
-    public func setTerminalSize (cols: Int, rows: Int, pixelWidth: Int, pixelHeight: Int) {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-
-        var ret: Int32 = 0
-        repeat {
-            ret = libssh2_channel_request_pty_size_ex(channelHandle, Int32(cols), Int32(rows), Int32(pixelWidth), Int32(pixelHeight))
-        } while ret == LIBSSH2_ERROR_EAGAIN
+    public func setTerminalSize (cols: Int, rows: Int, pixelWidth: Int, pixelHeight: Int) async {
+        return await sessionActor.setTerminalSize(self, cols: cols, rows: rows, pixelWidth: pixelWidth, pixelHeight: pixelHeight)
     }
 
     // Returns 0 on success, or a LIBSSH2 error otherwise, always retries operations, so EAGAIN is never returned
     public func processStartup (request: String, message: String?) async -> Int32 {
-        return await sessionActor!.processStartup(channelHandle, request: request, message: message)
+        return await sessionActor.processStartup(self, request: request, message: message)
     }
     
     public var receivedEOF: Bool {
@@ -87,10 +84,7 @@ public class Channel: Equatable {
         let error = retError >= 0 ? Data (bytesNoCopy: bufferError, count: retError, deallocator: .none) : nil
         
         if receivedEOF {
-            
-            abort ()
-            // TODO, next line:
-            // session.unregister(channel: self)
+            session.unregister(channel: self)
         }
         if ret >= 0 || retError >= 0 {
             readCallback (self, data, error)
