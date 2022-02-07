@@ -20,11 +20,15 @@ public class SFTP {
     }
     
     deinit {
-        Task { await session.sessionActor.sftpShutdown (sftpHandle) }
+        let h = sftpHandle
+        let k = session.sessionActor
+        Task {
+            await k.sftpShutdown (h)
+        }
     }
 
-    func stat (path: String) -> LIBSSH2_SFTP_ATTRIBUTES? {
-        session.sessionActor.sftpStat (self, path: path)
+    func stat (path: String) async -> LIBSSH2_SFTP_ATTRIBUTES? {
+        await session.sessionActor.sftpStat (self, path: path)
     }
 
     func llOpen (path: String, flags: UInt, file: Bool) async -> OpaquePointer? {

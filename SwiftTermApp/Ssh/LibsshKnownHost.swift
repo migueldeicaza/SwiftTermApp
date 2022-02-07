@@ -57,7 +57,7 @@ class LibsshKnownHost {
     
     // returns nil on success, otherwise an error description
     func readFile (filename: String) async -> String? {
-        return await sessionActor.readFile (khHandle, filename: filename)
+        return await sessionActor.readFile (knownHost: self, filename: filename)
     }
     
     // returns nil on success, otherwise an error description

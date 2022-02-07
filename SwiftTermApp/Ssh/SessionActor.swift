@@ -272,47 +272,12 @@ actor SessionActor {
         return String (cString: libssh2_session_banner_get(sessionHandle))
     }
     
-    public func readFile (_ khHandle: OpaquePointer, filename: String) -> String? {
-        let ret = libssh2_knownhost_readfile(khHandle, filename, LIBSSH2_KNOWNHOST_FILE_OPENSSH)
+    public func readFile (knownHost: LibsshKnownHost, filename: String) -> String? {
+        let ret = libssh2_knownhost_readfile(knownHost.khHandle, filename, LIBSSH2_KNOWNHOST_FILE_OPENSSH)
         if ret < 0 {
             return libSsh2ErrorToString(error: ret)
         }
         return nil
-    }
-    
-    public func openChannel (type: String, windowSize: CUnsignedInt = 2*1024*1024, packetSize: CUnsignedInt = 32768, readCallback: @escaping (Channel, Data?, Data?)->()) async -> OpaquePointer? {
-        
-        return await callSshPtr {
-            return libssh2_channel_open_ex(self.sessionHandle, type, UInt32(type.utf8.count), windowSize, packetSize, nil, 0)
-        }
-    }
-    
-    public func channelSetEnv (_ channel: Channel, name: String, value: String) async -> Int32 {
-        return await callSsh {
-            libssh2_channel_setenv_ex (channel.channelHandle, name, UInt32(name.utf8.count), value, UInt32(value.utf8.count))
-        }
-    }
-    
-    public func requestPseudoTerminal (_ channel: Channel, name: String, cols: Int, rows: Int) async -> Int32 {
-        return await callSsh {
-            libssh2_channel_request_pty_ex(channel.channelHandle, name, UInt32(name.utf8.count), nil, 0, Int32(cols), Int32(rows), LIBSSH2_TERM_WIDTH_PX, LIBSSH2_TERM_HEIGHT_PX)
-        }
-    }
-    
-    public func processStartup (_ channel: Channel, request: String, message: String?) async -> Int32 {
-        return await callSsh {
-            libssh2_channel_process_startup (channel.channelHandle, request, UInt32(request.utf8.count), message, message == nil ? 0 : UInt32(message!.utf8.count))
-        }
-    }
-    
-    public func setTerminalSize (_ channel: Channel, cols: Int, rows: Int, pixelWidth: Int, pixelHeight: Int) async {
-        let _ = await callSsh {
-            libssh2_channel_request_pty_size_ex(channel.channelHandle, Int32(cols), Int32(rows), Int32(pixelWidth), Int32(pixelHeight))
-        }
-    }
-    
-    public func openSftp () async -> OpaquePointer? {
-        return await callSshPtr { libssh2_sftp_init(self.sessionHandle) }
     }
     
     public func disconnect (reason: Int32 = SSH_DISCONNECT_BY_APPLICATION, description: String) async {
@@ -320,8 +285,98 @@ actor SessionActor {
             libssh2_session_disconnect_ex(self.sessionHandle, reason, description, "")
         }
     }
+    
+    // Channel APIs
+    
+    public func openChannel (type: String, windowSize: CUnsignedInt = 2*1024*1024, packetSize: CUnsignedInt = 32768, readCallback: @escaping (Channel, Data?, Data?)async->()) async -> OpaquePointer? {
+        
+        return await callSshPtr {
+            return libssh2_channel_open_ex(self.sessionHandle, type, UInt32(type.utf8.count), windowSize, packetSize, nil, 0)
+        }
+    }
+    
+    public func setEnv (channel: Channel, name: String, value: String) async -> Int32 {
+        return await callSsh {
+            libssh2_channel_setenv_ex (channel.channelHandle, name, UInt32(name.utf8.count), value, UInt32(value.utf8.count))
+        }
+    }
+    
+    public func requestPseudoTerminal (channel: Channel, name: String, cols: Int, rows: Int) async -> Int32 {
+        return await callSsh {
+            libssh2_channel_request_pty_ex(channel.channelHandle, name, UInt32(name.utf8.count), nil, 0, Int32(cols), Int32(rows), LIBSSH2_TERM_WIDTH_PX, LIBSSH2_TERM_HEIGHT_PX)
+        }
+    }
+    
+    public func ping (channel: Channel) async -> (Data?, Data?)? {
+        // standard channel
+        let channelHandle = channel.channelHandle
+        let streamId: Int32 = 0
+        var ret, retError: Int
+        let bufferSize = channel.bufferSize
+        ret = libssh2_channel_read_ex (channelHandle, streamId, channel.buffer, bufferSize)
+        retError = libssh2_channel_read_ex (channelHandle, SSH_EXTENDED_DATA_STDERR, channel.bufferError, bufferSize)
 
+        let data = ret >= 0 ? Data (bytesNoCopy: channel.buffer, count: ret, deallocator: .none) : nil
+        let error = retError >= 0 ? Data (bytesNoCopy: channel.bufferError, count: retError, deallocator: .none) : nil
+        if ret >= 0 || retError >= 0 {
+            return (data, error)
+        } else {
+            return nil
+        }
+
+    }
+    public func processStartup (channel: Channel, request: String, message: String?) async -> Int32 {
+        return await callSsh {
+            libssh2_channel_process_startup (channel.channelHandle, request, UInt32(request.utf8.count), message, message == nil ? 0 : UInt32(message!.utf8.count))
+        }
+    }
+    
+    public func setTerminalSize (channel: Channel, cols: Int, rows: Int, pixelWidth: Int, pixelHeight: Int) async {
+        let _ = await callSsh {
+            libssh2_channel_request_pty_size_ex(channel.channelHandle, Int32(cols), Int32(rows), Int32(pixelWidth), Int32(pixelHeight))
+        }
+    }
+    
+    public func close (channel: Channel) async {
+        let _ = await callSsh {
+            libssh2_channel_close(channel.channelHandle)
+        }
+    }
+    
+    public func send (channel: Channel, data: Data, callback: @escaping (Int)->()) async {
+        if data.count == 0 {
+            return
+        }
+        callback (Int (await callSsh {
+            data.withUnsafeBytes { (unsafeBytes) in
+                let bytes = unsafeBytes.bindMemory(to: CChar.self).baseAddress!
+                
+                
+                let ret = libssh2_channel_write_ex(channel.channelHandle, 0, bytes, data.count)
+                    
+                if ret < 0 {
+                    print ("DEBUG libssh2_channel_write_ex result: \(libSsh2ErrorToString(error:Int32(ret)))")
+                }
+                return Int32 (ret)
+            }
+        }))
+    }
+    
+    public func exec (channel: Channel, command: String) async -> Int32 {
+        await callSsh {
+            libssh2_channel_process_startup (channel.channelHandle, "exec", 4, command, UInt32(command.utf8.count))
+        }
+    }
+    
+    public func free (channelHandle: OpaquePointer) {
+        libssh2_channel_free(channelHandle)
+    }
+    
     // SFTP APIs
+    public func openSftp () async -> OpaquePointer? {
+        return await callSshPtr { libssh2_sftp_init(self.sessionHandle) }
+    }
+    
     func sftpStat (_ sftp: SFTP, path: String) async -> LIBSSH2_SFTP_ATTRIBUTES? {
         var attr: LIBSSH2_SFTP_ATTRIBUTES = LIBSSH2_SFTP_ATTRIBUTES()
         let pc = UInt32 (path.utf8.count)

@@ -230,7 +230,7 @@ class Session: CustomDebugStringConvertible {
     public func openChannel (type: String,
                              windowSize: CUnsignedInt = 2*1024*1024,
                              packetSize: CUnsignedInt = 32768,
-                             readCallback: @escaping (Channel, Data?, Data?)->()) async -> Channel? {
+                             readCallback: @escaping (Channel, Data?, Data?)async->()) async -> Channel? {
         guard let channelHandle = await sessionActor.openChannel(type: type, windowSize: windowSize, packetSize: packetSize, readCallback: readCallback) else {
             return nil
         }
@@ -243,7 +243,7 @@ class Session: CustomDebugStringConvertible {
     ///  - lang: The desired value for the LANG environment variable to be set on the remote end
     ///  - readCallback: method that is invoked when new data is available on the channel, it receives the channel source as a parameter, and two Data? parameters,
     ///   one for standard output, and one for standard error.
-    public func openSessionChannel (lang: String, readCallback: @escaping (Channel, Data?, Data?)->()) async -> Channel? {
+    public func openSessionChannel (lang: String, readCallback: @escaping (Channel, Data?, Data?)async->()) async -> Channel? {
         if let channel = await openChannel(type: "session", readCallback: readCallback) {
             await channel.setEnvironment(name: "LANG", value: lang)
             return channel
@@ -257,14 +257,14 @@ class Session: CustomDebugStringConvertible {
     ///  - lang: The desired value for the LANG environment variable to be set on the remote end
     ///  - readCallback: method that is invoked when new data is available on the channel, it receives the channel source as a parameter, and two Data? parameters,
     ///   one for standard output, and one for standard error.
-    public func run (command: String, lang: String, readCallback: @escaping (Channel, Data?, Data?)->()) async -> Channel? {
+    public func run (command: String, lang: String, readCallback: @escaping (Channel, Data?, Data?)async->()) async -> Channel? {
         if let channel = await openSessionChannel(lang: lang, readCallback: readCallback) {
-            let status = channel.exec (command)
+            let status = await channel.exec (command)
             if status == 0 {
                 activate(channel: channel)
                 return channel
             }
-            channel.close ()
+            await channel.close ()
         }
         return nil
     }
@@ -274,7 +274,7 @@ class Session: CustomDebugStringConvertible {
     ///  - command: the command to execute on the remote server
     ///  - lang: The desired value for the LANG environment variable to be set on the remote end
     ///  - resultCallback: method that is invoked when the command completes containing the stdout and stderr results as Data parameters
-    public func run (command: String, lang: String, resultCallback: @escaping (Data, Data)->()) async {
+    public func run (command: String, lang: String, resultCallback: @escaping (Data, Data)async->()) async {
         var stdout = Data()
         var stderr = Data()
         
@@ -304,7 +304,7 @@ class Session: CustomDebugStringConvertible {
     ///  - resultCallback: method that is invoked when the command completes containing the stdout and stderr results as string parameters
     ///
     ///  TODO: if this is async, why provide a resultCallback, and instead just return the values when we are done?
-    public func runSimple (command: String, lang: String, resultCallback: @escaping (String?, String?)->()) async {
+    public func runSimple (command: String, lang: String, resultCallback: @escaping (String?, String?)async->()) async {
         var stdout = Data()
         var stderr = Data()
         
@@ -323,7 +323,7 @@ class Session: CustomDebugStringConvertible {
                     let e = String (bytes: stderr, encoding: .utf8)
                     
 
-                    resultCallback (s, e)
+                    await resultCallback (s, e)
                 //}
                 return
             }
@@ -504,8 +504,10 @@ class SocketSession: Session {
             }
         }
         channelsLock.unlock()
-        for channel in copy {
-            channel.ping()
+        Task {
+            for channel in copy {
+                await channel.ping()
+            }
         }
     }
        

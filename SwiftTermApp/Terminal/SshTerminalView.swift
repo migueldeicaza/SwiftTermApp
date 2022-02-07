@@ -169,13 +169,11 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     func loggedIn (session: Session) async {
         await setupChannel (session: session)
 
+        var todo = true
         // If the user did not set an icon
-        // TODO
-//        if host.hostKind == "" {
-//            sshQueue.async {
-//                self.guessOsIcon ()
-//            }
-//        }
+        if host.hostKind == "" || todo {
+            await self.guessOsIcon ()
+        }
     }
 
     override init (frame: CGRect, host: Host) throws
@@ -203,9 +201,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     
     
     var passwordTextField: UITextField?
-
     nonisolated func passwordPrompt (challenge: String) -> String {
-        
+
         let semaphore = DispatchSemaphore(value: 0)
         DispatchQueue.main.async {
             guard let vc = self.getParentViewController() else {
@@ -436,8 +433,10 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         guard let channel = sessionChannel else {
             return
         }
-        channel.send (Data (bytes)) { code in
-            //print ("sendResult: \(code)")
+        Task {
+            await channel.send (Data (bytes)) { code in
+                //print ("sendResult: \(code)")
+            }
         }
     }
     
@@ -458,59 +457,58 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     
     // Attempts to guess the kind of OS to update the icon displayed for the host.hostKind
     func guessOsIcon () async {
-//        dispatchPrecondition(condition: .onQueue(sshQueue))
-//
-//        let sftp = await session.openSftp()
-//
-//        // If this is a Linux system
-//        if let _ = sftp?.stat(path: "/etc") {
-//            await session.runSimple (command: "/usr/bin/uname || /bin/uname", lang: "en_US.UTF_8") { stdout, stderr in
-//                var os = ""
-//                let stdout = stdout?.replacingOccurrences(of: "\n", with: "")
-//                switch stdout {
-//                case "Linux":
-//                    os = "linux"
-//                    if let content = await sftp?.readFileAsString(path: "/etc/os-release", limit: 64*1024) {
-//                        for line in  content.split(separator: "\n") {
-//                            if line.starts(with: "ID=") {
-//                                switch line  {
-//                                case "ID=raspbian":
-//                                    os = "raspberry-pi"
-//                                case "ID=fedora":
-//                                    os = "fedora"
-//                                case "ID=rhel":
-//                                    os = "redhat"
-//                                case "ID=ubuntu":
-//                                    os = "ubuntu"
-//                                case "ID=opensuse", "ID=opensuse-leap", "ID=sles", "ID=sles_sap":
-//                                    os = "suse"
-//                                default:
-//                                    break
-//                                }
-//                                break
-//                            }
-//                        }
-//                    }
-//
-//                case "Darwin":
-//                    os = "mac"
-//
-//                default:
-//                    break
-//                }
-//                DispatchQueue.main.async {
-//                    abort()
-//                    // TODO: next line
-//                    // DataStore.shared.updateKind(for: self.host, to: os)
-//                }
-//            }
-//        } else {
-//            DispatchQueue.main.async {
-//                DataStore.shared.updateKind(for: self.host, to: "windows")
-//            }
-//        }
+        let sftp = await session.openSftp()
+
+        // If this is a Linux system
+        if let _ = await sftp?.stat(path: "/etc") {
+            await session.runSimple (command: "/usr/bin/uname || /bin/uname", lang: "en_US.UTF_8") { stdout, stderr in
+                var os = ""
+                let stdout = stdout?.replacingOccurrences(of: "\n", with: "")
+                switch stdout {
+                case "Linux":
+                    os = "linux"
+                    if let content = await sftp?.readFileAsString(path: "/etc/os-release", limit: 64*1024) {
+                        for line in  content.split(separator: "\n") {
+                            if line.starts(with: "ID=") {
+                                switch line  {
+                                case "ID=raspbian":
+                                    os = "raspberry-pi"
+                                case "ID=fedora":
+                                    os = "fedora"
+                                case "ID=rhel":
+                                    os = "redhat"
+                                case "ID=ubuntu":
+                                    os = "ubuntu"
+                                case "ID=opensuse", "ID=opensuse-leap", "ID=sles", "ID=sles_sap":
+                                    os = "suse"
+                                default:
+                                    break
+                                }
+                                break
+                            }
+                        }
+                    }
+
+                case "Darwin":
+                    os = "mac"
+
+                default:
+                    break
+                }
+                // Make a copy to make swift happy
+                let nos = os
+                DispatchQueue.main.async {
+                    DataStore.shared.updateKind(for: self.host, to: nos)
+                }
+            }
+        } else {
+            DispatchQueue.main.async {
+                DataStore.shared.updateKind(for: self.host, to: "windows")
+            }
+        }
     }
     
 }
 
+// TODO: This is a hack, it should be local to the function that uses, but I can not seem to convince swift to let mme do that.
 var promptedPassword: String = ""
