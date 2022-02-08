@@ -30,8 +30,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     var sessionChannel: Channel?
 
     // Delegate SocketSessionDelegate.authenticate: invoked to trigger authentication
-    func authenticate (session: Session) -> String? {
-        let authMethods = session.userAuthenticationList(username: host.username)
+    func authenticate (session: Session) async -> String? {
+        let authMethods = await session.userAuthenticationList(username: host.username)
         for m in authMethods {
             switch m {
             case "none":
@@ -49,13 +49,13 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                                 password = sshKey.passphrase
                             }
                             
-                            return session.userAuthPublicKeyFromMemory (username: host.username,
+                            return await session.userAuthPublicKeyFromMemory (username: host.username,
                                                                    passPhrase: password,
                                                                    publicKey: sshKey.publicKey,
                                                                    privateKey: sshKey.privateKey)
                         case .ecdsa(inEnclave: true):
                             if let keyHandle = sshKey.getKeyHandle() {
-                                return session.userAuthWithCallback(username: host.username, publicKey: sshKey.getPublicKeyAsData()) { dataToSign in
+                                return await session.userAuthWithCallback(username: host.username, publicKey: sshKey.getPublicKeyAsData()) { dataToSign in
                                     var error: Unmanaged<CFError>?
                                     guard let signed = SecKeyCreateSignature(keyHandle, .ecdsaSignatureMessageX962SHA256, dataToSign as CFData, &error) else {
                                         return nil
@@ -75,14 +75,14 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             case "password":
                 if host.usePassword && host.password != "" {
                     // TODO: perhaps empty passwords are ok?
-                    if let error = session.userAuthPassword (username: host.username, password: host.password) {
+                    if let error = await session.userAuthPassword (username: host.username, password: host.password) {
                         return error
                     }
                     return nil
                 }
                 break
             case "keyboard-interactive":
-                if let error = session.userAuthKeyboardInteractive(username: host.username, prompt: passwordPrompt) {
+                if let error = await session.userAuthKeyboardInteractive(username: host.username, prompt: passwordPrompt) {
                     return error
                 }
                 return nil
@@ -100,7 +100,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
     }
     
-    func channelReader (channel: Channel, data: Data?, error: Data?) {
+    nonisolated func channelReader (channel: Channel, data: Data?, error: Data?) {
         if let d = data {
             let sliced = Array(d) [0...]
 
@@ -133,9 +133,9 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
     }
     
-    func setupChannel (session: Session) {
+    func setupChannel (session: Session) async {
         // TODO: should this be different based on the locale?
-        sessionChannel = session.openSessionChannel(lang: "en_US.UTF-8", readCallback: channelReader)
+        sessionChannel = await session.openSessionChannel(lang: "en_US.UTF-8", readCallback: channelReader)
 
         guard let channel = sessionChannel else {
             DispatchQueue.main.async {
@@ -143,23 +143,22 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             }
             return
         }
-        if !checkHostIntegrity () {
+        if await !checkHostIntegrity (host: self.host) {
             return
         }
         
         let terminal = getTerminal()
-        var status: Int32
-        status = channel.requestPseudoTerminal(name: "xterm-256color", cols: terminal.cols, rows: terminal.rows)
+        let status = await channel.requestPseudoTerminal(name: "xterm-256color", cols: terminal.cols, rows: terminal.rows)
         if status != 0 {
             DispatchQueue.main.async {
                 self.connectionError(error: "Failed to request pseudo-terminal on the remote host\n\nDetail: \(libSsh2ErrorToString(error: status))")
             }
             return
         }
-        status = channel.processStartup(request: "shell", message: nil)
-        if status != 0 {
+        let status2 = await channel.processStartup(request: "shell", message: nil)
+        if status2 != 0 {
             DispatchQueue.main.async {
-                self.connectionError(error: "Failed to launch the shell process:\n\nDetail: \(libSsh2ErrorToString(error: status))")
+                self.connectionError(error: "Failed to launch the shell process:\n\nDetail: \(libSsh2ErrorToString(error: status2))")
             }
             return
         }
@@ -167,14 +166,13 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     }
     
     // Delegate SocketSessionDelegate.loggedIn: invoked when the connection has been authenticated
-    func loggedIn (session: Session) {
-        setupChannel (session: session)
+    func loggedIn (session: Session) async {
+        await setupChannel (session: session)
 
+        var todo = true
         // If the user did not set an icon
-        if host.hostKind == "" {
-            sshQueue.async {
-                self.guessOsIcon ()
-            }
+        if host.hostKind == "" || todo {
+            await self.guessOsIcon ()
         }
     }
 
@@ -201,19 +199,16 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
        return nil
     }
     
-    var promptedPassword: String = ""
-    var passwordTextField: UITextField?
     
-    func passwordPrompt (challenge: String) -> String {
-        dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
-        
-        guard let vc = getParentViewController() else {
-            return ""
-        }
+    var passwordTextField: UITextField?
+    nonisolated func passwordPrompt (challenge: String) -> String {
 
         let semaphore = DispatchSemaphore(value: 0)
-        
         DispatchQueue.main.async {
+            guard let vc = self.getParentViewController() else {
+                return
+            }
+
             let alertController = UIAlertController(title: "Authentication challenge", message: challenge, preferredStyle: .alert)
             alertController.addTextField { [unowned self] (textField) in
                 textField.placeholder = challenge
@@ -222,13 +217,14 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             }
             alertController.addAction(UIAlertAction(title: "OK", style: .default) { [unowned self] _ in
                 if let tf = self.passwordTextField {
-                    self.promptedPassword = tf.text ?? ""
+                    promptedPassword = tf.text ?? ""
                 }
                 semaphore.signal()
                 
             })
             vc.present(alertController, animated: true, completion: nil)
         }
+        
         let _ = semaphore.wait(timeout: DispatchTime.distantFuture)
         return promptedPassword
     }
@@ -285,69 +281,68 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         print ("debug: \(msg)")
         debugLog.append ((Date (),msg))
     }
+
+    func getHostName (host: Host) -> String {
+        if host.port != 22 {
+            return "\(host.hostname):\(host.port)"
+        }
+        return host.hostname
+    }
     
+    // When we connect to a new host that is unknown to us, let the user confirm
+    // that the key the host is sharing is the one they are expecting
+    //
+    // Returns true if the user wishes to proceed
+    func confirmHostAuthUnknown (hostKeyType: String, key: [Int8], fingerprint: String, knownHosts: LibsshKnownHost, host: Host) -> Bool {
+        let semaphore = DispatchSemaphore(value: 0)
+        var ok = true
+        
+        DispatchQueue.main.async {
+            if let parent = self.getParentViewController() {
+                var window: UIHostingController<HostAuthUnknown>!
+                window = UIHostingController<HostAuthUnknown>(rootView: HostAuthUnknown(alias: self.host.alias, hostString: self.getHostName(host: host), fingerprint: fingerprint, cancelCallback: {
+                        ok = false
+                        Connections.remove(self)
+                        window.dismiss (animated: true) { semaphore.signal ()}
+                    }, okCallback: {
+                        window.dismiss (animated: true) {
+                            semaphore.signal ()
+                        }
+                    }))
+                parent.present(window, animated: true, completion: nil)
+            }
+        }
+        let _ = semaphore.wait(timeout: DispatchTime.distantFuture)
+        if ok {
+            if let addError = knownHosts.add(hostname: self.host.hostname, port: Int32 (self.host.port), key: key, keyType: hostKeyType, comment: self.host.alias) {
+                print ("Error adding host to knownHosts: \(addError)")
+            }
+            if let writeError = knownHosts.writeFile(filename: DataStore.shared.knownHostsPath) {
+                print ("Error writing knownhosts file \(writeError)")
+            }
+            DataStore.shared.loadKnownHosts()
+        }
+        return ok
+    }
     /// Checks that we are connecting to the host we thought we were,
     /// this uses and updates the `known_hosts` database to track the
     /// known hosts
     ///
     /// Returns true on success, false on error
-    func checkHostIntegrity () -> Bool {
-
-        guard let knownHosts = session.makeKnownHost() else {
+    func checkHostIntegrity (host: Host) async -> Bool {
+        guard let knownHosts = await session.makeKnownHost() else {
             return false
         }
         
-        func getHostName () -> String {
-            if host.port != 22 {
-                return "\(host.hostname):\(host.port)"
-            }
-            return host.hostname
-        }
-        
-        func getFingerPrint () -> String {
-            guard let bytes = session.fingerprintBytes(.sha256) else { return "Unknown" }
+        @MainActor
+        func getFingerPrint () async -> String {
+            guard let bytes = await session.getFingerprintBytes() else { return "Unknown" }
             let d = Data (bytes)
             return "SHA256:" + d.base64EncodedString()
         }
         
         func closeConnection (description: String) {
             
-        }
-        
-        // When we connect to a new host that is unknown to us, let the user confirm
-        // that the key the host is sharing is the one they are expecting
-        //
-        // Returns true if the user wishes to proceed
-        func confirmHostAuthUnknown (hostKeyType: String, key: [Int8], fingerprint: String) -> Bool {
-            let semaphore = DispatchSemaphore(value: 0)
-            var ok = true
-            
-            DispatchQueue.main.async {
-                if let parent = self.getParentViewController() {
-                    var window: UIHostingController<HostAuthUnknown>!
-                    window = UIHostingController<HostAuthUnknown>(rootView: HostAuthUnknown(alias: self.host.alias, hostString: getHostName(), fingerprint: fingerprint, cancelCallback: {
-                            ok = false
-                            Connections.remove(self)
-                            window.dismiss (animated: true) { semaphore.signal ()}
-                        }, okCallback: {
-                            window.dismiss (animated: true) {
-                                semaphore.signal ()
-                            }
-                        }))
-                    parent.present(window, animated: true, completion: nil)
-                }
-            }
-            let _ = semaphore.wait(timeout: DispatchTime.distantFuture)
-            if ok {
-                if let addError = knownHosts.add(hostname: self.host.hostname, port: Int32 (self.host.port), key: key, keyType: hostKeyType, comment: self.host.alias) {
-                    print ("Error adding host to knownHosts: \(addError)")
-                }
-                if let writeError = knownHosts.writeFile(filename: DataStore.shared.knownHostsPath) {
-                    print ("Error writing knownhosts file \(writeError)")
-                }
-                DataStore.shared.loadKnownHosts()
-            }
-            return ok
         }
         
         func showHostKeyMismatch (fingerprint: String) {
@@ -358,7 +353,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                 if let parent = self.getParentViewController() {
                     var window: UIHostingController<HostAuthKeyMismatch>!
                     
-                    window = UIHostingController<HostAuthKeyMismatch>(rootView: HostAuthKeyMismatch(alias: self.host.alias, hostString: getHostName(), fingerprint: fingerprint, callback: {
+                    window = UIHostingController<HostAuthKeyMismatch>(rootView: HostAuthKeyMismatch(alias: self.host.alias, hostString: self.getHostName(host: host), fingerprint: fingerprint, callback: {
                         window.dismiss(animated: true, completion: {
                             
                         })
@@ -371,25 +366,25 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             
         }
         
-        if let _ = knownHosts.readFile (filename: DataStore.shared.knownHostsPath) {
+        if let _ = await knownHosts.readFile (filename: DataStore.shared.knownHostsPath) {
             return false
         }
         
-        if let keyAndType = session.hostKey() {
+        if let keyAndType = await session.hostKey() {
             let res = knownHosts.check (hostName: host.hostname, port: Int32 (host.port), key: keyAndType.key)
             let hostKeyType = SshUtil.extractKeyType (keyAndType.key)
             
             switch res.status {
             case .notFound, .failure:
-                if confirmHostAuthUnknown(hostKeyType: hostKeyType ?? "", key: keyAndType.key, fingerprint: getFingerPrint()) {
+                if confirmHostAuthUnknown(hostKeyType: hostKeyType ?? "", key: keyAndType.key, fingerprint: await getFingerPrint(), knownHosts: knownHosts, host: host) {
                     return true
                 }
-                session.disconnect(description: "User did not accept this host")
+                await session.disconnect(description: "User did not accept this host")
                 return false
 
             case .keyMismatch:
-                showHostKeyMismatch (fingerprint: getFingerPrint())
-                session.disconnect(description: "Known host key mismatch")
+                showHostKeyMismatch (fingerprint: await getFingerPrint())
+                await session.disconnect(description: "Known host key mismatch")
                 return false
             case .match:
                 // We are good!
@@ -414,8 +409,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     
     public func sizeChanged(source: TerminalView, newCols: Int, newRows: Int) {
         if let c = sessionChannel {
-            sshQueue.async {
-                c.setTerminalSize(cols: newCols, rows: newRows, pixelWidth: 1, pixelHeight: 1)
+            Task {
+                await c.setTerminalSize(cols: newCols, rows: newRows, pixelWidth: 1, pixelHeight: 1)
             }
         }
     }
@@ -438,8 +433,10 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         guard let channel = sessionChannel else {
             return
         }
-        channel.send (Data (bytes)) { code in
-            //print ("sendResult: \(code)")
+        Task {
+            await channel.send (Data (bytes)) { code in
+                //print ("sendResult: \(code)")
+            }
         }
     }
     
@@ -459,20 +456,18 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     }
     
     // Attempts to guess the kind of OS to update the icon displayed for the host.hostKind
-    func guessOsIcon () {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-        
-        let sftp = session.openSftp()
-        
+    func guessOsIcon () async {
+        let sftp = await session.openSftp()
+
         // If this is a Linux system
-        if let _ = sftp?.stat(path: "/etc") {
-            session.runSimple (command: "/usr/bin/uname || /bin/uname", lang: "en_US.UTF_8") { stdout, stderr in
+        if let _ = await sftp?.stat(path: "/etc") {
+            await session.runSimple (command: "/usr/bin/uname || /bin/uname", lang: "en_US.UTF_8") { stdout, stderr in
                 var os = ""
                 let stdout = stdout?.replacingOccurrences(of: "\n", with: "")
                 switch stdout {
                 case "Linux":
                     os = "linux"
-                    if let content = sftp?.readFileAsString(path: "/etc/os-release", limit: 64*1024) {
+                    if let content = await sftp?.readFileAsString(path: "/etc/os-release", limit: 64*1024) {
                         for line in  content.split(separator: "\n") {
                             if line.starts(with: "ID=") {
                                 switch line  {
@@ -493,15 +488,17 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                             }
                         }
                     }
-                    
+
                 case "Darwin":
                     os = "mac"
-                    
+
                 default:
                     break
                 }
+                // Make a copy to make swift happy
+                let nos = os
                 DispatchQueue.main.async {
-                    DataStore.shared.updateKind(for: self.host, to: os)
+                    DataStore.shared.updateKind(for: self.host, to: nos)
                 }
             }
         } else {
@@ -513,3 +510,5 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     
 }
 
+// TODO: This is a hack, it should be local to the function that uses, but I can not seem to convince swift to let mme do that.
+var promptedPassword: String = ""

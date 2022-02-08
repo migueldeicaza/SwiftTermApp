@@ -47,7 +47,7 @@ protocol SessionDelegate: AnyObject {
     /// connection has been established.
     /// - Parameter session: identifies the session that this callback is for
     /// - Returns: nil on success, or a human-readable description as a string on error
-    func authenticate (session: Session) -> String?
+    func authenticate (session: Session) async -> String?
     
     /// Called if we failed to login on the network queue
     /// - Parameter session: identifies the session that this callback is for
@@ -55,7 +55,7 @@ protocol SessionDelegate: AnyObject {
     
     /// Called when we are authenticated on the network queue, and channels can be opened
     /// - Parameter session: identifies the session that this callback is for
-    func loggedIn (session: Session)
+    func loggedIn (session: Session) async
     
     /// Called on the sshQueue, this message is invoked in response to receiving an `SSH_MSG_DEBUG` message
     /// described in https://datatracker.ietf.org/doc/html/rfc4253
@@ -84,19 +84,13 @@ var sshQueue: DispatchQueue = DispatchQueue.init(label: "ssh-queue", qos: .userI
 /// is received by the session, this implenentation currently notifies all channels that they should poll
 /// for data.
 class Session: CustomDebugStringConvertible {
-    
-    // Handle to the libssh2 Session
-    var sessionHandle: OpaquePointer!
+    // Our actor that serializes access to libssh in a per-session basis
+    var sessionActor: SessionActor
     
     var channelsLock = NSLock ()
     
     // Where we post interesting events about this session
     weak var delegate: SessionDelegate!
-    
-    typealias disconnectType = @convention(c) (UnsafeRawPointer, CInt,
-                                               UnsafePointer<CChar>, CInt,
-                                               UnsafePointer<CChar>, CInt, UnsafeRawPointer) -> Void
-    
     
     // Turns the libssh2 abstract pointer (which is a pointer to the value passed) into a strong type
     static func getSession (from abstract: UnsafeRawPointer) -> Session {
@@ -104,38 +98,15 @@ class Session: CustomDebugStringConvertible {
         return Unmanaged<Session>.fromOpaque(ptr.pointee).takeUnretainedValue()
     }
 
-    public init (delegate: SessionDelegate) {
+    public init (delegate: SessionDelegate, send: @escaping socketCbType, recv: @escaping socketCbType, disconnect: @escaping disconnectCbType, debug: @escaping debugCbType) {
         self.delegate = delegate
+        
         channelsLock = NSLock ()
-
-        sshQueue.sync {
-            libssh2_init (0)
-            let opaqueHandle = UnsafeMutableRawPointer(mutating: Unmanaged.passUnretained(self).toOpaque())
-            sessionHandle = libssh2_session_init_ex(nil, nil, nil, opaqueHandle)
-            let flags: Int32 = 0
-            libssh2_trace(sessionHandle, flags)
-            libssh2_trace_sethandler(sessionHandle, nil, { session, context, data, length in
-                var str: String
-                if let ptr = data {
-                    str = String (cString: ptr)
-                } else {
-                    str = "<null>"
-                }
-                print ("Trace callback: \(str)")
-            })
-            
-            let callback: disconnectType = { sessionPtr, reason, message, messageLen, language, languageLen, abstract in
-                let session = Session.getSession(from: abstract)
-                
-                print ("On session: \(session)")
-                print ("Disconnected")
-                session.disconnect(reason: SSH_DISCONNECT_CONNECTION_LOST, description: "")
-            }
-            libssh2_session_callback_set(sessionHandle, LIBSSH2_CALLBACK_DISCONNECT, unsafeBitCast(callback, to: UnsafeMutableRawPointer.self))
-            // TODO: wish of mine: should set all the callbacjs, and handle every scenario
-            setupCallbacks ()
-        }
-    
+        
+        // Init this first, we will wipe it out soon enough
+        sessionActor = SessionActor (fakeSetup: true)
+        let opaqueHandle = UnsafeMutableRawPointer(mutating: Unmanaged.passUnretained(self).toOpaque())
+        sessionActor = SessionActor (send: send, recv: recv, disconnect: disconnect, debug: debug, opaque: opaqueHandle)
     }
     
     var debugDescription: String {
@@ -157,59 +128,28 @@ class Session: CustomDebugStringConvertible {
     ///   * LIBSSH2_HOSTKEY_TYPE_ED25519
     /// - Returns: tuple with the key as an array of bytes and the type.
     /// Returns the key and type for the host.  The key is one of
-    public func hostKey () -> (key: [Int8], type: Int32)? {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-        
-        var len: Int = 0
-        var type: Int32 = 0
-
-        let ptr = libssh2_session_hostkey(sessionHandle, &len, &type)
-        if ptr == nil {
-            return nil
-        }
-        let data = UnsafeBufferPointer (start: ptr, count: len)
-        return (data.map { $0 }, type)
+    public func hostKey () async -> (key: [Int8], type: Int32)? {
+        return await sessionActor.hostKey ()
     }
 
     /// Performs the SSH session handshake
-    public func handshake () {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-        while libssh2_session_handshake(sessionHandle, 0) == LIBSSH2_ERROR_EAGAIN {
-            // Repeat while we get EAGAIN
-        }
+    public func handshake () async -> Int32 {
+        return await sessionActor.handshake ()
     }
     
     /// Returns an array of authentication methods available for the specified user
-    public func userAuthenticationList (username: String) -> [String] {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-        var result: UnsafeMutablePointer<CChar>!
-        
-        timeout = Date (timeIntervalSinceNow: 2)
-        result = libssh2_userauth_list (sessionHandle, username, UInt32(username.utf8.count))
-        timeout = nil
-        if result == nil {
-            let code = libssh2_session_last_errno(sessionHandle)
-            print ("Got error: ssh2error: \(code)")
-            return []
-        }
-        return String (validatingUTF8: result)?.components(separatedBy: ",") ?? []
+    public func userAuthenticationList (username: String) async -> [String] {
+        return await sessionActor.userAuthenticationList (username: username)
     }
     
     /// Returns the hostkey SHA256 hash from the session as an array of bytes
-    public func getFingerprintBytes () -> [UInt8]? {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-        guard let hashPointer = libssh2_hostkey_hash(sessionHandle, LIBSSH2_HOSTKEY_HASH_SHA256) else {
-            return nil
-        }
-        
-        let hash = UnsafeRawPointer(hashPointer).assumingMemoryBound(to: UInt8.self)
-        
-        return (0..<32).map({ UInt8(hash[$0]) })
+    public func getFingerprintBytes () async -> [UInt8]? {
+        return await sessionActor.getFingerprintBytes ()
     }
     
     /// Returns the hostkey SHA256 hash from the session as a string with the prefix "SHA256:" followed by the base64-encoded hash.
-    public func getFingerprint () -> String? {
-        guard let bytes = getFingerprintBytes() else {
+    public func getFingerprint () async -> String? {
+        guard let bytes = await getFingerprintBytes() else {
             return nil
         }
         let d = Data (bytes)
@@ -219,14 +159,16 @@ class Session: CustomDebugStringConvertible {
     var timeout: Date?
     public private(set) var banner: String = ""
     
-    func setupSshConnection ()
+    func setupSshConnection () async
     {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-        handshake()
-        banner = String (cString: libssh2_session_banner_get(sessionHandle))
-        let failureReason = delegate.authenticate(session: self)
-        if authenticated {
-            delegate.loggedIn(session: self)
+        if await handshake() != 0 {
+            // There was an error
+            // TODO: handle this one
+        }
+        banner = await sessionActor.getBanner () 
+        let failureReason = await delegate.authenticate(session: self)
+        if await authenticated {
+            await delegate.loggedIn(session: self)
         } else {
             delegate.loginFailed (session: self, details: failureReason ?? "Internal error: authentication claims it worked, but libssh2 state indicates it is not authenticated")
         }
@@ -234,56 +176,15 @@ class Session: CustomDebugStringConvertible {
     
     /// Determines if the session has been authenticated
     public var authenticated: Bool {
-        get {
-            dispatchPrecondition(condition: .onQueue(sshQueue))
-            return libssh2_userauth_authenticated(sessionHandle) == 1
-        }
-    }
-    
-    // Returns nil on success, or a description of the code on error
-    func authErrorToString (code: CInt) -> String? {
-        switch code {
-        case 0:
-            // We are fine, return
-            return nil
-        case LIBSSH2_ERROR_ALLOC:
-            // WE are doomed, return
-            return "Memory allocation failure"
-        case LIBSSH2_ERROR_SOCKET_SEND:
-            // We are doomed return, upper Network layer will notify of this problem
-            return "Unable to send data to remote host"
-        case LIBSSH2_ERROR_PASSWORD_EXPIRED:
-            // the password expired, but we failed to change it (to fix, we will need to provide a callback)
-            return "Password expired"
-        case LIBSSH2_ERROR_AUTHENTICATION_FAILED:
-            // Failed, try the next password
-            return "Password authentication failed"
-        default:
-            // Unknown error, return
-            return "Unknown error during authentication"
+        get async {
+            return await sessionActor.authenticated
         }
     }
     
     /// Performs a username/password authentication
     /// - Returns: nil on success, or a user-visible description on error
-    public func userAuthPassword (username: String, password: String) -> String? {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-        
-        // TODO: we should likely handle the password change callback requirement:
-        // The callback: If the host accepts authentication but requests that the password be changed,
-        // this callback will be issued. If no callback is defined, but server required password change,
-        // authentication will fail.
-        
-        // Attempt basic password authentication. Note that many SSH servers which appear to support
-        // ordinary password authentication actually have it disabled and use Keyboard Interactive
-        // authentication (routed via PAM or another authentication backed) instead.
-        var ret: CInt
-        let usernameCount = UInt32(username.utf8.count)
-        let passwordCount = UInt32(password.utf8.count)
-        repeat {
-            ret = libssh2_userauth_password_ex (sessionHandle, username, usernameCount, password, passwordCount, nil)
-        } while ret == LIBSSH2_ERROR_EAGAIN
-        return authErrorToString(code: ret)
+    public func userAuthPassword (username: String, password: String) async -> String? {
+        return await sessionActor.userAuthPassword (username: username, password: password)
     }
     
     var promptFunc: ((String)->String)?
@@ -291,37 +192,9 @@ class Session: CustomDebugStringConvertible {
     /// Performs an interactive user authentication for the specified username
     /// - Parameter prompt: method to invoke to present the prompt to the user
     /// - Returns: nil on success, or a user-visible description on error
-    public func userAuthKeyboardInteractive (username: String, prompt: @escaping (String)->String) -> String? {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-        
-        var ret: CInt
-        self.promptFunc = prompt
-        
-        let usernameCount = UInt32 (username.utf8.count)
-        repeat {
-            ret = libssh2_userauth_keyboard_interactive_ex(sessionHandle, username, usernameCount) { name, nameLen, instruction, instructionLen, numPrompts, prompts, responses, abstract in
-                for i in 0..<Int(numPrompts) {
-                    guard let prompt = prompts?[i], let text = prompt.text else {
-                        continue
-                    }
-
-                    let data = Data (bytes: UnsafeRawPointer (text), count: Int(prompt.length))
-
-                    guard let challenge = String (data: data, encoding: .utf8) else {
-                        continue
-                    }
-
-                    let session = Session.getSession (from: abstract!)
-                    let password = session.promptFunc! (challenge)
-                    let response = password.withCString {
-                         LIBSSH2_USERAUTH_KBDINT_RESPONSE(text: strdup($0), length: UInt32(strlen(password)))
-                    }
-                    responses?[i] = response
-                }
-            }
-        } while ret == LIBSSH2_ERROR_EAGAIN
-        self.promptFunc = nil
-        return authErrorToString(code: ret)
+    public func userAuthKeyboardInteractive (username: String, prompt: @escaping (String)->String) async -> String? {
+        promptFunc = prompt
+        return await sessionActor.userAuthKeyboardInteractive(username: username)
     }
     
     /// Authenticates using the provided public/private key pairs
@@ -331,29 +204,9 @@ class Session: CustomDebugStringConvertible {
     ///  - publicKey: Contents of the public key
     ///  - privateKey: contents of the private key
     /// - Returns: nil on success, or a user-visible description on error
-    public func userAuthPublicKeyFromMemory (username: String, passPhrase: String, publicKey: String, privateKey: String) -> String? {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-        
-        var ret: CInt = 0
-        
-        // Use the withCString rather than going to Data and then to pointers, because libssh2 ignores in some paths the size of the
-        // parameters and instead relies on a NUL characters at the end of the string to determine the size.
-        
-        let usernameCount = username.utf8.count
-        privateKey.withCString {
-            let privPtr = $0
-            
-            publicKey.withCString {
-                let pubPtr = $0
-                repeat {
-                    ret = libssh2_userauth_publickey_frommemory(sessionHandle, username, usernameCount, pubPtr, strlen(pubPtr), privPtr, strlen(privPtr), passPhrase)
-                } while ret == LIBSSH2_ERROR_EAGAIN
-            }
-        }
-        return authErrorToString(code: ret)
+    public func userAuthPublicKeyFromMemory (username: String, passPhrase: String, publicKey: String, privateKey: String) async -> String? {
+        return await sessionActor.userAuthPublicKeyFromMemory (username: username, passPhrase: passPhrase, publicKey: publicKey, privateKey: privateKey)
     }
-    
-    
     
     /// Authenticates the session using a callback method
     /// - Parameters:
@@ -361,25 +214,8 @@ class Session: CustomDebugStringConvertible {
     ///  - publicKey: Contents of the public key
     ///  - signCallback: method that receives a Data to be signed, and returns the signed data on success, nil on error
     /// - Returns:nil on success, or a user-visible description on error
-    public func userAuthWithCallback (username: String, publicKey: Data, signCallback: @escaping (Data)->Data?) -> String? {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-        
-        var ret: CInt = 0
-        let cbData = callbackData (pub: publicKey, signCallback: signCallback)
-        let ptrCbData = UnsafeMutablePointer<UnsafeMutableRawPointer?>.allocate(capacity: 1)
-        ptrCbData.pointee = Unmanaged.passUnretained(cbData).toOpaque()
-
-        //libssh2_session_set_timeout (self.sessionHandle, 0)
-        
-        publicKey.withUnsafeBytes {
-            let pubPtr = $0.bindMemory(to: UInt8.self).baseAddress!
-
-            let count = publicKey.count
-            repeat {
-                ret = libssh2_userauth_publickey (sessionHandle, username, pubPtr, count, authenticateCallback, ptrCbData)
-            } while ret == LIBSSH2_ERROR_EAGAIN
-        }
-        return authErrorToString(code: ret)
+    public func userAuthWithCallback (username: String, publicKey: Data, signCallback: @escaping (Data)->Data?) async -> String? {
+        return await sessionActor.userAuthWithCallback(username: username, publicKey: publicKey, signCallback: signCallback)
     }
     
     var channels: [Channel] = []
@@ -391,18 +227,15 @@ class Session: CustomDebugStringConvertible {
     ///  - packetSize: Maximum number of bytes remote host is allowed to send in a single SSH_MSG_CHANNEL_DATA or SSG_MSG_CHANNEL_EXTENDED_DATA packet, defaults to 32k
     ///  - readCallback: method that is invoked when new data is available on the channel, it receives the channel source as a parameter, and two Data? parameters,
     ///   one for standard output, and one for standard error.
-    public func openChannel (type: String, windowSize: CUnsignedInt = 2*1024*1024, packetSize: CUnsignedInt = 32768, readCallback: @escaping (Channel, Data?, Data?)->())  -> Channel? {
-        var ret: OpaquePointer?
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-        let typeCount = UInt32(type.utf8.count)
-        repeat {
-            ret = libssh2_channel_open_ex(sessionHandle, type, typeCount, windowSize, packetSize, nil, 0)
-        } while ret == nil && libssh2_session_last_errno (sessionHandle) == LIBSSH2_ERROR_EAGAIN
-        guard let channelHandle = ret else {
+    public func openChannel (type: String,
+                             windowSize: CUnsignedInt = 2*1024*1024,
+                             packetSize: CUnsignedInt = 32768,
+                             readCallback: @escaping (Channel, Data?, Data?)async->()) async -> Channel? {
+        guard let channelHandle = await sessionActor.openChannel(type: type, windowSize: windowSize, packetSize: packetSize, readCallback: readCallback) else {
             return nil
         }
-        let channel = Channel (session: self, channelHandle: channelHandle, readCallback: readCallback)
-        return channel
+        return Channel (session: self, channelHandle: channelHandle, readCallback: readCallback)
+
     }
     
     /// Opens a new session channel with the defaults, and with the specified LANG environment variable set
@@ -410,9 +243,9 @@ class Session: CustomDebugStringConvertible {
     ///  - lang: The desired value for the LANG environment variable to be set on the remote end
     ///  - readCallback: method that is invoked when new data is available on the channel, it receives the channel source as a parameter, and two Data? parameters,
     ///   one for standard output, and one for standard error.
-    public func openSessionChannel (lang: String, readCallback: @escaping (Channel, Data?, Data?)->())  -> Channel? {
-        if let channel = openChannel(type: "session", readCallback: readCallback) {
-            channel.setEnvironment(name: "LANG", value: lang)
+    public func openSessionChannel (lang: String, readCallback: @escaping (Channel, Data?, Data?)async->()) async -> Channel? {
+        if let channel = await openChannel(type: "session", readCallback: readCallback) {
+            await channel.setEnvironment(name: "LANG", value: lang)
             return channel
         }
         return nil
@@ -424,14 +257,14 @@ class Session: CustomDebugStringConvertible {
     ///  - lang: The desired value for the LANG environment variable to be set on the remote end
     ///  - readCallback: method that is invoked when new data is available on the channel, it receives the channel source as a parameter, and two Data? parameters,
     ///   one for standard output, and one for standard error.
-    public func run (command: String, lang: String, readCallback: @escaping (Channel, Data?, Data?)->())  -> Channel? {
-        if let channel = openSessionChannel(lang: lang, readCallback: readCallback) {
-            let status = channel.exec (command)
+    public func run (command: String, lang: String, readCallback: @escaping (Channel, Data?, Data?)async->()) async -> Channel? {
+        if let channel = await openSessionChannel(lang: lang, readCallback: readCallback) {
+            let status = await channel.exec (command)
             if status == 0 {
                 activate(channel: channel)
                 return channel
             }
-            channel.close ()
+            await channel.close ()
         }
         return nil
     }
@@ -441,11 +274,11 @@ class Session: CustomDebugStringConvertible {
     ///  - command: the command to execute on the remote server
     ///  - lang: The desired value for the LANG environment variable to be set on the remote end
     ///  - resultCallback: method that is invoked when the command completes containing the stdout and stderr results as Data parameters
-    public func run (command: String, lang: String, resultCallback: @escaping (Data, Data)->()) {
+    public func run (command: String, lang: String, resultCallback: @escaping (Data, Data)async->()) async {
         var stdout = Data()
         var stderr = Data()
         
-        run (command: command, lang: lang) { channel, out, err in
+        await run (command: command, lang: lang) { channel, out, err in
             //print ("Run callback for \(command) out=\(out?.count) err=\(err?.count) eof=\(channel.receivedEOF)")
             if let gotOut = out {
                 stdout.append(gotOut)
@@ -455,7 +288,9 @@ class Session: CustomDebugStringConvertible {
             }
             if channel.receivedEOF {
                 DispatchQueue.main.async {
-                    resultCallback (stdout, stderr)
+                    abort ()
+                    // TODO: next line
+                    // resultCallback (stdout, stderr)
                 }
                 return
             }
@@ -467,11 +302,14 @@ class Session: CustomDebugStringConvertible {
     ///  - command: the command to execute on the remote server
     ///  - lang: The desired value for the LANG environment variable to be set on the remote end
     ///  - resultCallback: method that is invoked when the command completes containing the stdout and stderr results as string parameters
-    public func runSimple (command: String, lang: String, resultCallback: @escaping (String?, String?)->()) {
+    ///
+    ///  TODO: if this is async, why provide a resultCallback, and instead just return the values when we are done?
+    public func runSimple (command: String, lang: String, resultCallback: @escaping (String?, String?)async->()) async {
         var stdout = Data()
         var stderr = Data()
         
-        run (command: command, lang: lang) { channel, out, err in
+        
+        await run (command: command, lang: lang) { channel, out, err in
             //print ("Run callback for \(command) out=\(out?.count) err=\(err?.count) eof=\(channel.receivedEOF)")
             if let gotOut = out {
                 stdout.append(gotOut)
@@ -485,7 +323,7 @@ class Session: CustomDebugStringConvertible {
                     let e = String (bytes: stderr, encoding: .utf8)
                     
 
-                    resultCallback (s, e)
+                    await resultCallback (s, e)
                 //}
                 return
             }
@@ -499,15 +337,8 @@ class Session: CustomDebugStringConvertible {
     ///  - packetSize: Maximum number of bytes remote host is allowed to send in a single SSH_MSG_CHANNEL_DATA or SSG_MSG_CHANNEL_EXTENDED_DATA packet, defaults to 32k
     ///  - readCallback: method that is invoked when new data is available on the channel, it receives the channel source as a parameter, and two Data? parameters,
     ///   one for standard output, and one for standard error.
-    public func openSftp () -> SFTP? {
-        var ret: OpaquePointer?
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-        
-        repeat {
-            ret = libssh2_sftp_init(sessionHandle)
-        } while ret == nil && libssh2_session_last_errno (sessionHandle) == LIBSSH2_ERROR_EAGAIN
-        
-        guard let sftpHandle = ret else {
+    public func openSftp () async -> SFTP? {
+        guard let sftpHandle = await sessionActor.openSftp () else {
             return nil
         }
         return SFTP (session: self, sftpHandle: sftpHandle)
@@ -531,58 +362,17 @@ class Session: CustomDebugStringConvertible {
     }
     
     /// Creates an instance of the libssh2-level list of known hosts.
-    public func makeKnownHost () -> LibsshKnownHost? {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-        guard let kh = libssh2_knownhost_init (sessionHandle) else {
-            return nil
-        }
-        return LibsshKnownHost (knownHost: kh)
+    public func makeKnownHost () async -> LibsshKnownHost? {
+        return await sessionActor.makeKnownHost()
     }
-    
-    public enum FingerprintHashType {
-        case md5
-        case sha1
-        case sha256
-    }
-    
-    public func fingerprintBytes(_ hashType: FingerprintHashType) -> [UInt8]? {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-        
-        let type: Int32
-        let length: Int
 
-        switch hashType {
-            case .md5:
-                type = LIBSSH2_HOSTKEY_HASH_MD5
-                length = 16
-            case .sha1:
-                type = LIBSSH2_HOSTKEY_HASH_SHA1
-                length = 20
-            case .sha256:
-                type = LIBSSH2_HOSTKEY_HASH_SHA256
-                length = 32
-        }
-
-        guard let hashPointer = libssh2_hostkey_hash(self.sessionHandle, type) else {
-            return nil
-        }
-        
-        let hash = UnsafeRawPointer(hashPointer).assumingMemoryBound(to: UInt8.self)
-        
-        return (0..<length).map({ UInt8(hash[$0]) })
-    }
 
     /// Disconnects the session from the remote end, you can specifiy a reason, as well as a description that is sent to the remote server
     /// - Parameters:
     ///  - reason: the reason for the disconnection
     ///  - description: a human-readable descriptioin that will be sent to the remote end at close time.
-    public func disconnect (reason: Int32 = SSH_DISCONNECT_BY_APPLICATION, description: String) {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-        
-        var ret: CInt
-        repeat {
-            ret = libssh2_session_disconnect_ex(sessionHandle, reason, description, "")
-        } while ret == LIBSSH2_ERROR_EAGAIN
+    public func disconnect (reason: Int32 = SSH_DISCONNECT_BY_APPLICATION, description: String) async {
+        await sessionActor.disconnect (reason: reason, description: description)
     }
 
 }
@@ -605,8 +395,32 @@ class SocketSession: Session {
         self.host = host
         self.port = port
         
+        let send: socketCbType = { socket, buffer, length, flags, abstract in
+            SocketSession.send_callback(socket: socket, buffer: buffer, length: length, flags: flags, abstract: abstract)
+        }
+        
+        let recv: socketCbType = { socket, buffer, length, flags, abstract in
+            return SocketSession.recv_callback(socket: socket, buffer: buffer, length: length, flags: flags, abstract: abstract)
+        }
+        let disconnect: disconnectCbType = { sess, reason, message, messageLen, language, languageLen, abstract in
+            let session = Session.getSession(from: abstract)
+            
+            Task {
+                await session.disconnect(reason: SSH_DISCONNECT_CONNECTION_LOST, description: "")
+            }
+        }
+
+        let debug: debugCbType = { session, alwaysDisplay, messagePtr, messageLen, languagePtr, languageLen, abstract in
+            let msg = Data (bytes: messagePtr, count: Int (messageLen))
+            let lang = Data (bytes: languagePtr, count: Int (languageLen))
+            
+            let session = SocketSession.getSocketSession(from: abstract)
+            session.delegate.debug(session: session, alwaysDisplay: alwaysDisplay != 0, message: msg, language: lang)
+        }
+
         connection = NWConnection(host: NWEndpoint.Host (host), port: NWEndpoint.Port (integerLiteral: port), using: .tcp)
-        super.init (delegate: delegate)
+        super.init(delegate: delegate, send: send, recv: recv, disconnect: disconnect, debug: debug)
+        
         connection.stateUpdateHandler = connectionStateHandler
         connection.start (queue: SocketSession.networkQueue)
     }
@@ -661,9 +475,11 @@ class SocketSession: Session {
             }
             self.bufferLock.unlock()
             
+            // TODO: maybe we do not need PingChannels, we can merge with pingtasks?
             sshQueue.async {
                 self.pingChannels ()
             }
+            Task { await self.sessionActor.pingTasks() }
             
             if restart {
                 self.startIO()
@@ -688,8 +504,10 @@ class SocketSession: Session {
             }
         }
         channelsLock.unlock()
-        for channel in copy {
-            channel.ping()
+        Task {
+            for channel in copy {
+                await channel.ping()
+            }
         }
     }
        
@@ -705,8 +523,8 @@ class SocketSession: Session {
         case .ready:
             log ("ready")
             startIO()
-            sshQueue.sync {
-                self.setupSshConnection ()
+            Task {
+                await setupSshConnection ()
             }
         case .failed(_):
             log ("failed")
@@ -804,45 +622,17 @@ class SocketSession: Session {
         let ret = successOrError(wasError, n: consumedBytes)
         return ret
     }
-    
-    typealias socketCbType = @convention(c) (libssh2_socket_t, UnsafeRawPointer, size_t, CInt, UnsafeRawPointer) -> ssize_t
-    typealias debugCbType  = @convention(c) (libssh2_socket_t, CInt, UnsafeRawPointer, CInt, UnsafeRawPointer, CInt, UnsafeRawPointer) -> ()
-    
-    public override func setupCallbacks () {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-        let send: socketCbType = { socket, buffer, length, flags, abstract in
-            SocketSession.send_callback(socket: socket, buffer: buffer, length: length, flags: flags, abstract: abstract)
-        }
         
-        let recv: socketCbType = { socket, buffer, length, flags, abstract in
-            return SocketSession.recv_callback(socket: socket, buffer: buffer, length: length, flags: flags, abstract: abstract)
-        }
-        let debug: debugCbType = { session, alwaysDisplay, messagePtr, messageLen, languagePtr, languageLen, abstract in
-            let msg = Data (bytes: messagePtr, count: Int (messageLen))
-            let lang = Data (bytes: languagePtr, count: Int (languageLen))
-            
-            let session = SocketSession.getSocketSession(from: abstract)
-            session.delegate.debug(session: session, alwaysDisplay: alwaysDisplay != 0, message: msg, language: lang)
-        }
-        libssh2_session_set_blocking (sessionHandle, 0)
-        libssh2_session_callback_set(sessionHandle, LIBSSH2_CALLBACK_SEND, unsafeBitCast(send, to: UnsafeMutableRawPointer.self))
-        libssh2_session_callback_set(sessionHandle, LIBSSH2_CALLBACK_RECV, unsafeBitCast(recv, to: UnsafeMutableRawPointer.self))
-        libssh2_session_callback_set(sessionHandle, LIBSSH2_CALLBACK_DEBUG, unsafeBitCast(debug, to: UnsafeMutableRawPointer.self))
-    }
-    
-    public override func disconnect (reason: Int32 = SSH_DISCONNECT_BY_APPLICATION, description: String) {
-        super.disconnect(reason: reason, description: description)
+    public override func disconnect (reason: Int32 = SSH_DISCONNECT_BY_APPLICATION, description: String) async {
+        await super.disconnect(reason: reason, description: description)
         connection.forceCancel()
     }
 }
 
 class ProxySession: Session {
-    public override init (delegate: SessionDelegate)
+    public init (delegate: SessionDelegate)
     {
-        super.init (delegate: delegate)
-    }
-    
-    public override func setupCallbacks () {
+        abort ()
     }
 }
 
