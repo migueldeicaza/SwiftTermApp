@@ -155,14 +155,14 @@ actor SessionActor {
 
     public var timeout: Date?
     
-    public func userAuthenticationList (username: String) async -> [String] {
+    public func userAuthenticationList (username: String) async -> String {
         let ptr = await callSshPtr {
             return libssh2_userauth_list (self.sessionHandle, username, UInt32(username.utf8.count))
         }
         guard let ptr = ptr else {
-            return []
+            return ""
         }
-        return String (validatingUTF8: ptr)?.components(separatedBy: ",") ?? []
+        return String (validatingUTF8: ptr) ?? ""
     }
         
     public var authenticated: Bool {
