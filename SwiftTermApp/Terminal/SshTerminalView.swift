@@ -28,7 +28,10 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     var completeConnectSetup: () -> () = { }
     var session: SocketSession!
     var sessionChannel: Channel?
-
+    
+    // TODO, this should be based on the user locale, not forced here
+    var lang = "en_US.UTF-8"
+    
     // Delegate SocketSessionDelegate.authenticate: invoked to trigger authentication
     func authenticate (session: Session) async -> String? {
         let authMethods = await session.userAuthenticationList(username: host.username)
@@ -135,7 +138,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     
     func setupChannel (session: Session) async {
         // TODO: should this be different based on the locale?
-        sessionChannel = await session.openSessionChannel(lang: "en_US.UTF-8", readCallback: channelReader)
+        sessionChannel = await session.openSessionChannel(lang: lang, readCallback: channelReader)
 
         guard let channel = sessionChannel else {
             DispatchQueue.main.async {
@@ -165,6 +168,21 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         session.activate(channel: channel)
     }
     
+    func directoryListing () async {
+        var dir = "/"
+        await session.runSimple(command: "pwd", lang: lang) { out, err in
+            dir = out ?? "/"
+        }
+        dir = dir.replacingOccurrences(of: "\n", with: "")
+        let sftp = await session.openSftp()
+        if let dir = await sftp?.openDir(path: dir, flags: 0) {
+            while let res = await dir.readDir() {
+                print ("Got: \(res.attrs)")
+                var s = String (bytes: res.name, encoding: .utf8) ?? "<Not Renderable>"
+                print ("Got: \(s)")
+            }
+        }
+    }
     // Delegate SocketSessionDelegate.loggedIn: invoked when the connection has been authenticated
     func loggedIn (session: Session) async {
         await setupChannel (session: session)
@@ -461,7 +479,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
 
         // If this is a Linux system
         if let _ = await sftp?.stat(path: "/etc") {
-            await session.runSimple (command: "/usr/bin/uname || /bin/uname", lang: "en_US.UTF_8") { stdout, stderr in
+            await session.runSimple (command: "/usr/bin/uname || /bin/uname", lang: lang) { stdout, stderr in
                 var os = ""
                 let stdout = stdout?.replacingOccurrences(of: "\n", with: "")
                 switch stdout {
