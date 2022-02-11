@@ -21,8 +21,6 @@
 		490A187D26AA60980034B2BF /* HostConnectionError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490A187C26AA60980034B2BF /* HostConnectionError.swift */; };
 		4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4911B3032463AD3E00816BAA /* GenerateKey.swift */; };
 		49148F99268AB0B0000AB718 /* InputKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49148F98268AB0B0000AB718 /* InputKeyboard.swift */; };
-		491769B62666BE8000D32353 /* SwiftSH in Frameworks */ = {isa = PBXBuildFile; productRef = 491769B52666BE8000D32353 /* SwiftSH */; };
-		4922DDAF26632E4600B7D2BE /* CSwiftSH in Frameworks */ = {isa = PBXBuildFile; productRef = 4922DDAE26632E4600B7D2BE /* CSwiftSH */; };
 		4923C56627319336000CC371 /* LocationTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4923C56527319336000CC371 /* LocationTracking.swift */; };
 		493F4F3027613F1B00838AC7 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493F4F2F27613F1B00838AC7 /* Session.swift */; };
 		493F4F3227650E7800838AC7 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493F4F3127650E7800838AC7 /* Errors.swift */; };
@@ -47,6 +45,8 @@
 		49A0A2C2249298BF002593F7 /* DigitalBrain.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49A0A2C1249298BF002593F7 /* DigitalBrain.metal */; };
 		49A4466126A3D76200A636DC /* Commands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A4466026A3D76200A636DC /* Commands.swift */; };
 		49A64C6126842A480069C7FA /* HostConnectionClosed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A64C6026842A480069C7FA /* HostConnectionClosed.swift */; };
+		49AB982527B1CAF900539D4A /* CSSH in Frameworks */ = {isa = PBXBuildFile; productRef = 49AB982427B1CAF900539D4A /* CSSH */; };
+		49AB982827B1CB1F00539D4A /* CSwiftSH in Frameworks */ = {isa = PBXBuildFile; productRef = 49AB982727B1CB1F00539D4A /* CSwiftSH */; };
 		49B49D9C27A9B7F00031A9AE /* SFTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B49D9B27A9B7F00031A9AE /* SFTP.swift */; };
 		49B84C53268137C700B36066 /* HostAuthUnknown.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B84C52268137C700B36066 /* HostAuthUnknown.swift */; };
 		49B84C5526813F9400B36066 /* HostAuthKeyMismatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B84C5426813F9400B36066 /* HostAuthKeyMismatch.swift */; };
@@ -152,9 +152,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				491769B62666BE8000D32353 /* SwiftSH in Frameworks */,
 				49C1B6AF24625C7D00D54F6F /* SwiftTerm in Frameworks */,
-				4922DDAF26632E4600B7D2BE /* CSwiftSH in Frameworks */,
+				49AB982527B1CAF900539D4A /* CSSH in Frameworks */,
+				49AB982827B1CB1F00539D4A /* CSwiftSH in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -423,8 +423,8 @@
 			name = SwiftTermApp;
 			packageProductDependencies = (
 				49C1B6AE24625C7D00D54F6F /* SwiftTerm */,
-				4922DDAE26632E4600B7D2BE /* CSwiftSH */,
-				491769B52666BE8000D32353 /* SwiftSH */,
+				49AB982427B1CAF900539D4A /* CSSH */,
+				49AB982727B1CB1F00539D4A /* CSwiftSH */,
 			);
 			productName = testMasterDetail;
 			productReference = 4901167224553789002C1F85 /* SwiftTermApp.app */;
@@ -479,7 +479,8 @@
 			mainGroup = 4901166924553789002C1F85;
 			packageReferences = (
 				49C1B6AD24625C7D00D54F6F /* XCRemoteSwiftPackageReference "SwiftTerm" */,
-				4922DDAD26632E4600B7D2BE /* XCRemoteSwiftPackageReference "SwiftSH" */,
+				49AB982327B1CAF900539D4A /* XCRemoteSwiftPackageReference "Libssh2Prebuild" */,
+				49AB982627B1CB1F00539D4A /* XCRemoteSwiftPackageReference "SwiftSH" */,
 			);
 			productRefGroup = 4901167324553789002C1F85 /* Products */;
 			projectDirPath = "";
@@ -855,12 +856,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		4922DDAD26632E4600B7D2BE /* XCRemoteSwiftPackageReference "SwiftSH" */ = {
+		49AB982327B1CAF900539D4A /* XCRemoteSwiftPackageReference "Libssh2Prebuild" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/migueldeicaza/SwiftSH";
+			repositoryURL = "https://github.com/migueldeicaza/Libssh2Prebuild";
 			requirement = {
 				branch = master;
 				kind = branch;
+			};
+		};
+		49AB982627B1CB1F00539D4A /* XCRemoteSwiftPackageReference "SwiftSH" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/migueldeicaza/SwiftSH";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.2;
 			};
 		};
 		49C1B6AD24625C7D00D54F6F /* XCRemoteSwiftPackageReference "SwiftTerm" */ = {
@@ -874,14 +883,14 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		491769B52666BE8000D32353 /* SwiftSH */ = {
+		49AB982427B1CAF900539D4A /* CSSH */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4922DDAD26632E4600B7D2BE /* XCRemoteSwiftPackageReference "SwiftSH" */;
-			productName = SwiftSH;
+			package = 49AB982327B1CAF900539D4A /* XCRemoteSwiftPackageReference "Libssh2Prebuild" */;
+			productName = CSSH;
 		};
-		4922DDAE26632E4600B7D2BE /* CSwiftSH */ = {
+		49AB982727B1CB1F00539D4A /* CSwiftSH */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4922DDAD26632E4600B7D2BE /* XCRemoteSwiftPackageReference "SwiftSH" */;
+			package = 49AB982627B1CB1F00539D4A /* XCRemoteSwiftPackageReference "SwiftSH" */;
 			productName = CSwiftSH;
 		};
 		49C1B6AE24625C7D00D54F6F /* SwiftTerm */ = {

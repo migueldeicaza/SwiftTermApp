@@ -1,34 +1,32 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "CSSH",
-        "repositoryURL": "https://github.com/migueldeicaza/Libssh2Prebuild.git",
-        "state": {
-          "branch": null,
-          "revision": "631d39784b593505a1b37341cda80055363bc753",
-          "version": "1.9.0+OpenSSL_1_1_1h"
-        }
-      },
-      {
-        "package": "SwiftSH",
-        "repositoryURL": "https://github.com/migueldeicaza/SwiftSH",
-        "state": {
-          "branch": "master",
-          "revision": "4e83a501b943d50d57d03082865199875a560641",
-          "version": null
-        }
-      },
-      {
-        "package": "SwiftTerm",
-        "repositoryURL": "https://github.com/migueldeicaza/SwiftTerm.git",
-        "state": {
-          "branch": "main",
-          "revision": "841c20c26c4acadc84487ed89591e5246b21e101",
-          "version": null
-        }
+  "pins" : [
+    {
+      "identity" : "libssh2prebuild",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/migueldeicaza/Libssh2Prebuild",
+      "state" : {
+        "branch" : "master",
+        "revision" : "2b9a34880aa7906a76872ac03077ea5aa313c72b"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "swiftsh",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/migueldeicaza/SwiftSH",
+      "state" : {
+        "revision" : "3f2dd003fcfe03194bd7ce3701646a818abeb1f8",
+        "version" : "0.2.0"
+      }
+    },
+    {
+      "identity" : "swiftterm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/migueldeicaza/SwiftTerm.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "841c20c26c4acadc84487ed89591e5246b21e101"
+      }
+    }
+  ],
+  "version" : 2
 }
