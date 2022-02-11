@@ -16,5 +16,5 @@ jobs:
         uses: actions/checkout@v2
       - name: Build
         run: |
-          xcodebuild clean build analyze -scheme SwiftTermApp -project SwiftTermApp.xcodeproj  | xcpretty && exit ${PIPESTATUS[0]}
+          xcodebuild clean build analyze CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -scheme SwiftTermApp -project SwiftTermApp.xcodeproj  | xcpretty && exit ${PIPESTATUS[0]}
 
