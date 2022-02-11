@@ -94,6 +94,27 @@ actor SessionActor {
     }
 
     ///
+    /// Calls into a libssh2 function that uses the convention that where a `LIBSSH2_ERROR_EAGAIN`
+    /// return value indicates that the operation should be retried, but does so by waiting for new
+    /// data to be made available on the channel.
+    ///
+    /// - Parameter callback: a method that is expecred to return an Int32, and one of the
+    /// possible values is `LIBSSH2_ERROR_EAGAIN` which will trigger a new attempt to execute
+    func callSshInt (_ callback: @escaping ()->Int) async -> Int {
+        return await withUnsafeContinuation { c in
+            let op: queuedOp = {
+                let ret = callback()
+                if ret == LIBSSH2_ERROR_EAGAIN {
+                    return true
+                }
+                c.resume(returning: ret)
+                return false
+            }
+            track (task: op)
+        }
+    }
+
+    ///
     /// Calls into a libssh2 function that returns a pointer value as a return, and that sets the
     /// libssh2 errno to `LIBSSH2_ERROR_EAGAIN` to indicate that there is not enough data
     /// availble and the operation should be retried.   If this is the case, then the operation is
@@ -382,15 +403,40 @@ actor SessionActor {
         let pc = UInt32 (path.utf8.count)
         
         let ret = await callSsh {
-            libssh2_sftp_stat_ex(sftp.sftpHandle, path, pc, LIBSSH2_SFTP_STAT, &attr)
+            libssh2_sftp_stat_ex(sftp.handle, path, pc, LIBSSH2_SFTP_STAT, &attr)
         }
         return ret == 0 ? attr : nil
     }
     
-    func sftpLlOpen (_ sftp: SFTP, path: String, flags: UInt, file: Bool) async -> OpaquePointer? {
+    func sftpOpen (_ sftp: SFTP, path: String, flags: UInt, file: Bool) async -> OpaquePointer? {
         return await callSshPtr {
-            libssh2_sftp_open_ex(sftp.sftpHandle, path, UInt32 (path.utf8.count), flags, 0, file ? LIBSSH2_SFTP_OPENFILE : LIBSSH2_SFTP_OPENDIR)
+            libssh2_sftp_open_ex(sftp.handle, path, UInt32 (path.utf8.count), flags, 0, file ? LIBSSH2_SFTP_OPENFILE : LIBSSH2_SFTP_OPENDIR)
         }
+    }
+    
+    func sftpClose (sftpHandle: OpaquePointer) async {
+        let _ = await callSsh {
+            libssh2_sftp_close_handle(sftpHandle)
+        }
+    }
+    
+    // Fetches the next directory entry, returing the attributes, and the optional strings that represent it - might be nil if utf8 fails to decode it
+    func sftpReaddir (sftpHandle: OpaquePointer) async -> (attrs: LIBSSH2_SFTP_ATTRIBUTES, name: Data, rendered: Data)? {
+        let maxLen = 512
+
+        let buffer = UnsafeMutablePointer<CChar>.allocate(capacity: maxLen)
+        let longEntry = UnsafeMutablePointer<CChar>.allocate(capacity: maxLen)
+        var attrs = LIBSSH2_SFTP_ATTRIBUTES()
+        
+        let code = await callSsh {
+            libssh2_sftp_readdir_ex(sftpHandle, buffer, maxLen, longEntry, maxLen, &attrs)
+        }
+        let short = Data (bytes: buffer, count: strlen (buffer))
+        let long = Data (bytes: longEntry, count: strlen (longEntry))
+        let ret = code <= 0 ? nil : (attrs, short, long)
+        buffer.deallocate()
+        longEntry.deallocate()
+        return ret
     }
     
     public func sftpShutdown (_ sftpHandle: OpaquePointer) async {
@@ -398,7 +444,7 @@ actor SessionActor {
     }
         
     func sftpReadFile (_ sftp: SFTP, path: String, limit: Int) async -> [Int8]? {
-        guard let f = await sftpLlOpen (sftp, path: path, flags: UInt (LIBSSH2_FXF_READ), file: true) else {
+        guard let f = await sftpOpen (sftp, path: path, flags: UInt (LIBSSH2_FXF_READ), file: true) else {
             return nil
         }
         var buffer: [Int8] = []
@@ -415,6 +461,8 @@ actor SessionActor {
                 if ret > 0 {
                     left -= ret
                     buffer.append(contentsOf: llbuffer [0..<ret])
+                } else {
+                    return Int32 (limit-left)
                 }
                 if ret == 0 {
                     return Int32 (ret)
@@ -422,11 +470,71 @@ actor SessionActor {
             } while left > 0
             return 0
         }
-        let _ = await callSsh {
-            libssh2_sftp_close_handle(f)
-        }
         return buffer
     }
+    
+    func sftpWriteFile (_ sftp: SFTP,
+                        path: String,
+                        contents: Data,
+                        mode: Int32 = LIBSSH2_SFTP_S_IRUSR|LIBSSH2_SFTP_S_IWUSR|LIBSSH2_SFTP_S_IRGRP|LIBSSH2_SFTP_S_IROTH) async -> UInt {
+        guard let f = await sftpOpen (sftp, path: path, flags: UInt (LIBSSH2_FXF_CREAT|LIBSSH2_FXF_WRITE|LIBSSH2_FXF_TRUNC) | UInt (mode), file: true) else {
+            return libssh2_sftp_last_error(sftp.handle)
+        }
+        var left = contents.count
+        var offset = 0
+        let _ = await callSshInt {
+            repeat {
+                let ret = contents.withUnsafeBytes { ptr -> Int in
+                    guard let rawBytes = ptr.bindMemory(to: Int8.self).baseAddress else {
+                        return -1
+                    }
+                    return libssh2_sftp_write(f, rawBytes.advanced(by: offset), left)
+                }
+                if ret == LIBSSH2_ERROR_EAGAIN {
+                    return ret
+                }
+                if ret <= 0 {
+                    return offset
+                }
+                left -= Int (ret)
+                offset += Int (ret)
+            } while left > 0
+            return offset
+        }
+        return 0
+    }
+    
+//    libssh2_sftp_fsetstat()
+//    libssh2_sftp_fstat()
+//    libssh2_sftp_fstat_ex()
+//    libssh2_sftp_fstatvfs()
+//    libssh2_sftp_fsync()
+//    libssh2_sftp_get_channel()
+//    libssh2_sftp_init()
+//    libssh2_sftp_last_error()
+//    libssh2_sftp_lstat()
+//    libssh2_sftp_mkdir()
+//    libssh2_sftp_mkdir_ex()
+//    libssh2_sftp_readlink()
+//    libssh2_sftp_realpath()
+//    libssh2_sftp_rename()
+//    libssh2_sftp_rename_ex()
+//    libssh2_sftp_rewind()
+//    libssh2_sftp_rmdir()
+//    libssh2_sftp_rmdir_ex()
+//    libssh2_sftp_seek()
+//    libssh2_sftp_seek64()
+//    libssh2_sftp_setstat()
+//    libssh2_sftp_shutdown()
+//    libssh2_sftp_stat()
+//    libssh2_sftp_stat_ex()
+//    libssh2_sftp_statvfs()
+//    libssh2_sftp_symlink()
+//    libssh2_sftp_symlink_ex()
+//    libssh2_sftp_tell()
+//    libssh2_sftp_tell64()
+//    libssh2_sftp_unlink()
+//    libssh2_sftp_unlink_ex()
 }
     
 // Returns nil on success, or a description of the code on error
