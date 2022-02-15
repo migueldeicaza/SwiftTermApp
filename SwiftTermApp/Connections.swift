@@ -19,6 +19,19 @@ class Connections: ObservableObject {
         return connections.count > 0
     }
     
+    public static func allocateConnectionId () -> Int {
+        var serials = Set<Int> ()
+        
+        for conn in shared.connections {
+            serials.update(with: conn.serial)
+        }
+        for x in 0..<Int.max {
+            if !serials.contains(x) {
+                return x
+            }
+        }
+        return -1
+    }
     public static func remove (_ terminal: SshTerminalView)
     {
         if let idx = shared.connections.firstIndex(of: terminal) {

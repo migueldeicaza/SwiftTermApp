@@ -328,6 +328,20 @@ actor SessionActor {
         }
     }
     
+    var logFileCounter = 1
+    func dump (_ data: Data)
+    {
+        let dir = "/tmp"
+        let path = dir + "/log-\(logFileCounter)"
+        do {
+            try data.write(to: URL.init(fileURLWithPath: path))
+            logFileCounter += 1
+        } catch {
+            // Ignore write error
+            //print ("Got error while logging data dump to \(path)")
+        }
+    }
+
     public func ping (channel: Channel) async -> (Data?, Data?)? {
         // standard channel
         let channelHandle = channel.channelHandle
@@ -339,6 +353,7 @@ actor SessionActor {
 
         let data = ret >= 0 ? Data (bytesNoCopy: channel.buffer, count: ret, deallocator: .none) : nil
         let error = retError >= 0 ? Data (bytesNoCopy: channel.bufferError, count: retError, deallocator: .none) : nil
+        //if ret >= 0 { dump (data!) }
         if ret >= 0 || retError >= 0 {
             return (data, error)
         } else {

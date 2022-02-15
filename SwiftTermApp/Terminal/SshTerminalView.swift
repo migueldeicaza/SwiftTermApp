@@ -28,9 +28,11 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     var completeConnectSetup: () -> () = { }
     var session: SocketSession!
     var sessionChannel: Channel?
+    var serial: Int = -1
     
     // TODO, this should be based on the user locale, not forced here
     var lang = "en_US.UTF-8"
+    var reconnect: Bool = true
     
     // Delegate SocketSessionDelegate.authenticate: invoked to trigger authentication
     func authenticate (session: Session) async -> String? {
@@ -103,6 +105,13 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
     }
     
+    // Delegate SessionDelegate.remoteEndDisconnected
+    func remoteEndDisconnected(session: Session) {
+        DispatchQueue.main.async {
+            
+        }
+    }
+    
     nonisolated func channelReader (channel: Channel, data: Data?, error: Data?) {
         if let d = data {
             let sliced = Array(d) [0...]
@@ -136,6 +145,9 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
     }
     
+    // UTF-8, allow setting cursor color, xterm mouse sequences, RGB colors using SGR, setting terminal title, fill rects, margin support
+    let tmuxFeatureFlags = "-T UTF-8,256,ccolor,mouse,RGB,title,rectfill,margins "
+    
     func setupChannel (session: Session) async {
         // TODO: should this be different based on the locale?
         sessionChannel = await session.openSessionChannel(lang: lang, readCallback: channelReader)
@@ -158,14 +170,56 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             }
             return
         }
-        let status2 = await channel.processStartup(request: "shell", message: nil)
-        if status2 != 0 {
+        if host.reconnectType == "tmux" {
+            if serial == -1 {
+                await launchNewTmux(channel)
+            } else {
+                await attachTmux (channel)
+            }
+        } else {
+            let status2 = await channel.processStartup(request: "shell", message: nil)
+            if status2 != 0 {
+                DispatchQueue.main.async {
+                    self.connectionError(error: "Failed to launch the shell process:\n\nDetail: \(libSsh2ErrorToString(error: status2))")
+                }
+                return
+            }
+        }
+        session.activate(channel: channel)
+    }
+    
+    func launchNewTmux (_ channel: Channel) async {
+        serial = Connections.allocateConnectionId()
+        let status = await channel.processStartup(request: "exec", message: "tmux \(tmuxFeatureFlags) new-session -s 'SwiftTermApp-\(serial)'")
+        if status != 0 {
             DispatchQueue.main.async {
-                self.connectionError(error: "Failed to launch the shell process:\n\nDetail: \(libSsh2ErrorToString(error: status2))")
+                self.connectionError(error: "Failed to launch a new tmux session:\n\nDetail: \(libSsh2ErrorToString(error: status))")
             }
             return
         }
-        session.activate(channel: channel)
+    }
+    
+    func attachTmux (_ channel: Channel) async {
+        await session.runSimple(command: "tmux list-sessions -F '#{session_name}'", lang: lang) { (out, err) in
+            var command: String? = nil
+            guard let str = out else {
+                return
+            }
+            for line in (str).split (separator: "\n") {
+                if line == "SwiftTermApp-\(self.serial)" {
+                    command = "tmux \(self.tmuxFeatureFlags) attach-session -t SwiftTermApp-\(self.serial)"
+                    break
+                }
+            }
+            if let tmux = command {
+                let status = await channel.processStartup(request: "exec", message: tmux)
+                if status == 0 {
+                    return
+                }
+            } else {
+                await self.launchNewTmux(channel)
+            }
+        }
     }
     
     func directoryListing () async {
@@ -187,15 +241,15 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     func loggedIn (session: Session) async {
         await setupChannel (session: session)
 
-        var todo = true
         // If the user did not set an icon
-        if host.hostKind == "" || todo {
+        if host.hostKind == ""  {
             await self.guessOsIcon ()
         }
     }
 
     override init (frame: CGRect, host: Host) throws
     {
+        //serial = Connections.allocateConnectionId()
         try super.init (frame: frame, host: host)
 
         session = SocketSession(host: host.hostname, port: UInt16 (host.port & 0xffff), delegate: self)
@@ -381,7 +435,6 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                 }
             }
             semaphore.wait ()
-            
         }
         
         if let _ = await knownHosts.readFile (filename: DataStore.shared.knownHostsPath) {

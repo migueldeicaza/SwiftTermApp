@@ -103,18 +103,37 @@ class Host: Codable, Identifiable {
         self.lastUsed = lastUsed
     }
     
+    // Unique ID, used inside Swift to differentiate structures
     var id = UUID()
+    
+    // Public name for this host
     var alias: String = ""
+    
+    // Address to connect to
     var hostname: String = ""
+    
+    // Setting for this host, should the backspace key send a control-h
     var backspaceAsControlH: Bool = false
+    
+    // The port to which we will connect in the host
     var port: Int = 22
+    
+    // If true, this host uses a password, rather than a key
     var usePassword: Bool = true
+    
+    // Username to login as
     var username: String = ""
+    
+    // If usePassword is set, this might contain the password to provide for authentication
     var password: String = ""
+    
+    // The guessed host type - this is used to pick the icon for the host, and it is sometimes automatically guessed and set
     var hostKind: String = ""
     
     /// Environment variables to pass on the connection
     var environmentVariables: [String] = []
+    
+    /// Scripts to execute on startup
     var startupScripts: [String] = []
     
     // This is the UUID of the key registered with the app
@@ -126,13 +145,18 @@ class Host: Codable, Identifiable {
     /// The values are `default` to pick the value from settings, "" to use a solid color, or the name of a live background
     var background: String = ""
     
+    /// Last time this host was used, to show the sorted list of hosts used
     var lastUsed: Date = Date.distantPast
+    
+    /// Reconnection type, one of "" or "tmux"
+    var reconnectType: String = ""
     
     func summary() -> String {
         hostname + (style != "" ? ", \(style)" : "")
     }
 }
 
+/// Represents a host we have connected to
 struct KnownHost: Identifiable {
     var host: String
     var keyType: String
