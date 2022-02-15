@@ -147,6 +147,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     
     // UTF-8, allow setting cursor color, xterm mouse sequences, RGB colors using SGR, setting terminal title, fill rects, margin support
     let tmuxFeatureFlags = "-T UTF-8,256,ccolor,mouse,RGB,title,rectfill,margins "
+    let tmuxSessionPrefix = "SwiftTermApp-"
     
     func setupChannel (session: Session) async {
         // TODO: should this be different based on the locale?
@@ -171,9 +172,32 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             return
         }
         if host.reconnectType == "tmux" {
+            let activeSessions = await session.runSimple(command: "tmux list-sessions -F '#{session_name},#{session_attached_list)'", lang: lang) { (out, err) -> [(Int, Int)] in
+                var res: [(Int,Int)] = []
+                guard let str = out else {
+                    return res
+                }
+
+                for line in (str).split (separator: "\n") {
+                    let recs = line.split(separator: ",")
+                    guard recs.count == 2 else {
+                        continue
+                    }
+                    let sessionName = String (recs [0])
+                    if sessionName.starts(with: self.tmuxSessionPrefix) {
+                        if let id = Int (String (sessionName.dropFirst(self.tmuxSessionPrefix.utf8.count))), let n = Int (String (recs [1])) {
+                            res.append((id, n))
+                        }
+                    }
+                }
+                return res
+            }
+            
             if serial == -1 {
+                // TODO: we should offer the user if one of the active sessions is worth attaching to, and attaching to that
                 await launchNewTmux(channel)
             } else {
+                // TODO: validate that the serial we want exists, if it does, attach, otherwise create a new one
                 await attachTmux (channel)
             }
         } else {

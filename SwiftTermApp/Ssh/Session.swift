@@ -281,7 +281,7 @@ class Session: CustomDebugStringConvertible {
         var stdout = Data()
         var stderr = Data()
         
-        await runAsync (command: command, lang: lang) { channel, out, err in
+        let _ = await runAsync (command: command, lang: lang) { channel, out, err in
             //print ("Run callback for \(command) out=\(out?.count) err=\(err?.count) eof=\(channel.receivedEOF)")
             if let gotOut = out {
                 stdout.append(gotOut)
@@ -307,24 +307,27 @@ class Session: CustomDebugStringConvertible {
     ///  - resultCallback: method that is invoked when the command completes containing the stdout and stderr results as string parameters
     ///
     ///  This method will only return after the resultCallback is invoked
-    public func runSimple (command: String, lang: String, resultCallback: @escaping (String?, String?)async->()) async {
-        var stdout = Data()
-        var stderr = Data()
-        
-        await runAsync (command: command, lang: lang) { channel, out, err in
-            //print ("Run callback for \(command) out=\(out?.count) err=\(err?.count) eof=\(channel.receivedEOF)")
-            if let gotOut = out {
-                stdout.append(gotOut)
-            }
-            if let gotErr = err {
-                stderr.append(gotErr)
-            }
-            if channel.receivedEOF {
-                let s = String (bytes: stdout, encoding: .utf8)
-                let e = String (bytes: stderr, encoding: .utf8)
+    public func runSimple<T> (command: String, lang: String, resultCallback: @escaping (String?, String?)async->(T)) async -> T {
+        return await withCheckedContinuation { c in
+            Task {
+                var stdout = Data()
+                var stderr = Data()
                 
+                let _ = await runAsync(command: "", lang: lang) { channel, out, err in
+                    if let gotOut = out {
+                        stdout.append(gotOut)
+                    }
+                    if let gotErr = err {
+                        stderr.append(gotErr)
+                    }
+                    if channel.receivedEOF {
+                        let s = String (bytes: stdout, encoding: .utf8)
+                        let e = String (bytes: stderr, encoding: .utf8)
 
-                await resultCallback (s, e)
+                        let r = await resultCallback (s, e)
+                        c.resume(returning: r)
+                    }
+                }
             }
         }
     }
