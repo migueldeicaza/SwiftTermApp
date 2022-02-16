@@ -278,7 +278,6 @@ actor SessionActor {
         return LibsshKnownHost (sessionActor: self, knownHost: kh)
     }
     
-    
     public func getFingerprintBytes () -> [UInt8]? {
         guard let hashPointer = libssh2_hostkey_hash(sessionHandle, LIBSSH2_HOSTKEY_HASH_SHA256) else {
             return nil
@@ -301,6 +300,24 @@ actor SessionActor {
         return nil
     }
     
+    public func writeFile (knownHost: LibsshKnownHost, filename: String) -> String? {
+        let ret = libssh2_knownhost_writefile(knownHost.khHandle, filename, LIBSSH2_KNOWNHOST_FILE_OPENSSH)
+        if ret < 0 {
+            return libSsh2ErrorToString (error: ret)
+        }
+        return nil
+    }
+    
+
+    public func add(knownHost: LibsshKnownHost, fullhostname: String, key: [Int8], keyTypeCode: Int32, comment: String) async -> String? {
+        let empty = ""
+        var kcopy = key
+        let ret = await callSsh {
+            libssh2_knownhost_addc(knownHost.khHandle, fullhostname, empty, &kcopy, kcopy.count, comment, comment.utf8.count, LIBSSH2_KNOWNHOST_TYPE_PLAIN | LIBSSH2_KNOWNHOST_KEYENC_RAW | keyTypeCode, nil)
+        }
+        
+        return libSsh2ErrorToString(error: ret)
+    }
     public func disconnect (reason: Int32 = SSH_DISCONNECT_BY_APPLICATION, description: String) async {
         let _ = await callSsh {
             libssh2_session_disconnect_ex(self.sessionHandle, reason, description, "")

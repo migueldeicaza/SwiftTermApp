@@ -192,6 +192,8 @@ class DataStore: ObservableObject {
     
     let hostsArrayKey = "hostsArray"
     let keysArrayKey = "keysArray"
+    let connectionsArrayKey = "connectionsArray"
+    
     public var knownHostsPath: String
     
     init ()

@@ -1,22 +1,28 @@
 //
-//  HostConnectionClosed.swift
+//  TmuxSessionGone.swift
 //  SwiftTermApp
 //
-//  Created by Miguel de Icaza on 6/23/21.
-//  Copyright © 2021 Miguel de Icaza. All rights reserved.
+//  Created by Miguel de Icaza on 2/15/22.
+//  Copyright © 2022 Miguel de Icaza. All rights reserved.
 //
 
 import SwiftUI
 
-struct HostConnectionClosed: View {
+struct GenericConnectionIssue: View, ConnectionMessage {
+    init(host: Host, message: String, ok: @escaping () -> ()) {
+        self.host = host
+        self.error = message
+        self.ok = ok
+    }
+    
     @State var host: Host
-    @State var receivedEOF: Bool
+    @State var error: String
     @State var ok: () -> () = { }
     
     var body: some View {
         VStack (alignment: .center){
             HStack (alignment: .center){
-                Image (systemName: receivedEOF ? "info.circle" : "desktopcomputer.trianglebadge.exclamationmark")
+                Image (systemName: "desktopcomputer.trianglebadge.exclamationmark")
                     .resizable()
                     .aspectRatio(1, contentMode: .fit)
                     .frame(width: 30)
@@ -29,9 +35,8 @@ struct HostConnectionClosed: View {
             .background(Color(UIColor.secondarySystemBackground))
             //.background(.yellow)
             VStack (alignment: .center){
-                Text ("Connection to \(host.hostname):\(host.port)" + (receivedEOF ? " was closed" : " terminated"))
+                Text (error)
                     .padding ([.bottom])
-                Spacer ()
                 HStack (alignment: .center, spacing: 20) {
                     Button ("Ok") { ok () }
                         .buttonStyle(.bordered)
@@ -44,16 +49,15 @@ struct HostConnectionClosed: View {
     }
 }
 
-struct HostConnectionClosed_Previews: PreviewProvider {
-    static var previews: some View {
-        WrapperView ()
-    }
-    
+struct TmuxSessionGone_Previews: PreviewProvider {
     struct WrapperView: View {
         var host = Host ()
         
         var body: some View {
-            HostConnectionClosed(host: host, receivedEOF: false)
+            HostConnectionError(host: host, error: "Test")
         }
+    }
+    static var previews: some View {
+        WrapperView()
     }
 }

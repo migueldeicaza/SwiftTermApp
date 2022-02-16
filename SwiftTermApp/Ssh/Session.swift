@@ -313,7 +313,8 @@ class Session: CustomDebugStringConvertible {
                 var stdout = Data()
                 var stderr = Data()
                 
-                let _ = await runAsync(command: "", lang: lang) { channel, out, err in
+                
+                let _ = await runAsync(command: command, lang: lang) { channel, out, err in
                     if let gotOut = out {
                         stdout.append(gotOut)
                     }
@@ -368,6 +369,9 @@ class Session: CustomDebugStringConvertible {
         return await sessionActor.makeKnownHost()
     }
 
+    public func shutdown () {
+        
+    }
 
     /// Disconnects the session from the remote end, you can specifiy a reason, as well as a description that is sent to the remote server
     /// - Parameters:
@@ -491,6 +495,10 @@ class SocketSession: Session {
         }
     }
     
+    public override func shutdown () {
+        connection.cancel()
+    }
+    
     // Since libssh2 does not provide a callback/completion system per channel, we inform
     // all registered channels that new data is available, so they can pull and process.
     func pingChannels () {
@@ -528,7 +536,7 @@ class SocketSession: Session {
                 await setupSshConnection ()
             }
         case .failed(_):
-            log ("failed")
+            delegate.remoteEndDisconnected(session: self)
         case .cancelled:
             log ("canceled")
         @unknown default:
