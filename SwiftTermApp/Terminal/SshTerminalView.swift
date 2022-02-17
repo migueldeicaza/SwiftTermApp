@@ -46,66 +46,88 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     
     // Delegate SocketSessionDelegate.authenticate: invoked to trigger authentication
     func authenticate (session: Session) async -> String? {
-        let authMethods = await session.userAuthenticationList(username: host.username)
-        for m in authMethods {
-            switch m {
-            case "none":
-                return nil
-            case "publickey":
-                if let sshKeyId = host.sshKey {
-                    if let sshKey = DataStore.shared.keys.first(where: { $0.id == sshKeyId }) {
-                        switch sshKey.type {
-                        case .rsa(_), .ecdsa(inEnclave: false):
-                            var password: String
-                            
-                            if SshUtil.openSSHKeyRequiresPassword(key: sshKey.privateKey) && sshKey.passphrase == "" {
-                                password = self.passwordPrompt (challenge: "Key requires password")
-                            } else {
-                                password = sshKey.passphrase
-                            }
-                            
-                            return await session.userAuthPublicKeyFromMemory (username: host.username,
-                                                                   passPhrase: password,
-                                                                   publicKey: sshKey.publicKey,
-                                                                   privateKey: sshKey.privateKey)
-                        case .ecdsa(inEnclave: true):
-                            if let keyHandle = sshKey.getKeyHandle() {
-                                return await session.userAuthWithCallback(username: host.username, publicKey: sshKey.getPublicKeyAsData()) { dataToSign in
-                                    var error: Unmanaged<CFError>?
-                                    guard let signed = SecKeyCreateSignature(keyHandle, .ecdsaSignatureMessageX962SHA256, dataToSign as CFData, &error) else {
-                                        return nil
-                                    }
-                                    return signed as NSData as Data
-                                }
-                            } else {
-                                print ("Did not get a handle to the sshKey")
-                                break
-                            }
+        
+        func loginWithKey (_ sshKey: Key) async -> String? {
+            switch sshKey.type {
+            case .rsa(_), .ecdsa(inEnclave: false):
+                var password: String
+                
+                if SshUtil.openSSHKeyRequiresPassword(key: sshKey.privateKey) && sshKey.passphrase == "" {
+                    password = self.passwordPrompt (challenge: "Key requires password")
+                } else {
+                    password = sshKey.passphrase
+                }
+                
+                return await session.userAuthPublicKeyFromMemory (username: host.username,
+                                                       passPhrase: password,
+                                                       publicKey: sshKey.publicKey,
+                                                       privateKey: sshKey.privateKey)
+            case .ecdsa(inEnclave: true):
+                if let keyHandle = sshKey.getKeyHandle() {
+                    return await session.userAuthWithCallback(username: host.username, publicKey: sshKey.getPublicKeyAsData()) { dataToSign in
+                        var error: Unmanaged<CFError>?
+                        guard let signed = SecKeyCreateSignature(keyHandle, .ecdsaSignatureMessageX962SHA256, dataToSign as CFData, &error) else {
+                            return nil
                         }
-                    } else {
-                        return "The host references an SSH key that is no longer set"
+                        return signed as NSData as Data
                     }
+                } else {
+                    return "Could not fetch the enclave key"
                 }
-                break
-            case "password":
-                if host.usePassword && host.password != "" {
-                    // TODO: perhaps empty passwords are ok?
-                    if let error = await session.userAuthPassword (username: host.username, password: host.password) {
-                        return error
-                    }
-                    return nil
-                }
-                break
-            case "keyboard-interactive":
-                if let error = await session.userAuthKeyboardInteractive(username: host.username, prompt: passwordPrompt) {
-                    return error
-                }
-                return nil
-            default:
-                break
             }
         }
-        return nil
+        
+        let authMethods = await session.userAuthenticationList(username: host.username)
+        
+        if authMethods == "" {
+            return nil
+        }
+        
+        var cumulativeErrors: [String] = []
+        
+        // First, try to use what the user configured
+        if authMethods.contains("publickey") && host.sshKey != nil {
+            if let sshKey = DataStore.shared.keys.first(where: { $0.id == host.sshKey! }) {
+                if let error = await loginWithKey (sshKey) {
+                    cumulativeErrors.append (error)
+                } else {
+                    return nil
+                }
+            }
+        }
+        if authMethods.contains ("password") && host.usePassword {
+            if let error = await session.userAuthPassword (username: host.username, password: host.password) {
+                cumulativeErrors.append (error)
+            }
+            return nil
+        }
+        
+        // Ok, none of the presets work, try all the public keys that have a passphrase
+        if authMethods.contains ("publickey") {
+            let skip = host.sshKey == nil ? nil : DataStore.shared.keys.first(where: { $0.id == host.sshKey! })
+            
+            for sshKey in DataStore.shared.keys {
+                // Skip the key that was original bound to it
+                if skip != nil && skip!.id == sshKey.id {
+                    continue
+                }
+                if let error = await loginWithKey (sshKey) {
+                    cumulativeErrors.append (error)
+                } else {
+                    return nil
+                }
+            }
+        }
+
+        if authMethods.contains ("keyboard-interactive") {
+                if let error = await session.userAuthKeyboardInteractive(username: host.username, prompt: passwordPrompt) {
+                    cumulativeErrors.append(error)
+                } else {
+                    return nil
+                }
+        }
+        
+        return cumulativeErrors.last ?? "No valid autentication options available: \(authMethods)"
     }
     
     // Delegate SocketSessionDelegate.loginFailed, invoked if the authentication fails

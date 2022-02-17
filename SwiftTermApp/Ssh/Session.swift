@@ -16,32 +16,6 @@ import CryptoKit
 
 @_implementationOnly import CSSH
 
-extension Data {
-    public func getDump(indent: String = "") -> String {
-        let res = self.withUnsafeBytes { data -> String in
-            var hexstr = String()
-            var txt = String ()
-            var n = 0
-            for i in data.bindMemory(to: UInt8.self) {
-                if (n % 16) == 0 {
-                    hexstr += " \(txt)\n" + String (format: "%04x: ", n)
-                    txt = ""
-                }
-                n += 1
-                hexstr += String(format: "%02X ", i)
-                txt += (i > 32 && i < 127 ? String (Unicode.Scalar (i)) : ".")
-            }
-            hexstr += " \(txt)"
-            return hexstr.replacingOccurrences(of: "\n", with: "\n\(indent)")
-        }
-        return res
-    }
-    
-    public func dump() {
-        print (getDump ())
-    }
-}
-
 protocol SessionDelegate: AnyObject {
     /// Called to authenticate the user on the network queue, once the
     /// connection has been established.
@@ -141,7 +115,7 @@ class Session: CustomDebugStringConvertible {
     }
     
     /// Returns an array of authentication methods available for the specified user
-    public func userAuthenticationList (username: String) async -> [String] {
+    public func userAuthenticationList (username: String) async -> String {
         return await sessionActor.userAuthenticationList (username: username)
     }
     
