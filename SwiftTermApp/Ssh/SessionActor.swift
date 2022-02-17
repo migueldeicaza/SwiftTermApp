@@ -10,7 +10,6 @@
 //  Copyright © 2022 Miguel de Icaza. All rights reserved.
 //
 import Foundation
-import CSwiftSH
 import Network
 import CryptoKit
 

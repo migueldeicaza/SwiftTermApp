@@ -3,19 +3,10 @@
     "pins": [
       {
         "package": "CSSH",
-        "repositoryURL": "https://github.com/migueldeicaza/Libssh2Prebuild.git",
-        "state": {
-          "branch": null,
-          "revision": "631d39784b593505a1b37341cda80055363bc753",
-          "version": "1.9.0+OpenSSL_1_1_1h"
-        }
-      },
-      {
-        "package": "SwiftSH",
-        "repositoryURL": "https://github.com/migueldeicaza/SwiftSH",
+        "repositoryURL": "https://github.com/migueldeicaza/Libssh2Prebuild",
         "state": {
           "branch": "master",
-          "revision": "4e83a501b943d50d57d03082865199875a560641",
+          "revision": "2b9a34880aa7906a76872ac03077ea5aa313c72b",
           "version": null
         }
       },

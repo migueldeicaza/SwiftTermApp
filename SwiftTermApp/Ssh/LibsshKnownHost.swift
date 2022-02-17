@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import CSwiftSH
 @_implementationOnly import CSSH
 
 public enum KnownHostStatus {

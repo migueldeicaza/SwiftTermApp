@@ -21,11 +21,10 @@
 		490A187D26AA60980034B2BF /* HostConnectionError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490A187C26AA60980034B2BF /* HostConnectionError.swift */; };
 		4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4911B3032463AD3E00816BAA /* GenerateKey.swift */; };
 		49148F99268AB0B0000AB718 /* InputKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49148F98268AB0B0000AB718 /* InputKeyboard.swift */; };
-		491769B62666BE8000D32353 /* SwiftSH in Frameworks */ = {isa = PBXBuildFile; productRef = 491769B52666BE8000D32353 /* SwiftSH */; };
 		49184C5D27BC1BA900335BFB /* ConnectionMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49184C5C27BC1BA900335BFB /* ConnectionMessage.swift */; };
 		49184C5F27BC1CAA00335BFB /* GenericConnectionIssue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49184C5E27BC1CAA00335BFB /* GenericConnectionIssue.swift */; };
-		4922DDAF26632E4600B7D2BE /* CSwiftSH in Frameworks */ = {isa = PBXBuildFile; productRef = 4922DDAE26632E4600B7D2BE /* CSwiftSH */; };
 		4923C56627319336000CC371 /* LocationTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4923C56527319336000CC371 /* LocationTracking.swift */; };
+		4928BDEB27BF09BE00C180E6 /* CSSH in Frameworks */ = {isa = PBXBuildFile; productRef = 4928BDEA27BF09BE00C180E6 /* CSSH */; };
 		493F4F3027613F1B00838AC7 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493F4F2F27613F1B00838AC7 /* Session.swift */; };
 		493F4F3227650E7800838AC7 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493F4F3127650E7800838AC7 /* Errors.swift */; };
 		493F4F34276511CE00838AC7 /* Channel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493F4F33276511CE00838AC7 /* Channel.swift */; };
@@ -160,9 +159,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				491769B62666BE8000D32353 /* SwiftSH in Frameworks */,
 				49C1B6AF24625C7D00D54F6F /* SwiftTerm in Frameworks */,
-				4922DDAF26632E4600B7D2BE /* CSwiftSH in Frameworks */,
+				4928BDEB27BF09BE00C180E6 /* CSSH in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -435,8 +433,7 @@
 			name = SwiftTermApp;
 			packageProductDependencies = (
 				49C1B6AE24625C7D00D54F6F /* SwiftTerm */,
-				4922DDAE26632E4600B7D2BE /* CSwiftSH */,
-				491769B52666BE8000D32353 /* SwiftSH */,
+				4928BDEA27BF09BE00C180E6 /* CSSH */,
 			);
 			productName = testMasterDetail;
 			productReference = 4901167224553789002C1F85 /* SwiftTermApp.app */;
@@ -491,7 +488,7 @@
 			mainGroup = 4901166924553789002C1F85;
 			packageReferences = (
 				49C1B6AD24625C7D00D54F6F /* XCRemoteSwiftPackageReference "SwiftTerm" */,
-				4922DDAD26632E4600B7D2BE /* XCRemoteSwiftPackageReference "SwiftSH" */,
+				4928BDE927BF09BE00C180E6 /* XCRemoteSwiftPackageReference "Libssh2Prebuild" */,
 			);
 			productRefGroup = 4901167324553789002C1F85 /* Products */;
 			projectDirPath = "";
@@ -871,9 +868,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		4922DDAD26632E4600B7D2BE /* XCRemoteSwiftPackageReference "SwiftSH" */ = {
+		4928BDE927BF09BE00C180E6 /* XCRemoteSwiftPackageReference "Libssh2Prebuild" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/migueldeicaza/SwiftSH";
+			repositoryURL = "https://github.com/migueldeicaza/Libssh2Prebuild";
 			requirement = {
 				branch = master;
 				kind = branch;
@@ -890,15 +887,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		491769B52666BE8000D32353 /* SwiftSH */ = {
+		4928BDEA27BF09BE00C180E6 /* CSSH */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4922DDAD26632E4600B7D2BE /* XCRemoteSwiftPackageReference "SwiftSH" */;
-			productName = SwiftSH;
-		};
-		4922DDAE26632E4600B7D2BE /* CSwiftSH */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4922DDAD26632E4600B7D2BE /* XCRemoteSwiftPackageReference "SwiftSH" */;
-			productName = CSwiftSH;
+			package = 4928BDE927BF09BE00C180E6 /* XCRemoteSwiftPackageReference "Libssh2Prebuild" */;
+			productName = CSSH;
 		};
 		49C1B6AE24625C7D00D54F6F /* SwiftTerm */ = {
 			isa = XCSwiftPackageProductDependency;

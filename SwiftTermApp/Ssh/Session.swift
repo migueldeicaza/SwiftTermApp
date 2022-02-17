@@ -10,7 +10,6 @@
 //   Explore removing all the DispatchQueues that I used while debugging this
 
 import Foundation
-import CSwiftSH
 import Network
 import CryptoKit
 

@@ -8,7 +8,6 @@
 
 import Foundation
 @_implementationOnly import CSSH
-import CSwiftSH
 
 /// Surfaces operations on channels
 public class Channel: Equatable {

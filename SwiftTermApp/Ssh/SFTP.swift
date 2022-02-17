@@ -8,7 +8,6 @@
 
 import Foundation
 @_implementationOnly import CSSH
-import CSwiftSH
 
 public class SftpHandle {
     weak var session: Session!
