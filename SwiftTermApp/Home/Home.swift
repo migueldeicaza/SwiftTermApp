@@ -58,7 +58,8 @@ struct LargeHomeView: View {
 struct HomeView: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @ObservedObject var connections = Connections.shared
-    
+    @Environment(\.scenePhase) var scenePhase
+
     func sortDate (first: Host, second: Host) throws -> Bool
     {
         first.lastUsed > second.lastUsed
@@ -115,6 +116,19 @@ struct HomeView: View {
             }
         }
         .listStyle(GroupedListStyle())
+        .onChange(of: scenePhase) { newPhase in
+            switch newPhase {
+            case .active:
+                break
+            case .inactive:
+                break
+            case .background:
+                //Connections.saveState()
+                break
+            default:
+                break
+            }
+        }
         //.listStyle(.sidebar)
 
     }

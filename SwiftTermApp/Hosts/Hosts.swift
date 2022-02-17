@@ -58,12 +58,14 @@ struct HostSummaryView: View {
                 HostEditView(host: self.host, showingModal: self.$showingModal)
             }
             .contextMenu {
-                Button(action: {
-                    createNewTerm = true
-                    active = true
-                }) {
-                    Text("New Connection")
-                    Image(systemName: "plus.circle")
+                HStack {
+                    Button(action: {
+                        createNewTerm = true
+                        active = true
+                    }) {
+                        Text("New Connection")
+                        Image(systemName: "plus.circle")
+                    }
                 }
 //                Button(action: {
 //                    print ("wussup")

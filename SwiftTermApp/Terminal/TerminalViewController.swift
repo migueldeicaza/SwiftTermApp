@@ -24,7 +24,6 @@ class TerminalViewController: UIViewController {
     var terminalView: SshTerminalView?
     var interactive: Bool
     var host: Host
-    var serial: Int
     static var Serial: Int = 0
 
     // Because we are sharing the TerminalView, we do not want to
@@ -37,9 +36,8 @@ class TerminalViewController: UIViewController {
     }
     
     // This constructor is used to launch a new instance, and will trigger the SSH workflow
-    init (host: Host, interactive: Bool)
+    init (host: Host, interactive: Bool, serial: Int = -1)
     {
-        serial = TerminalViewController.Serial
         TerminalViewController.Serial += 1
         self.host = host
         self.interactive = interactive
@@ -50,7 +48,6 @@ class TerminalViewController: UIViewController {
     // This consturctor is used to create a fresh TerminalViewController from an existing TerminalView
     init (terminalView: SshTerminalView, interactive: Bool)
     {
-        serial = TerminalViewController.Serial
         TerminalViewController.Serial += 1
         self.terminalView = terminalView
         self.host = terminalView.host
@@ -213,7 +210,7 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
                     return viewController
                 }
             }
-            viewController = TerminalViewController (host: host, interactive: interactive)
+            viewController = TerminalViewController (host: host, interactive: interactive, serial: -2)
             return viewController
         case .rehost(rehost: let terminalView):
             viewController = TerminalViewController(terminalView: terminalView, interactive: interactive)

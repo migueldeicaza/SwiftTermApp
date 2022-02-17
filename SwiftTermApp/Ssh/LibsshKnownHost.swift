@@ -61,19 +61,12 @@ class LibsshKnownHost {
     }
     
     // returns nil on success, otherwise an error description
-    func writeFile (filename: String) -> String? {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
-
-        let ret = libssh2_knownhost_writefile(khHandle, filename, LIBSSH2_KNOWNHOST_FILE_OPENSSH)
-        if ret < 0 {
-            return libSsh2ErrorToString (error: ret)
-        }
-        return nil
+    func writeFile (filename: String) async -> String? {
+        return await sessionActor.writeFile (knownHost: self, filename: filename)
     }
     
     /// Returns nil on success, otherwise a string describing the error
-    func add(hostname: String, port: Int32? = nil, key: [Int8], keyType: String, comment: String) -> String? {
-        dispatchPrecondition(condition: .onQueue(sshQueue))
+    func add(hostname: String, port: Int32? = nil, key: [Int8], keyType: String, comment: String) async -> String? {
 
         let fullhostname: String
         if let p = port {
@@ -100,12 +93,6 @@ class LibsshKnownHost {
             return "knownHost.add: the provided key type is \(keyType) which is not currently supported"
         }
 
-        let empty = ""
-        var kcopy = key
-        var ret: CInt
-        repeat {
-            ret = libssh2_knownhost_addc(khHandle, fullhostname, empty, &kcopy, kcopy.count, comment, comment.utf8.count, LIBSSH2_KNOWNHOST_TYPE_PLAIN | LIBSSH2_KNOWNHOST_KEYENC_RAW | keyTypeCode, nil)
-        } while ret == LIBSSH2_ERROR_EAGAIN
-        return libSsh2ErrorToString(error: ret)
+        return await sessionActor.add (knownHost: self, fullhostname: fullhostname, key: key, keyTypeCode: keyTypeCode, comment: comment)
     }
 }

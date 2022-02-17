@@ -22,6 +22,8 @@
 		4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4911B3032463AD3E00816BAA /* GenerateKey.swift */; };
 		49148F99268AB0B0000AB718 /* InputKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49148F98268AB0B0000AB718 /* InputKeyboard.swift */; };
 		491769B62666BE8000D32353 /* SwiftSH in Frameworks */ = {isa = PBXBuildFile; productRef = 491769B52666BE8000D32353 /* SwiftSH */; };
+		49184C5D27BC1BA900335BFB /* ConnectionMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49184C5C27BC1BA900335BFB /* ConnectionMessage.swift */; };
+		49184C5F27BC1CAA00335BFB /* GenericConnectionIssue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49184C5E27BC1CAA00335BFB /* GenericConnectionIssue.swift */; };
 		4922DDAF26632E4600B7D2BE /* CSwiftSH in Frameworks */ = {isa = PBXBuildFile; productRef = 4922DDAE26632E4600B7D2BE /* CSwiftSH */; };
 		4923C56627319336000CC371 /* LocationTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4923C56527319336000CC371 /* LocationTracking.swift */; };
 		493F4F3027613F1B00838AC7 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493F4F2F27613F1B00838AC7 /* Session.swift */; };
@@ -99,6 +101,8 @@
 		490A187C26AA60980034B2BF /* HostConnectionError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostConnectionError.swift; sourceTree = "<group>"; };
 		4911B3032463AD3E00816BAA /* GenerateKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateKey.swift; sourceTree = "<group>"; };
 		49148F98268AB0B0000AB718 /* InputKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputKeyboard.swift; sourceTree = "<group>"; };
+		49184C5C27BC1BA900335BFB /* ConnectionMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionMessage.swift; sourceTree = "<group>"; };
+		49184C5E27BC1CAA00335BFB /* GenericConnectionIssue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericConnectionIssue.swift; sourceTree = "<group>"; };
 		4923C56527319336000CC371 /* LocationTracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationTracking.swift; sourceTree = "<group>"; };
 		493F4F2F27613F1B00838AC7 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		493F4F3127650E7800838AC7 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
@@ -285,6 +289,8 @@
 				49B84C5426813F9400B36066 /* HostAuthKeyMismatch.swift */,
 				49A64C6026842A480069C7FA /* HostConnectionClosed.swift */,
 				490A187C26AA60980034B2BF /* HostConnectionError.swift */,
+				49184C5C27BC1BA900335BFB /* ConnectionMessage.swift */,
+				49184C5E27BC1CAA00335BFB /* GenericConnectionIssue.swift */,
 			);
 			path = ConnectionUI;
 			sourceTree = "<group>";
@@ -526,6 +532,7 @@
 				49BA35A626784B6B00B63510 /* Passphrase.swift in Sources */,
 				49C1B6BE24637DD500D54F6F /* ButtonColors.swift in Sources */,
 				49C1B6B5246260DC00D54F6F /* TerminalViewController.swift in Sources */,
+				49184C5D27BC1BA900335BFB /* ConnectionMessage.swift in Sources */,
 				49A4466126A3D76200A636DC /* Commands.swift in Sources */,
 				49EED560245D0A0B00A8794E /* STButton.swift in Sources */,
 				49BA359626751B2700B63510 /* GenerateSecureEnclave.swift in Sources */,
@@ -537,6 +544,7 @@
 				49C1B6B72462611F00D54F6F /* SshTerminalView.swift in Sources */,
 				49A64C6126842A480069C7FA /* HostConnectionClosed.swift in Sources */,
 				49011692245622C6002C1F85 /* DataStore.swift in Sources */,
+				49184C5F27BC1CAA00335BFB /* GenericConnectionIssue.swift in Sources */,
 				49BA35A22678471600B63510 /* Asn1Parser.swift in Sources */,
 				4901168C24554A51002C1F85 /* AddKeyManually.swift in Sources */,
 				49B84C53268137C700B36066 /* HostAuthUnknown.swift in Sources */,

@@ -60,6 +60,9 @@ protocol SessionDelegate: AnyObject {
     /// Called on the sshQueue, this message is invoked in response to receiving an `SSH_MSG_DEBUG` message
     /// described in https://datatracker.ietf.org/doc/html/rfc4253
     func debug (session: Session, alwaysDisplay: Bool, message: Data, language: Data)
+    
+    /// Invoked when the remote end has been disconnected - TODO need to wire this up
+    func remoteEndDisconnected (session: Session)
 }
 
 /// We execute all calls to libssh2 on the ssh queue.
@@ -257,7 +260,7 @@ class Session: CustomDebugStringConvertible {
     ///  - lang: The desired value for the LANG environment variable to be set on the remote end
     ///  - readCallback: method that is invoked when new data is available on the channel, it receives the channel source as a parameter, and two Data? parameters,
     ///   one for standard output, and one for standard error.
-    public func run (command: String, lang: String, readCallback: @escaping (Channel, Data?, Data?)async->()) async -> Channel? {
+    public func runAsync (command: String, lang: String, readCallback: @escaping (Channel, Data?, Data?)async->()) async -> Channel? {
         if let channel = await openSessionChannel(lang: lang, readCallback: readCallback) {
             let status = await channel.exec (command)
             if status == 0 {
@@ -274,11 +277,11 @@ class Session: CustomDebugStringConvertible {
     ///  - command: the command to execute on the remote server
     ///  - lang: The desired value for the LANG environment variable to be set on the remote end
     ///  - resultCallback: method that is invoked when the command completes containing the stdout and stderr results as Data parameters
-    public func run (command: String, lang: String, resultCallback: @escaping (Data, Data)async->()) async {
+    public func runAsync (command: String, lang: String, resultCallback: @escaping (Data, Data)async->()) async {
         var stdout = Data()
         var stderr = Data()
         
-        await run (command: command, lang: lang) { channel, out, err in
+        let _ = await runAsync (command: command, lang: lang) { channel, out, err in
             //print ("Run callback for \(command) out=\(out?.count) err=\(err?.count) eof=\(channel.receivedEOF)")
             if let gotOut = out {
                 stdout.append(gotOut)
@@ -303,29 +306,29 @@ class Session: CustomDebugStringConvertible {
     ///  - lang: The desired value for the LANG environment variable to be set on the remote end
     ///  - resultCallback: method that is invoked when the command completes containing the stdout and stderr results as string parameters
     ///
-    ///  TODO: if this is async, why provide a resultCallback, and instead just return the values when we are done?
-    public func runSimple (command: String, lang: String, resultCallback: @escaping (String?, String?)async->()) async {
-        var stdout = Data()
-        var stderr = Data()
-        
-        
-        await run (command: command, lang: lang) { channel, out, err in
-            //print ("Run callback for \(command) out=\(out?.count) err=\(err?.count) eof=\(channel.receivedEOF)")
-            if let gotOut = out {
-                stdout.append(gotOut)
-            }
-            if let gotErr = err {
-                stderr.append(gotErr)
-            }
-            if channel.receivedEOF {
-                //DispatchQueue.main.async {
-                    let s = String (bytes: stdout, encoding: .utf8)
-                    let e = String (bytes: stderr, encoding: .utf8)
-                    
+    ///  This method will only return after the resultCallback is invoked
+    public func runSimple<T> (command: String, lang: String, resultCallback: @escaping (String?, String?)async->(T)) async -> T {
+        return await withCheckedContinuation { c in
+            Task {
+                var stdout = Data()
+                var stderr = Data()
+                
+                
+                let _ = await runAsync(command: command, lang: lang) { channel, out, err in
+                    if let gotOut = out {
+                        stdout.append(gotOut)
+                    }
+                    if let gotErr = err {
+                        stderr.append(gotErr)
+                    }
+                    if channel.receivedEOF {
+                        let s = String (bytes: stdout, encoding: .utf8)
+                        let e = String (bytes: stderr, encoding: .utf8)
 
-                    await resultCallback (s, e)
-                //}
-                return
+                        let r = await resultCallback (s, e)
+                        c.resume(returning: r)
+                    }
+                }
             }
         }
     }
@@ -366,6 +369,9 @@ class Session: CustomDebugStringConvertible {
         return await sessionActor.makeKnownHost()
     }
 
+    public func shutdown () {
+        
+    }
 
     /// Disconnects the session from the remote end, you can specifiy a reason, as well as a description that is sent to the remote server
     /// - Parameters:
@@ -484,10 +490,13 @@ class SocketSession: Session {
             if restart {
                 self.startIO()
             } else {
-                // Handle, this happens if the connection is reset for example - 
-                abort()
+                
             }
         }
+    }
+    
+    public override func shutdown () {
+        connection.cancel()
     }
     
     // Since libssh2 does not provide a callback/completion system per channel, we inform
@@ -527,7 +536,7 @@ class SocketSession: Session {
                 await setupSshConnection ()
             }
         case .failed(_):
-            log ("failed")
+            delegate.remoteEndDisconnected(session: self)
         case .cancelled:
             log ("canceled")
         @unknown default:

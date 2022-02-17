@@ -140,6 +140,7 @@ struct HostEditView: View {
     @State var port = ""
     @State var usePassword = false
     @State var sshKey: UUID? = nil
+    @State var reconnectType = 0
     
     init (host: Host, showingModal: Binding<Bool>){
         self._host = host
@@ -157,6 +158,15 @@ struct HostEditView: View {
         _style = State (initialValue: host.style)
         _backgroundStyle = State (initialValue: host.background)
         _sshKey = State (initialValue: host.sshKey)
+        
+        var r = 0
+        switch host.reconnectType {
+        case "tmux":
+            r = 1
+        default:
+            r = 0
+        }
+        _reconnectType = State (initialValue: r)
     }
     
     var disableSave: Bool {
@@ -177,6 +187,7 @@ struct HostEditView: View {
         _host.background = backgroundStyle
         _host.style = style
         _host.sshKey = sshKey
+        _host.reconnectType = reconnectType == 1 ? "tmux" : ""
         
         store.save (host: _host)
         
@@ -269,6 +280,17 @@ struct HostEditView: View {
                                 }.isDetailLink (false)
                             }
                         }
+                    }
+                    HStack {
+                        Text ("Restoration")
+                        Spacer ()
+                        Picker(selection: self.$reconnectType, label: Text ("Auth")) {
+                            Text ("none")
+                                .tag (0)
+                            Text ("tmux")
+                                .tag (1)
+                        }.pickerStyle(SegmentedPickerStyle())
+                            .frame(width: 160)
                     }
                 }
                 
