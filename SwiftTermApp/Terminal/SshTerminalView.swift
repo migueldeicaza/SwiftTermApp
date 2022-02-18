@@ -21,7 +21,7 @@ enum MyError : Error {
 ///
 /// Extends the AppTerminalView with elements for the connection
 ///
-public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDelegate {
+public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDelegate, Sendable {
     /// The current directory as reported by the remote host.
     public var currentDirectory: String? = nil
     
@@ -57,7 +57,6 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                 } else {
                     password = sshKey.passphrase
                 }
-                
                 return await session.userAuthPublicKeyFromMemory (username: host.username,
                                                        passPhrase: password,
                                                        publicKey: sshKey.publicKey,
@@ -170,7 +169,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                 let end = min (next+blocksize, last)
                 let chunk = sliced [next..<end]
             
-                DispatchQueue.main.sync {
+                
+                DispatchQueue.main.async {
                     self.feed(byteArray: chunk)
                 }
                 next = end
@@ -326,9 +326,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     }
     
     func directoryListing () async {
-        var dir = "/"
-        await session.runSimple(command: "pwd", lang: lang) { out, err in
-            dir = out ?? "/"
+        var dir = await session.runSimple(command: "pwd", lang: lang) { out, err in
+            return out ?? "/"
         }
         dir = dir.replacingOccurrences(of: "\n", with: "")
         let sftp = await session.openSftp()

@@ -54,9 +54,9 @@ public class SftpDirHandle : SftpHandle {
     }
 }
 
-public class SFTP {
-    var handle: OpaquePointer
-    weak var session: Session!
+public class SFTP: Sendable {
+    let handle: OpaquePointer
+    let session: Session!
     
     init (session: Session, sftpHandle: OpaquePointer) {
         self.handle = sftpHandle

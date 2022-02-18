@@ -20,7 +20,7 @@ public enum KnownHostStatus {
     case notFound
 }
 
-class LibsshKnownHost {
+class LibsshKnownHost: Sendable {
     func check(hostName: String, port: Int32, key: [Int8]) -> (status: KnownHostStatus, key: String?) { // (status: KnownHostStatus, knownHost: libssh2_knownhost?) {
 
         var ptr: UnsafeMutablePointer<libssh2_knownhost>? = UnsafeMutablePointer<libssh2_knownhost>.allocate(capacity: 1)
@@ -46,12 +46,20 @@ class LibsshKnownHost {
         }
     }
     
-    var khHandle: OpaquePointer
-    weak var sessionActor: SessionActor!
+    let khHandle: OpaquePointer
+    let sessionActor: SessionActor
     
     init (sessionActor: SessionActor, knownHost: OpaquePointer){
         self.sessionActor = sessionActor
         self.khHandle = knownHost
+    }
+    
+    deinit {
+        let sa = sessionActor
+        let kh = khHandle
+        Task {
+            await sa.releaseKnownHost (handle: kh)
+        }
     }
     
     // returns nil on success, otherwise an error description

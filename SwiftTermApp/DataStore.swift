@@ -84,7 +84,7 @@ class Key: Codable, Identifiable {
 /// - backspaceAsControlH
 ///
 /// Possibly should add; Font and FontSize
-class Host: Codable, Identifiable {
+class Host: Codable, Identifiable, Sendable {
     internal init(id: UUID = UUID(), alias: String = "", hostname: String = "", backspaceAsControlH: Bool = false, port: Int = 22, usePassword: Bool = true, username: String = "", password: String = "", hostKind: String = "", environmentVariables: [String] = [], startupScripts: [String] = [], sshKey: UUID? = nil, style: String = "", background: String = "", lastUsed: Date = Date.distantPast) {
         self.id = id
         self.alias = alias

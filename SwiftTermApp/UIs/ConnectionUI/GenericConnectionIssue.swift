@@ -10,9 +10,9 @@ import SwiftUI
 
 struct GenericConnectionIssue: View, ConnectionMessage {
     init(host: Host, message: String, ok: @escaping () -> ()) {
+        self.ok = ok
         self.host = host
         self.error = message
-        self.ok = ok
     }
     
     @State var host: Host

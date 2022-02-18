@@ -13,6 +13,11 @@ import Foundation
 import Network
 import CryptoKit
 
+extension Data: Sendable {}
+extension SecKey: Sendable {}
+extension DispatchQueue: Sendable {}
+extension DispatchSemaphore: Sendable {}
+
 @_implementationOnly import CSSH
 
 typealias socketCbType = @convention(c) (libssh2_socket_t, UnsafeRawPointer, size_t, CInt, UnsafeRawPointer) -> ssize_t
@@ -251,7 +256,8 @@ actor SessionActor {
         return authErrorToString(code: ret)
     }
     
-    public func userAuthWithCallback (username: String, publicKey: Data, signCallback: @escaping (Data)->Data?) async -> String? {
+    @_predatesConcurrency 
+    public func userAuthWithCallback (username: String, publicKey: Data, signCallback: @Sendable @escaping (Data)->Data?) async -> String? {
         let ret = await callSsh {
             var rc: CInt = 0
             let cbData = callbackData (pub: publicKey, signCallback: signCallback)
@@ -275,6 +281,10 @@ actor SessionActor {
             return nil
         }
         return LibsshKnownHost (sessionActor: self, knownHost: kh)
+    }
+    
+    public func releaseKnownHost (handle: OpaquePointer) {
+        libssh2_knownhost_free(handle)
     }
     
     public func getFingerprintBytes () -> [UInt8]? {
@@ -325,7 +335,7 @@ actor SessionActor {
     
     // Channel APIs
     
-    public func openChannel (type: String, windowSize: CUnsignedInt = 2*1024*1024, packetSize: CUnsignedInt = 32768, readCallback: @escaping (Channel, Data?, Data?)async->()) async -> OpaquePointer? {
+    public func openChannel (type: String, windowSize: CUnsignedInt = 2*1024*1024, packetSize: CUnsignedInt = 32768) async -> OpaquePointer? {
         
         return await callSshPtr {
             return libssh2_channel_open_ex(self.sessionHandle, type, UInt32(type.utf8.count), windowSize, packetSize, nil, 0)
@@ -395,7 +405,7 @@ actor SessionActor {
         }
     }
     
-    public func send (channel: Channel, data: Data, callback: @escaping (Int)->()) async {
+    public func send (channel: Channel, data: Data, callback: @Sendable @escaping (Int)->()) async {
         if data.count == 0 {
             return
         }

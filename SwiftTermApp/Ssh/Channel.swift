@@ -9,17 +9,18 @@
 import Foundation
 @_implementationOnly import CSSH
 
-/// Surfaces operations on channels
-public class Channel: Equatable {
-    var channelHandle: OpaquePointer
-    weak var sessionActor: SessionActor!
-    weak var session: Session!
-    var buffer, bufferError: UnsafeMutablePointer<Int8>
-    let bufferSize = 32*1024
-    var sendQueue = DispatchQueue (label: "channelSend", qos: .userInitiated)
-    var readCallback: ((Channel, Data?, Data?)async->())
 
-    
+
+/// Surfaces operations on channels
+public class Channel: Equatable, Sendable {
+    let channelHandle: OpaquePointer
+    let sessionActor: SessionActor!
+    let session: Session!
+    let buffer, bufferError: UnsafeMutablePointer<Int8>
+    let bufferSize = 32*1024
+    let sendQueue = DispatchQueue (label: "channelSend", qos: .userInitiated)
+    let readCallback: ((Channel, Data?, Data?)async->())
+
     init (session: Session, channelHandle: OpaquePointer, readCallback: @escaping (Channel, Data?, Data?)async->()) {
         self.channelHandle = channelHandle
         self.sessionActor = session.sessionActor
@@ -86,7 +87,7 @@ public class Channel: Equatable {
     }
     
     /// Sends the provided data to the channel, and invokes the callback with the status code when doneaaaa
-    func send (_ data: Data, callback: @escaping (Int)->()) async {
+    func send (_ data: Data, callback: @escaping @Sendable (Int)->()) async {
         await sessionActor.send (channel: self, data: data, callback: callback)
     }
     

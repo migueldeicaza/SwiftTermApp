@@ -26,7 +26,7 @@ import Combine
  */
 public class AppTerminalView: TerminalView {
     var id = UUID ()
-    var host: Host
+    let host: Host
     var disableFirstResponderDuringViewRehosting: Bool = false
     /// This variable is turned on when the user has manually changed the size by pinching, and it used
     /// to ignore global changes after the user triggered the pinch change.

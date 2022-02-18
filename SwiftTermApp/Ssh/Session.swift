@@ -59,11 +59,14 @@ var sshQueue: DispatchQueue = DispatchQueue.init(label: "ssh-queue", qos: .userI
 /// Because libssh2 does not have a way of notifying if a specific channel has data available once it
 /// is received by the session, this implenentation currently notifies all channels that they should poll
 /// for data.
-class Session: CustomDebugStringConvertible {
+class Session: CustomDebugStringConvertible, Sendable {
     // Our actor that serializes access to libssh in a per-session basis
+    // this could be a let, but due to the two-stage initialization required
+    // (we need to allocate opaqueHandle that references self), so it has to be
+    
     var sessionActor: SessionActor
     
-    var channelsLock = NSLock ()
+    let channelsLock = NSLock ()
     
     // Where we post interesting events about this session
     weak var delegate: SessionDelegate!
@@ -76,8 +79,6 @@ class Session: CustomDebugStringConvertible {
 
     public init (delegate: SessionDelegate, send: @escaping socketCbType, recv: @escaping socketCbType, disconnect: @escaping disconnectCbType, debug: @escaping debugCbType) {
         self.delegate = delegate
-        
-        channelsLock = NSLock ()
         
         // Init this first, we will wipe it out soon enough
         sessionActor = SessionActor (fakeSetup: true)
@@ -190,7 +191,10 @@ class Session: CustomDebugStringConvertible {
     ///  - publicKey: Contents of the public key
     ///  - signCallback: method that receives a Data to be signed, and returns the signed data on success, nil on error
     /// - Returns:nil on success, or a user-visible description on error
-    public func userAuthWithCallback (username: String, publicKey: Data, signCallback: @escaping (Data)->Data?) async -> String? {
+    /// 
+    @_predatesConcurrency
+
+    public func userAuthWithCallback (username: String, publicKey: Data, signCallback: @escaping @Sendable (Data)->Data?) async -> String? {
         return await sessionActor.userAuthWithCallback(username: username, publicKey: publicKey, signCallback: signCallback)
     }
     
@@ -207,7 +211,7 @@ class Session: CustomDebugStringConvertible {
                              windowSize: CUnsignedInt = 2*1024*1024,
                              packetSize: CUnsignedInt = 32768,
                              readCallback: @escaping (Channel, Data?, Data?)async->()) async -> Channel? {
-        guard let channelHandle = await sessionActor.openChannel(type: type, windowSize: windowSize, packetSize: packetSize, readCallback: readCallback) else {
+        guard let channelHandle = await sessionActor.openChannel(type: type, windowSize: windowSize, packetSize: packetSize) else {
             return nil
         }
         return Channel (session: self, channelHandle: channelHandle, readCallback: readCallback)
@@ -280,7 +284,7 @@ class Session: CustomDebugStringConvertible {
     ///  - resultCallback: method that is invoked when the command completes containing the stdout and stderr results as string parameters
     ///
     ///  This method will only return after the resultCallback is invoked
-    public func runSimple<T> (command: String, lang: String, resultCallback: @escaping (String?, String?)async->(T)) async -> T {
+    public func runSimple<T> (command: String, lang: String, resultCallback: @Sendable @escaping (String?, String?)async->(T)) async -> T {
         return await withCheckedContinuation { c in
             Task {
                 var stdout = Data()
