@@ -1,7 +1,17 @@
 # SwiftTermApp
 
-This is intended to be a terminal emulator application for iOS (maybe MacOS too) 
+SwiftTermApp is a terminal emulator and SSH cliennt application for iOS
 using the [SwiftTerm](https://github.com/migueldeicaza/SwiftTerm) engine and written in SwiftUI.
+
+Some of the features:
+* Comprehensive terminal emulator, based on SwiftTerm - which is both very comprehensive in terms of emulation, 
+  and has extensive support for international terminals, both for generated output as well as the support for
+  iOS input methods for dictation and international input.
+* Supports for keys stored on the secure enclave, so your private key can never be found in plain text.
+* Themable user interface:
+  * Using the user interface provided or
+  * Programatically, through the terminal support for configuring colors dynamically.
+* Metal shaders for some cool live effects
 
 ![Screenshot](https://user-images.githubusercontent.com/36863/81033655-645d5980-8e62-11ea-91c5-1d8b1931c7ce.png)
 
