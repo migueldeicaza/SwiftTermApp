@@ -286,6 +286,10 @@ class Session: CustomDebugStringConvertible {
                 var stdout = Data()
                 var stderr = Data()
                 
+                // One time, I got an exception from `c.resume` below being invoked twice, to avoid
+                // a crash, I catch this for now, but should find out why this happens.   Happened
+                // on first login.
+                var usedHardeningUntilBugTracked = false
                 
                 let _ = await runAsync(command: command, lang: lang) { channel, out, err in
                     if let gotOut = out {
@@ -299,7 +303,12 @@ class Session: CustomDebugStringConvertible {
                         let e = String (bytes: stderr, encoding: .utf8)
 
                         let r = await resultCallback (s, e)
-                        c.resume(returning: r)
+                        
+                        print ("Resuming for command \(command)")
+                        if !usedHardeningUntilBugTracked {
+                            c.resume(returning: r)
+                        }
+                        usedHardeningUntilBugTracked = true
                     }
                 }
             }

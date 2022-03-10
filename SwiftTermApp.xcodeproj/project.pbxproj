@@ -71,6 +71,10 @@
 		49F02ADF24610D7A00CFEB50 /* STFilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */; };
 		49F0740C2481B3ED00A83CDC /* ColorLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0740B2481B3ED00A83CDC /* ColorLoader.swift */; };
 		49F0741024834B9D00A83CDC /* AppTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0740F24834B9D00A83CDC /* AppTerminalView.swift */; };
+		49F1D13627DA5F11004A9CB1 /* swiftterm.txt in Resources */ = {isa = PBXBuildFile; fileRef = 49F1D13227DA5F11004A9CB1 /* swiftterm.txt */; };
+		49F1D13727DA5F11004A9CB1 /* openssl_1_1_1h.txt in Resources */ = {isa = PBXBuildFile; fileRef = 49F1D13327DA5F11004A9CB1 /* openssl_1_1_1h.txt */; };
+		49F1D13827DA5F11004A9CB1 /* libssh.txt in Resources */ = {isa = PBXBuildFile; fileRef = 49F1D13427DA5F11004A9CB1 /* libssh.txt */; };
+		49F1D13927DA5F11004A9CB1 /* swcrypt.txt in Resources */ = {isa = PBXBuildFile; fileRef = 49F1D13527DA5F11004A9CB1 /* swcrypt.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -152,6 +156,10 @@
 		49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STFilePicker.swift; sourceTree = "<group>"; };
 		49F0740B2481B3ED00A83CDC /* ColorLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorLoader.swift; sourceTree = "<group>"; };
 		49F0740F24834B9D00A83CDC /* AppTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTerminalView.swift; sourceTree = "<group>"; };
+		49F1D13227DA5F11004A9CB1 /* swiftterm.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = swiftterm.txt; sourceTree = "<group>"; };
+		49F1D13327DA5F11004A9CB1 /* openssl_1_1_1h.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = openssl_1_1_1h.txt; sourceTree = "<group>"; };
+		49F1D13427DA5F11004A9CB1 /* libssh.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = libssh.txt; sourceTree = "<group>"; };
+		49F1D13527DA5F11004A9CB1 /* swcrypt.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = swcrypt.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -196,6 +204,7 @@
 		4901167424553789002C1F85 /* SwiftTermApp */ = {
 			isa = PBXGroup;
 			children = (
+				49F1D12927DA545C004A9CB1 /* Licenses */,
 				493F4F2E27613F0F00838AC7 /* Ssh */,
 				4923C56427319327000CC371 /* Location */,
 				49BA35EB267BE79A00B63510 /* HostKeys */,
@@ -415,6 +424,17 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
+		49F1D12927DA545C004A9CB1 /* Licenses */ = {
+			isa = PBXGroup;
+			children = (
+				49F1D13427DA5F11004A9CB1 /* libssh.txt */,
+				49F1D13327DA5F11004A9CB1 /* openssl_1_1_1h.txt */,
+				49F1D13527DA5F11004A9CB1 /* swcrypt.txt */,
+				49F1D13227DA5F11004A9CB1 /* swiftterm.txt */,
+			);
+			path = Licenses;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -505,9 +525,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49F1D13727DA5F11004A9CB1 /* openssl_1_1_1h.txt in Resources */,
+				49F1D13627DA5F11004A9CB1 /* swiftterm.txt in Resources */,
 				490116822455378A002C1F85 /* LaunchScreen.storyboard in Resources */,
+				49F1D13927DA5F11004A9CB1 /* swcrypt.txt in Resources */,
 				4901167F2455378A002C1F85 /* Preview Assets.xcassets in Resources */,
 				4901167C2455378A002C1F85 /* Assets.xcassets in Resources */,
+				49F1D13827DA5F11004A9CB1 /* libssh.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
