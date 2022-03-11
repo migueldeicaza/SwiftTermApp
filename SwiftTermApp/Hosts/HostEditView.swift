@@ -170,7 +170,7 @@ struct HostEditView: View {
     }
     
     var disableSave: Bool {
-        return alias == "" || hostname == "" || username == "" || (usePassword == false && sshKey == nil)
+        return alias == "" || hostname == "" || username == ""
     }
     
     func saveAndLeave ()
