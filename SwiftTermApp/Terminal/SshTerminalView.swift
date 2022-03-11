@@ -99,7 +99,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             if let error = await session.userAuthPassword (username: host.username, password: host.password) {
                 cumulativeErrors.append (error)
             }
-            return nil
+            return "Invalid password"
         }
         
         // Ok, none of the presets work, try all the public keys that have a passphrase
@@ -345,7 +345,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         await setupChannel (session: session)
 
         // If the user did not set an icon
-        if host.hostKind == ""  {
+        if true || host.hostKind == ""  {
             await self.guessOsIcon ()
         }
     }

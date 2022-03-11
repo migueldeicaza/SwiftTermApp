@@ -174,7 +174,7 @@ class DataStore: ObservableObject {
     var defaults: UserDefaults?
     
     @Published var hosts: [Host] = [
-       Host(alias: "Dummy MacPro",         hostname: "192.168.86.220", lastUsed: Date ()),
+       //Host(alias: "Dummy MacPro",         hostname: "192.168.86.220", lastUsed: Date ()),
        //Host(alias: "Dummy Raspberri Pi",   hostname: "raspberry.tirania.org", lastUsed: Date ()),
        //Host(alias: "Dummy MacBook",        hostname: "road.tirania.org", usePassword: false, sshKey: DataStore.testKey1.id),
        //Host(alias: "Dummy Old Vax",        hostname: "oldvax.tirania.org",usePassword: false, sshKey: DataStore.testKey2.id),
@@ -182,7 +182,7 @@ class DataStore: ObservableObject {
     ]
     
     @Published var keys: [Key] = [
-        testKey1, testKey2
+        //testKey1, testKey2
     ]
     
     @Published var knownHosts: [KnownHost] = []
