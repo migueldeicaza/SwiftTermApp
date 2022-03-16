@@ -55,11 +55,44 @@ struct LargeHomeView: View {
     }
 }
 
+func getHostFromUrl (_ url: URL, visiblePrefix: String = "Dynamic") -> Host? {
+    let requestedPort = url.port ?? 22
+    let requestedUser = url.user
+    
+    if let requestedHost = url.host {
+        let matches = DataStore.shared.hosts.filter ({ h in
+            h.hostname == requestedHost && h.port == h.port && (requestedUser != nil ? requestedUser == h.username : true)
+        })
+        if let match = matches.first {
+            return match
+        }
+        
+        return Host (id: UUID(),
+                     alias: "\(visiblePrefix) \(requestedHost)",
+                     hostname: requestedHost,
+                     backspaceAsControlH: false,
+                     port: requestedPort,
+                     usePassword: false,
+                     username: requestedUser ?? "",
+                     password: "",
+                     hostKind: "",
+                     environmentVariables: [],
+                     startupScripts: [],
+                     sshKey: nil,
+                     style: "",
+                     background: "",
+                     lastUsed: Date ())
+    }
+    return nil
+}
+
 struct HomeView: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @ObservedObject var connections = Connections.shared
     @Environment(\.scenePhase) var scenePhase
-
+    @State var launchHost: Host? = nil
+    @State var transientLaunch: Bool? = false
+    
     func sortDate (first: Host, second: Host) throws -> Bool
     {
         first.lastUsed > second.lastUsed
@@ -72,6 +105,8 @@ struct HomeView: View {
                 ForEach(self.store.recentIndices (), id: \.self) { idx in
                     HostSummaryView (host: self.$store.hosts [idx])
                 }
+                
+                NavigationLink ("Test", destination: ConfigurableUITerminal(host: launchHost, createNew: true), tag: true, selection: $transientLaunch)
             }
             Section {
                 NavigationLink(
@@ -130,7 +165,12 @@ struct HomeView: View {
             }
         }
         //.listStyle(.sidebar)
-
+        .onOpenURL { url in
+            if let host = getHostFromUrl (url) {
+                launchHost = host
+                transientLaunch = true
+            }
+        }
     }
 }
 
