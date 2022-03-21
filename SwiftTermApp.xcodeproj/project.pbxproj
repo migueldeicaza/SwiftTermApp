@@ -76,6 +76,7 @@
 		49F1D13927DA5F11004A9CB1 /* swcrypt.txt in Resources */ = {isa = PBXBuildFile; fileRef = 49F1D13527DA5F11004A9CB1 /* swcrypt.txt */; };
 		49F1D14127DAB782004A9CB1 /* UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F1D14027DAB782004A9CB1 /* UITests.swift */; };
 		49F1D14327DAB782004A9CB1 /* UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F1D14227DAB782004A9CB1 /* UITestsLaunchTests.swift */; };
+		49F1D14A27DD0FFF004A9CB1 /* SideHostStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F1D14927DD0FFF004A9CB1 /* SideHostStatus.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -170,6 +171,7 @@
 		49F1D13E27DAB782004A9CB1 /* UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		49F1D14027DAB782004A9CB1 /* UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITests.swift; sourceTree = "<group>"; };
 		49F1D14227DAB782004A9CB1 /* UITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestsLaunchTests.swift; sourceTree = "<group>"; };
+		49F1D14927DD0FFF004A9CB1 /* SideHostStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideHostStatus.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -325,6 +327,7 @@
 				49A0A2BD2491C792002593F7 /* LazyView.swift */,
 				49A0A2BF2491CDC4002593F7 /* InteractiveLogin.swift */,
 				49BA35A526784B6B00B63510 /* Passphrase.swift */,
+				49F1D14927DD0FFF004A9CB1 /* SideHostStatus.swift */,
 			);
 			path = UIs;
 			sourceTree = "<group>";
@@ -648,6 +651,7 @@
 				4923C56627319336000CC371 /* LocationTracking.swift in Sources */,
 				49011690245607F7002C1F85 /* Hosts.swift in Sources */,
 				4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */,
+				49F1D14A27DD0FFF004A9CB1 /* SideHostStatus.swift in Sources */,
 				49F0741024834B9D00A83CDC /* AppTerminalView.swift in Sources */,
 				49F0740C2481B3ED00A83CDC /* ColorLoader.swift in Sources */,
 				4901167A24553789002C1F85 /* Home.swift in Sources */,

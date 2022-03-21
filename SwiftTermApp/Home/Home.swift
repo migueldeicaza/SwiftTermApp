@@ -55,14 +55,100 @@ struct LargeHomeView: View {
     }
 }
 
+// Given a URL in the form handler://[username@]host[:port] return a Host that matches
+// it.   If we have a known host that shares the port
+func getHostFromUrl (_ url: URL, visiblePrefix: String = "Dynamic") -> Host? {
+    let requestedPort = url.port ?? 22
+    let requestedUser = url.user
+    
+    if let requestedHost = url.host {
+        let matches = DataStore.shared.hosts.filter ({ h in
+            h.hostname == requestedHost && h.port == h.port && (requestedUser != nil ? requestedUser == h.username : true)
+        })
+        if let match = matches.first {
+            return match
+        }
+        
+        return Host (id: UUID(),
+                     alias: "\(visiblePrefix) \(requestedHost)",
+                     hostname: requestedHost,
+                     backspaceAsControlH: false,
+                     port: requestedPort,
+                     usePassword: false,
+                     username: requestedUser ?? "",
+                     password: "",
+                     hostKind: "",
+                     environmentVariables: [],
+                     startupScripts: [],
+                     sshKey: nil,
+                     style: "",
+                     background: "",
+                     lastUsed: Date ())
+    }
+    return nil
+}
+
+func getMissingUserPrompt (done: @escaping (_ result: String?) -> ()) -> UIAlertController {
+    let alert = UIAlertController (title: "Username", message: "The request to open the url did not include a username, please provide it here", preferredStyle: .alert)
+    alert.addTextField { tf in
+        tf.placeholder = ""
+        tf.keyboardType = .alphabet
+    }
+    let cancel = UIAlertAction(title: "Cancel", style: .default) { action in
+        done (nil)
+    }
+    alert.addAction (cancel)
+    let ok = UIAlertAction(title: "Ok", style: .default) { action in
+        let textField = alert.textFields?.first
+        done (textField?.text ?? nil)
+    }
+    alert.addAction (ok)
+    return alert
+}
+
+// prompts for a username when it is missing
+@MainActor
+func promptMissingUser (_ parentController: UIViewController) async -> String? {
+    
+    let result: String? = await withCheckedContinuation { c in
+        let alert = getMissingUserPrompt { result in
+            c.resume(returning: result)
+        }
+        parentController.present(alert, animated: true, completion: nil)
+    }
+    
+    return result
+}
+
+/// getCurrentKeyWindow: returns the current key window from the application
+@MainActor
+func getCurrentKeyWindow () -> UIWindow? {
+    return UIApplication.shared.connectedScenes
+          .filter { $0.activationState == .foregroundActive }
+          .map { $0 as? UIWindowScene }
+          .compactMap { $0 }
+          .first?.windows
+          .filter { $0.isKeyWindow }
+          .first
+}
+
 struct HomeView: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @ObservedObject var connections = Connections.shared
     @Environment(\.scenePhase) var scenePhase
-
+    @State var launchHost: Host? = nil
+    @State var transientLaunch: Bool? = false
+    
     func sortDate (first: Host, second: Host) throws -> Bool
     {
         first.lastUsed > second.lastUsed
+    }
+    
+    // Launches the specified host as a terminal, used in response to openUrl requests
+    @MainActor
+    func launch (_ host: Host) {
+        launchHost = host
+        transientLaunch = true
     }
     
     var body: some View {
@@ -71,6 +157,9 @@ struct HomeView: View {
             Section (header: Text ("Recent")) {
                 ForEach(self.store.recentIndices (), id: \.self) { idx in
                     HostSummaryView (host: self.$store.hosts [idx])
+                }
+                if transientLaunch ?? false == true {
+                    NavigationLink ("Dynamic Launch", destination: ConfigurableUITerminal(host: launchHost, createNew: true), tag: true, selection: $transientLaunch)
                 }
             }
             Section {
@@ -130,7 +219,22 @@ struct HomeView: View {
             }
         }
         //.listStyle(.sidebar)
-
+        .onOpenURL { url in
+            if let host = getHostFromUrl (url) {
+                if host.username == "" {
+                    if let window = getCurrentKeyWindow(), let vc = window.rootViewController {
+                        Task {
+                            if let user = await promptMissingUser (vc) {
+                                host.username = user
+                                launch (host)
+                            }
+                        }
+                    }
+                } else {
+                    launch (host)
+                }
+            }
+        }
     }
 }
 

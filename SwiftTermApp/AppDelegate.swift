@@ -10,6 +10,7 @@ import SwiftUI
 @main
 struct SampleApp: App {
     @State var dates = [Date]()
+    @State var launchHost: Host?
     
     init () {
         if settings.locationTrack {
