@@ -154,12 +154,14 @@ struct HomeView: View {
     var body: some View {
         List {
             //QuickLaunch()
-            Section (header: Text ("Recent")) {
-                ForEach(self.store.recentIndices (), id: \.self) { idx in
-                    HostSummaryView (host: self.$store.hosts [idx])
-                }
-                if transientLaunch ?? false == true {
-                    NavigationLink ("Dynamic Launch", destination: ConfigurableUITerminal(host: launchHost, createNew: true), tag: true, selection: $transientLaunch)
+            if self.store.recentIndices().count > 0 {
+                Section (header: Text ("Recent")) {
+                    ForEach(self.store.recentIndices (), id: \.self) { idx in
+                        HostSummaryView (host: self.$store.hosts [idx])
+                    }
+                    if transientLaunch ?? false == true {
+                        NavigationLink ("Dynamic Launch", destination: ConfigurableUITerminal(host: launchHost, createNew: true), tag: true, selection: $transientLaunch)
+                    }
                 }
             }
             Section {
