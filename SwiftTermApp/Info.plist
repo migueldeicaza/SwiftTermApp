@@ -53,6 +53,16 @@
 				<string>swiftterm</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string>org.tirania.SwiftTermAppX</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ssh</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
