@@ -141,7 +141,7 @@ class Session: CustomDebugStringConvertible {
             // There was an error
             // TODO: handle this one
         }
-        banner = await sessionActor.getBanner () 
+        banner = await sessionActor.getBanner ()
         let failureReason = await delegate.authenticate(session: self)
         if await authenticated {
             await delegate.loggedIn(session: self)
