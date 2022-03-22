@@ -20,7 +20,19 @@ class Key: Codable, Identifiable {
     // This stores the public key as pasted by the user
     var publicKey: String = ""
     var passphrase: String = ""
+    
+    // If this is set to the empty string, it means that it has not been stored yet on the keychain
     var keyTag: String = ""
+    
+    // The list of keys that are serialized to Json, this is used to prevent both
+    // passphrase and privateKey from being stored in plaintext.
+    enum CodingKeys: CodingKey {
+        case id
+        case type
+        case name
+        case publicKey
+        case keyTag
+    }
     
     public init (id: UUID = UUID(), type: KeyType = .rsa(4096), name: String = "", privateKey: String = "", publicKey: String = "", passphrase: String = "")
     {
@@ -46,6 +58,92 @@ class Key: Codable, Identifiable {
         default:
             return nil
         }
+    }
+    
+    enum KeychainError: Error {
+        case noPassword
+        case unexpectedPasswordData
+        case unhandledError(status: OSStatus)
+    }
+    
+    public static func getPassphraseQuery (id: String, password: String?, fetch: Bool = false) -> CFDictionary {
+        var query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: "SwiftTermAppPassword-\(id)"
+        ]
+        if let password = password {
+            query [kSecValueData as String] = password as AnyObject
+        }
+        if fetch {
+            query [kSecMatchLimit as String] = kSecMatchLimitOne
+            query [kSecReturnData as String] = kCFBooleanTrue
+        }
+        return query as CFDictionary
+    }
+    
+    public static func getPrivateKeyQuery (id: String, key: String?, fetch: Bool = false) -> CFDictionary {
+        var query: [String: Any] = [
+            kSecClass as String: kSecClassKey,
+            kSecAttrAccount as String: "SwiftTermAppKey-\(id)"
+        ]
+        if let key = key {
+            query [kSecValueData as String] = Data (key.utf8) as CFData
+        }
+        if fetch {
+            query [kSecMatchLimit as String] = kSecMatchLimitOne
+            query [kSecReturnData as String] = kCFBooleanTrue
+        }
+        return query as CFDictionary
+    }
+
+    /// Saves the private components into the keychain
+    public func saveKeychainElements () -> OSStatus {
+        
+        if keyTag == "" {
+            keyTag = id.uuidString
+            let query = Key.getPassphraseQuery(id: keyTag, password: passphrase)
+            let status = SecItemAdd(query, nil)
+            guard status == errSecSuccess else {
+                return status
+            }
+            let queryKey = Key.getPrivateKeyQuery(id: keyTag, key: privateKey)
+            return SecItemAdd(queryKey, nil)
+        } else {
+            let query = Key.getPassphraseQuery(id: keyTag, password: nil)
+            let attrsToUpdate: [String:Any] = [
+                kSecValueData as String: passphrase as AnyObject
+            ]
+            let status = SecItemUpdate(query, attrsToUpdate as CFDictionary)
+            guard status == errSecSuccess else {
+                return status
+            }
+            let queryKey = Key.getPrivateKeyQuery(id: keyTag, key: nil)
+            let attrsToUpdateKey: [String:Any] = [
+                kSecValueData as String: Data (privateKey.utf8) as CFData
+            ]
+            return SecItemUpdate(queryKey, attrsToUpdateKey as CFDictionary)
+        }
+    }
+    
+    /// Load the private components from the keychain
+    public func loadKeychainElements () {
+        let query = Key.getPassphraseQuery(id: keyTag, password: nil, fetch: true)
+        
+        var itemCopy: AnyObject?
+        let status = SecItemCopyMatching(query, &itemCopy)
+        if status != errSecSuccess {
+            print ("oops")
+        }
+        passphrase = (itemCopy as? String) ?? ""
+        let queryKey = Key.getPrivateKeyQuery(id: keyTag, key: nil, fetch: true)
+        let status2 = SecItemCopyMatching(queryKey, &itemCopy)
+        if status2 != errSecSuccess {
+            print ("oops")
+        }
+        if let ic = itemCopy as? Data {
+            privateKey = String (bytes: ic, encoding: .utf8) ?? ""
+        }
+    
     }
     
     ///
@@ -221,6 +319,9 @@ class DataStore: ObservableObject {
                     keys = k
                 }
             }
+            for key in keys {
+                key.loadKeychainElements ()
+            }
         }
         loadKnownHosts()
     }
@@ -235,8 +336,15 @@ class DataStore: ObservableObject {
         if let hostData = try? coder.encode(hosts) {
             d.set (hostData, forKey: hostsArrayKey)
         }
+        
+        // First, save the regular data
         if let keyData = try? coder.encode (keys) {
             d.set (keyData, forKey: keysArrayKey)
+        }
+        
+        // Now save the keys in the keychain
+        for key in keys {
+            key.saveKeychainElements ()
         }
         d.synchronize()
         saveKnownHosts ()
