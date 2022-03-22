@@ -66,6 +66,7 @@
 		49C1B6B5246260DC00D54F6F /* TerminalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6B4246260DC00D54F6F /* TerminalViewController.swift */; };
 		49C1B6B72462611F00D54F6F /* SshTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6B62462611F00D54F6F /* SshTerminalView.swift */; };
 		49C1B6BE24637DD500D54F6F /* ButtonColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6BD24637DD500D54F6F /* ButtonColors.swift */; };
+		49CA50E627EA6C0F00CA444E /* KeychainTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CA50E527EA6C0F00CA444E /* KeychainTools.swift */; };
 		49EED560245D0A0B00A8794E /* STButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EED55F245D0A0B00A8794E /* STButton.swift */; };
 		49F02ADF24610D7A00CFEB50 /* STFilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */; };
 		49F0740C2481B3ED00A83CDC /* ColorLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0740B2481B3ED00A83CDC /* ColorLoader.swift */; };
@@ -160,6 +161,7 @@
 		49C1B6B4246260DC00D54F6F /* TerminalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalViewController.swift; sourceTree = "<group>"; };
 		49C1B6B62462611F00D54F6F /* SshTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SshTerminalView.swift; sourceTree = "<group>"; };
 		49C1B6BD24637DD500D54F6F /* ButtonColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonColors.swift; sourceTree = "<group>"; };
+		49CA50E527EA6C0F00CA444E /* KeychainTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTools.swift; sourceTree = "<group>"; };
 		49EED55F245D0A0B00A8794E /* STButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STButton.swift; sourceTree = "<group>"; };
 		49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STFilePicker.swift; sourceTree = "<group>"; };
 		49F0740B2481B3ED00A83CDC /* ColorLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorLoader.swift; sourceTree = "<group>"; };
@@ -415,6 +417,7 @@
 				49BA359B2676F15D00B63510 /* KeySummaryView.swift */,
 				49BA35972676EEB600B63510 /* KeyTools.swift */,
 				4967BA03245A7AF300A9D2A6 /* SshUtil.swift */,
+				49CA50E527EA6C0F00CA444E /* KeychainTools.swift */,
 			);
 			path = Keys;
 			sourceTree = "<group>";
@@ -620,6 +623,7 @@
 				49C1B6B72462611F00D54F6F /* SshTerminalView.swift in Sources */,
 				49A64C6126842A480069C7FA /* HostConnectionClosed.swift in Sources */,
 				49011692245622C6002C1F85 /* DataStore.swift in Sources */,
+				49CA50E627EA6C0F00CA444E /* KeychainTools.swift in Sources */,
 				49184C5F27BC1CAA00335BFB /* GenericConnectionIssue.swift in Sources */,
 				49BA35A22678471600B63510 /* Asn1Parser.swift in Sources */,
 				4901168C24554A51002C1F85 /* AddKeyManually.swift in Sources */,
