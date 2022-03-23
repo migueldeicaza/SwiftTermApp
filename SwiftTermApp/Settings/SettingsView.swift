@@ -221,11 +221,10 @@ struct FontSizeSelector: View {
 
     var body: some View {
         HStack (alignment: .center){
-            ForEach (fontSizes.indices) { idx in
-                FontSize (fontName: self.fontName, size: self.fontSizes [idx], currentSize: self.$fontSize)
+            ForEach (fontSizes, id: \.self) { size in
+                FontSize (fontName: self.fontName, size: size, currentSize: self.$fontSize)
                     .onTapGesture {
-                        //self.fontSize = self.fontSizes [idx]
-                        self.fontSize = self.fontSizes [idx]
+                        self.fontSize = size
                 }
             }
         }

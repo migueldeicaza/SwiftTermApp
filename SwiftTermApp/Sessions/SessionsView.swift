@@ -108,12 +108,12 @@ struct SessionsView: View {
                 
                 // The repeat count here is just to exercise the preview, no really other
                 // reason
-                ForEach (0..<repeatCount) { x in
+                //ForEach (0..<repeatCount) { x in
                     ForEach (connections.connections, id: \.id) { terminalView in
                         SessionView (terminalView: terminalView)
                     }
 
-                }
+                //}
             } else {
                 Text ("No active sessions")
             }

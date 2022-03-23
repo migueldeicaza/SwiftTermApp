@@ -342,10 +342,11 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     }
     // Delegate SocketSessionDelegate.loggedIn: invoked when the connection has been authenticated
     func loggedIn (session: Session) async {
-        await setupChannel (session: session)
-
+        let _ = await setupChannel (session: session)
+        // TODO log that error
+        
         // If the user did not set an icon
-        if true || host.hostKind == ""  {
+        if host.hostKind == ""  {
             await self.guessOsIcon ()
         }
     }

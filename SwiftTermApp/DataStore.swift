@@ -20,7 +20,19 @@ class Key: Codable, Identifiable {
     // This stores the public key as pasted by the user
     var publicKey: String = ""
     var passphrase: String = ""
+    
+    // If this is set to the empty string, it means that it has not been stored yet on the keychain
     var keyTag: String = ""
+    
+    // The list of keys that are serialized to Json, this is used to prevent both
+    // passphrase and privateKey from being stored in plaintext.
+    enum CodingKeys: CodingKey {
+        case id
+        case type
+        case name
+        case publicKey
+        case keyTag
+    }
     
     public init (id: UUID = UUID(), type: KeyType = .rsa(4096), name: String = "", privateKey: String = "", publicKey: String = "", passphrase: String = "")
     {
@@ -45,6 +57,55 @@ class Key: Codable, Identifiable {
             return nil
         default:
             return nil
+        }
+    }
+    
+    /// Saves the private components into the keychain
+    public func saveKeychainElements () -> OSStatus {
+        
+        if keyTag == "" {
+            keyTag = id.uuidString
+            let (query, _) = getPassphraseQuery(id: keyTag, password: passphrase)
+            let status = SecItemAdd(query, nil)
+            guard status == errSecSuccess else {
+                return status
+            }
+            let (queryKey, _) = getPrivateKeyQuery(id: keyTag, key: privateKey)
+            let status2 = SecItemAdd(queryKey, nil)
+            return status2
+        } else {
+            let (query, attrsToUpdate) = getPassphraseQuery(id: keyTag, password: passphrase, split: true)
+            let status = SecItemUpdate(query, attrsToUpdate)
+            guard status == errSecSuccess else {
+                return status
+            }
+            let (queryKey, attrsToUpdateKey) = getPrivateKeyQuery(id: keyTag, key: privateKey, split: true)
+            let status2 = SecItemUpdate(queryKey, attrsToUpdateKey as CFDictionary)
+            return status2
+        }
+    }
+    
+    /// Load the private components from the keychain
+    public func loadKeychainElements () {
+        let (query, _) = getPassphraseQuery(id: keyTag, password: nil, fetch: true)
+        
+        var itemCopy: AnyObject?
+        let status = SecItemCopyMatching(query, &itemCopy)
+        if status != errSecSuccess {
+            print ("oops")
+        }
+        if let d = itemCopy as? Data {
+            passphrase = String (bytes: d, encoding: .utf8) ?? ""
+        } else {
+            passphrase = ""
+        }
+        let (queryKey, _) = getPrivateKeyQuery(id: keyTag, key: nil, fetch: true)
+        let status2 = SecItemCopyMatching(queryKey, &itemCopy)
+        if status2 != errSecSuccess {
+            print ("oops")
+        }
+        if let ic = itemCopy as? Data {
+            privateKey = String (bytes: ic, encoding: .utf8) ?? ""
         }
     }
     
@@ -103,6 +164,26 @@ class Host: Codable, Identifiable {
         self.lastUsed = lastUsed
     }
     
+    // The list of keys that are serialized to Json, this is used to prevent both
+    // password from being stored in plaintext.
+    enum CodingKeys: CodingKey {
+        case id
+        case alias
+        case hostname
+        case backspaceAsControlH
+        case port
+        case usePassword
+        case username
+        case hostKind
+        case environmentVariables
+        case startupScripts
+        case sshKey
+        case style
+        case background
+        case lastUsed
+        case reconnectType
+    }
+
     // Unique ID, used inside Swift to differentiate structures
     var id = UUID()
     
@@ -154,6 +235,34 @@ class Host: Codable, Identifiable {
     func summary() -> String {
         hostname + (style != "" ? ", \(style)" : "")
     }
+    
+    /// Saves the private components into the keychain
+    public func saveKeychainElements () -> OSStatus {
+        let (query, _) = getHostPasswordQuery(id: id.uuidString, password: password)
+        
+        let status = SecItemAdd(query, nil)
+        if status == errSecDuplicateItem {
+            let (query2, update) = getHostPasswordQuery(id: id.uuidString, password: password, split: true)
+            let status2 = SecItemUpdate(query2, update)
+            return status2
+        }
+        return status
+    }
+    
+    func loadKeychainElements () {
+        let (query, _) = getHostPasswordQuery(id: id.uuidString, password: nil, fetch: true)
+
+        var itemCopy: AnyObject?
+        let status = SecItemCopyMatching(query, &itemCopy)
+        if status != errSecSuccess {
+            print ("oops")
+        }
+        if let d = itemCopy as? Data {
+            password = String (bytes: d, encoding: .utf8) ?? ""
+        } else {
+            password = ""
+        }
+    }
 }
 
 /// Represents a host we have connected to
@@ -191,7 +300,8 @@ class DataStore: ObservableObject {
     var runtimeVisibleChanges = PassthroughSubject<Host,Never> ()
     
     let hostsArrayKey = "hostsArray"
-    let keysArrayKey = "keysArray"
+    
+    let keysArrayKey = "keysArray2"
     let connectionsArrayKey = "connectionsArray"
     
     public var knownHostsPath: String
@@ -216,10 +326,16 @@ class DataStore: ObservableObject {
                     hosts = h
                 }
             }
+            for host in hosts {
+                host.loadKeychainElements()
+            }
             if let data = d.data(forKey: keysArrayKey) {
                 if let k = try? decoder.decode ([Key].self, from: data) {
                     keys = k
                 }
+            }
+            for key in keys {
+                key.loadKeychainElements ()
             }
         }
         loadKnownHosts()
@@ -231,13 +347,34 @@ class DataStore: ObservableObject {
         guard let d = defaults else {
             return
         }
+        // First save the host passwords in the keychain
+        for host in hosts {
+            let status = host.saveKeychainElements()
+            if status != errSecSuccess {
+                let result = SecCopyErrorMessageString(status, nil).debugDescription
+                print ("error saving data for host \(host.alias) \(host.id) -> \(result)")
+            }
+        }
+        
         let coder = JSONEncoder ()
         if let hostData = try? coder.encode(hosts) {
             d.set (hostData, forKey: hostsArrayKey)
         }
+        
+        // First save the keys in the keychain, this assigns the keyTag if not set before
+        for key in keys {
+            let status = key.saveKeychainElements ()
+            if status != errSecSuccess {
+                let result = SecCopyErrorMessageString(status, nil).debugDescription
+                print ("error saving data for key \(key.name) \(key.id) -> \(result)")
+            }
+        }
+
+        // Now save the regular data
         if let keyData = try? coder.encode (keys) {
             d.set (keyData, forKey: keysArrayKey)
         }
+        
         d.synchronize()
         saveKnownHosts ()
     }
@@ -266,6 +403,15 @@ class DataStore: ObservableObject {
             }
         }
         keys.remove(atOffsets: offsets)
+    }
+    
+    func removeHosts (atOffsets offsets: IndexSet) {
+        for x in offsets {
+            let host = hosts [x]
+            let (query, _) = getHostPasswordQuery(id: host.id.uuidString, password: nil)
+            SecItemDelete(query)
+        }
+        hosts.remove(atOffsets: offsets)
     }
     
     func used (host: Host)
