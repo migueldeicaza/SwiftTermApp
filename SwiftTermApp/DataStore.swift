@@ -351,7 +351,7 @@ class DataStore: ObservableObject {
         for host in hosts {
             let status = host.saveKeychainElements()
             if status != errSecSuccess {
-                let result = SecCopyErrorMessageString(status, nil)
+                let result = SecCopyErrorMessageString(status, nil).debugDescription
                 print ("error saving data for host \(host.alias) \(host.id) -> \(result)")
             }
         }
@@ -365,7 +365,7 @@ class DataStore: ObservableObject {
         for key in keys {
             let status = key.saveKeychainElements ()
             if status != errSecSuccess {
-                let result = SecCopyErrorMessageString(status, nil)
+                let result = SecCopyErrorMessageString(status, nil).debugDescription
                 print ("error saving data for key \(key.name) \(key.id) -> \(result)")
             }
         }
@@ -409,7 +409,7 @@ class DataStore: ObservableObject {
         for x in offsets {
             let host = hosts [x]
             let (query, _) = getHostPasswordQuery(id: host.id.uuidString, password: nil)
-            let status = SecItemDelete(query)
+            SecItemDelete(query)
         }
         hosts.remove(atOffsets: offsets)
     }
