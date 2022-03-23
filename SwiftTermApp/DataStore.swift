@@ -405,6 +405,15 @@ class DataStore: ObservableObject {
         keys.remove(atOffsets: offsets)
     }
     
+    func removeHosts (atOffsets offsets: IndexSet) {
+        for x in offsets {
+            let host = hosts [x]
+            let (query, _) = getHostPasswordQuery(id: host.id.uuidString, password: nil)
+            let status = SecItemDelete(query)
+        }
+        hosts.remove(atOffsets: offsets)
+    }
+    
     func used (host: Host)
     {
         if let f = hosts.firstIndex(where: {$0.id == host.id}){

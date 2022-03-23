@@ -90,7 +90,7 @@ struct HostsView : View {
 
     func delete (at offsets: IndexSet)
     {
-        store.hosts.remove(atOffsets: offsets)
+        store.removeHosts (atOffsets: offsets)
         store.saveState()
     }
     
