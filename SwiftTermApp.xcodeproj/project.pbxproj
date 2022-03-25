@@ -28,6 +28,10 @@
 		493F4F3227650E7800838AC7 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493F4F3127650E7800838AC7 /* Errors.swift */; };
 		493F4F34276511CE00838AC7 /* Channel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493F4F33276511CE00838AC7 /* Channel.swift */; };
 		4943DA5327ECF70000E4E2F5 /* EnvironmentVariableEdit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA5227ECF70000E4E2F5 /* EnvironmentVariableEdit.swift */; };
+		4943DA5627EE43D800E4E2F5 /* SnippetBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA5527EE43D800E4E2F5 /* SnippetBrowser.swift */; };
+		4943DA5827EE471F00E4E2F5 /* SnippetEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA5727EE471F00E4E2F5 /* SnippetEditor.swift */; };
+		4943DA5B27EE5C2000E4E2F5 /* CommandPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA5A27EE5C2000E4E2F5 /* CommandPicker.swift */; };
+		4943DA5D27EE5C6F00E4E2F5 /* SnippetSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA5C27EE5C6F00E4E2F5 /* SnippetSummary.swift */; };
 		49584D83248C3BEA0081D015 /* MetalHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49584D82248C3BEA0081D015 /* MetalHost.swift */; };
 		49584D85248C3C500081D015 /* ShadersBase.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49584D84248C3C500081D015 /* ShadersBase.metal */; };
 		49584D87248C3C7F0081D015 /* PlasmaGlobe.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49584D86248C3C7F0081D015 /* PlasmaGlobe.metal */; };
@@ -123,6 +127,10 @@
 		493F4F3127650E7800838AC7 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
 		493F4F33276511CE00838AC7 /* Channel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channel.swift; sourceTree = "<group>"; };
 		4943DA5227ECF70000E4E2F5 /* EnvironmentVariableEdit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentVariableEdit.swift; sourceTree = "<group>"; };
+		4943DA5527EE43D800E4E2F5 /* SnippetBrowser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetBrowser.swift; sourceTree = "<group>"; };
+		4943DA5727EE471F00E4E2F5 /* SnippetEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetEditor.swift; sourceTree = "<group>"; };
+		4943DA5A27EE5C2000E4E2F5 /* CommandPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandPicker.swift; sourceTree = "<group>"; };
+		4943DA5C27EE5C6F00E4E2F5 /* SnippetSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetSummary.swift; sourceTree = "<group>"; };
 		49584D82248C3BEA0081D015 /* MetalHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalHost.swift; sourceTree = "<group>"; };
 		49584D84248C3C500081D015 /* ShadersBase.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ShadersBase.metal; sourceTree = "<group>"; };
 		49584D86248C3C7F0081D015 /* PlasmaGlobe.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = PlasmaGlobe.metal; sourceTree = "<group>"; };
@@ -230,6 +238,8 @@
 		4901167424553789002C1F85 /* SwiftTermApp */ = {
 			isa = PBXGroup;
 			children = (
+				4943DA5927EE5C1200E4E2F5 /* Command */,
+				4943DA5427EE42FA00E4E2F5 /* Snippets */,
 				49F1D12927DA545C004A9CB1 /* Licenses */,
 				493F4F2E27613F0F00838AC7 /* Ssh */,
 				4923C56427319327000CC371 /* Location */,
@@ -285,6 +295,24 @@
 				49B49DB027AC70B40031A9AE /* SessionActor.swift */,
 			);
 			path = Ssh;
+			sourceTree = "<group>";
+		};
+		4943DA5427EE42FA00E4E2F5 /* Snippets */ = {
+			isa = PBXGroup;
+			children = (
+				4943DA5527EE43D800E4E2F5 /* SnippetBrowser.swift */,
+				4943DA5727EE471F00E4E2F5 /* SnippetEditor.swift */,
+				4943DA5C27EE5C6F00E4E2F5 /* SnippetSummary.swift */,
+			);
+			path = Snippets;
+			sourceTree = "<group>";
+		};
+		4943DA5927EE5C1200E4E2F5 /* Command */ = {
+			isa = PBXGroup;
+			children = (
+				4943DA5A27EE5C2000E4E2F5 /* CommandPicker.swift */,
+			);
+			path = Command;
 			sourceTree = "<group>";
 		};
 		49584D81248C3BD80081D015 /* Metal */ = {
@@ -616,6 +644,7 @@
 				49584D83248C3BEA0081D015 /* MetalHost.swift in Sources */,
 				49BA35A626784B6B00B63510 /* Passphrase.swift in Sources */,
 				49C1B6BE24637DD500D54F6F /* ButtonColors.swift in Sources */,
+				4943DA5D27EE5C6F00E4E2F5 /* SnippetSummary.swift in Sources */,
 				49C1B6B5246260DC00D54F6F /* TerminalViewController.swift in Sources */,
 				49184C5D27BC1BA900335BFB /* ConnectionMessage.swift in Sources */,
 				49A4466126A3D76200A636DC /* Commands.swift in Sources */,
@@ -660,12 +689,15 @@
 				49A0A2C02491CDC4002593F7 /* InteractiveLogin.swift in Sources */,
 				49B84C5526813F9400B36066 /* HostAuthKeyMismatch.swift in Sources */,
 				49B49D9C27A9B7F00031A9AE /* SFTP.swift in Sources */,
+				4943DA5627EE43D800E4E2F5 /* SnippetBrowser.swift in Sources */,
 				4923C56627319336000CC371 /* LocationTracking.swift in Sources */,
 				49011690245607F7002C1F85 /* Hosts.swift in Sources */,
 				4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */,
 				49F1D14A27DD0FFF004A9CB1 /* SideHostStatus.swift in Sources */,
 				49F0741024834B9D00A83CDC /* AppTerminalView.swift in Sources */,
+				4943DA5827EE471F00E4E2F5 /* SnippetEditor.swift in Sources */,
 				49F0740C2481B3ED00A83CDC /* ColorLoader.swift in Sources */,
+				4943DA5B27EE5C2000E4E2F5 /* CommandPicker.swift in Sources */,
 				4901167A24553789002C1F85 /* Home.swift in Sources */,
 				499D8EBA268A690600CCEF9D /* ColumnSelector.swift in Sources */,
 				490A187D26AA60980034B2BF /* HostConnectionError.swift in Sources */,

@@ -192,6 +192,11 @@ struct HomeView: View {
                         Label("Known Host", systemImage: "lock.desktopcomputer")
                     })
                 NavigationLink(
+                    destination: SnippetBrowser(),
+                    label: {
+                        Label ("Snippets", systemImage: "note.text")
+                    })
+                NavigationLink(
                     destination: SettingsView(),
                     label: {
                         Label("Settings", systemImage: "gear")

@@ -66,11 +66,12 @@ struct RunningTerminalConfig: View {
 
 
 struct ConfigurableUITerminal: View {
-    var host: Host?
-    var terminalView: SshTerminalView?
-    var createNew: Bool = false
-    var interactive: Bool = true
+    @State var host: Host?
+    @State var terminalView: SshTerminalView?
+    @State var createNew: Bool = false
+    @State var interactive: Bool = true
     @State var showConfig: Bool = false
+    @State var showCommand: Bool = false
 
     func topMostViewController (_ t: UIViewController) -> UIViewController {
         if let presented = t.presentedViewController {
@@ -97,6 +98,10 @@ struct ConfigurableUITerminal: View {
         }
     }
     
+    func terminalGetter () -> AppTerminalView? {
+        return TerminalViewController.visibleTerminal
+    }
+    
     var body: some View {
         SwiftUITerminal(host: host, existing: terminalView, createNew: createNew, interactive: interactive)
             .navigationTitle (Text ((terminalView?.host.alias ?? host?.alias) ?? "error"))
@@ -104,6 +109,9 @@ struct ConfigurableUITerminal: View {
             .toolbar {
                 ToolbarItem (placement: .navigationBarTrailing) {
                     ControlGroup {
+                        Button (action: { self.showCommand = true }) {
+                            Image(systemName: "note.text")
+                        }
                         Button (action: { self.showConfig = true }) {
                             Image(systemName: "gearshape")
                         }
@@ -116,7 +124,11 @@ struct ConfigurableUITerminal: View {
             .sheet (isPresented: $showConfig) {
                 RunningTerminalConfig (host: terminalView?.host ?? host!, showingModal: $showConfig)
             }
-        
+            .sheet (isPresented: $showCommand) {
+                NavigationView {
+                    CommandPicker (terminalGetter: terminalGetter)
+                }
+            }
     }
 }
 
