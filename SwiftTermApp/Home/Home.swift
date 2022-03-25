@@ -78,7 +78,7 @@ func getHostFromUrl (_ url: URL, visiblePrefix: String = "Dynamic") -> Host? {
                      username: requestedUser ?? "",
                      password: "",
                      hostKind: "",
-                     environmentVariables: [],
+                     environmentVariables: [:],
                      startupScripts: [],
                      sshKey: nil,
                      style: "",

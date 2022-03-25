@@ -146,7 +146,7 @@ class Key: Codable, Identifiable {
 ///
 /// Possibly should add; Font and FontSize
 class Host: Codable, Identifiable {
-    internal init(id: UUID = UUID(), alias: String = "", hostname: String = "", backspaceAsControlH: Bool = false, port: Int = 22, usePassword: Bool = true, username: String = "", password: String = "", hostKind: String = "", environmentVariables: [String] = [], startupScripts: [String] = [], sshKey: UUID? = nil, style: String = "", background: String = "", lastUsed: Date = Date.distantPast) {
+    internal init(id: UUID = UUID(), alias: String = "", hostname: String = "", backspaceAsControlH: Bool = false, port: Int = 22, usePassword: Bool = true, username: String = "", password: String = "", hostKind: String = "", environmentVariables: [String:String] = [:], startupScripts: [String] = [], sshKey: UUID? = nil, style: String = "", background: String = "", lastUsed: Date = Date.distantPast) {
         self.id = id
         self.alias = alias
         self.hostname = hostname
@@ -212,7 +212,7 @@ class Host: Codable, Identifiable {
     var hostKind: String = ""
     
     /// Environment variables to pass on the connection
-    var environmentVariables: [String] = []
+    var environmentVariables: [String:String] = [:]
     
     /// Scripts to execute on startup
     var startupScripts: [String] = []
