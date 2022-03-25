@@ -222,6 +222,7 @@ class Session: CustomDebugStringConvertible {
     public func openSessionChannel (lang: String, readCallback: @escaping (Channel, Data?, Data?)async->()) async -> Channel? {
         if let channel = await openChannel(type: "session", readCallback: readCallback) {
             await channel.setEnvironment(name: "LANG", value: lang)
+            
             return channel
         }
         return nil

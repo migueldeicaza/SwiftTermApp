@@ -202,6 +202,11 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             return false
         }
         
+        // Pass the environment variables
+        for (envKey, envVar) in host.environmentVariables {
+            await channel.setEnvironment(name: envKey, value: envVar)
+        }
+
         let terminal = getTerminal()
         let status = await channel.requestPseudoTerminal(name: "xterm-256color", cols: terminal.cols, rows: terminal.rows)
         if status != 0 {

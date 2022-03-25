@@ -141,6 +141,7 @@ struct HostEditView: View {
     @State var usePassword = false
     @State var sshKey: UUID? = nil
     @State var reconnectType = 0
+    @State var environmentVariables: [String:String] = [:]
     
     init (host: Host, showingModal: Binding<Bool>){
         self._host = host
@@ -158,6 +159,7 @@ struct HostEditView: View {
         _style = State (initialValue: host.style)
         _backgroundStyle = State (initialValue: host.background)
         _sshKey = State (initialValue: host.sshKey)
+        _environmentVariables = State (initialValue: host.environmentVariables)
         
         var r = 0
         switch host.reconnectType {
@@ -188,6 +190,7 @@ struct HostEditView: View {
         _host.style = style
         _host.sshKey = sshKey
         _host.reconnectType = reconnectType == 1 ? "tmux" : ""
+        _host.environmentVariables = environmentVariables
         
         store.save (host: _host)
         
@@ -308,6 +311,9 @@ struct HostEditView: View {
                         TextField ("22", text: self.$port)
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
+                    }
+                    NavigationLink (destination: EnvironmentVariables(variables: self.$environmentVariables)) {
+                        Text ("Environment Variables")
                     }
                 }
             }

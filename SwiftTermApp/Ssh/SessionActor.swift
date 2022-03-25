@@ -44,6 +44,7 @@ actor SessionActor {
         libssh2_init (0)
         sessionHandle = libssh2_session_init_ex(nil, nil, nil, opaque)
         let flags: Int32 = 0
+        
         libssh2_trace(sessionHandle, flags)
         libssh2_trace_sethandler(sessionHandle, nil, { session, context, data, length in
             var str: String
