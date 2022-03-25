@@ -19,12 +19,18 @@ struct EnvironmentVariables: View {
     @State var activatedItem: EnvSelection? = nil
     
     func delete (at offsets: IndexSet) {
-        abort()
+        let ordered = variables.sorted(by: >)
+        var keys: [String] = []
+        for itemOffset in offsets {
+            if itemOffset < ordered.count {
+                keys.append (ordered [itemOffset].key)
+            }
+        }
+        for key in keys {
+            variables.removeValue(forKey: key)
+        }
     }
-    private func move(source: IndexSet, destination: Int) {
-        abort()
-    }
-
+    
     var body: some View {
         List {
             STButton (text: "Add Variable", icon: "plus.circle")

@@ -49,6 +49,7 @@ struct EnvironmentVariableEdit: View {
                         TextField ("value", text: $variable.value)
                             .lineLimit(3)
                             .keyboardType(.emailAddress)
+                            .autocapitalization(.none)
                             .font (.system (.body, design: .monospaced))
                     }
                 }

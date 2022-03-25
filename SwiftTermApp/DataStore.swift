@@ -265,6 +265,20 @@ class Host: Codable, Identifiable {
     }
 }
 
+class Snippet: Codable, Identifiable {
+    var title: String
+    var command: String
+    var platforms: [String]
+    var id: UUID
+    
+    public init (title: String, command: String, platforms: [String]) {
+        self.id = UUID()
+        self.title = title
+        self.command = command
+        self.platforms = platforms
+    }
+}
+
 /// Represents a host we have connected to
 struct KnownHost: Identifiable {
     var host: String
@@ -294,14 +308,16 @@ class DataStore: ObservableObject {
         //testKey1, testKey2
     ]
     
+    @Published var snippets: [Snippet] = [
+    ]
     @Published var knownHosts: [KnownHost] = []
     
     /// Event raised when the properties that can be changed on a live connection have changed
     var runtimeVisibleChanges = PassthroughSubject<Host,Never> ()
     
     let hostsArrayKey = "hostsArray"
-    
     let keysArrayKey = "keysArray2"
+    let snippetArrayKey = "snippetArray"
     let connectionsArrayKey = "connectionsArray"
     
     public var knownHostsPath: String
@@ -336,6 +352,12 @@ class DataStore: ObservableObject {
             }
             for key in keys {
                 key.loadKeychainElements ()
+            }
+            
+            if let data = d.data(forKey: snippetArrayKey) {
+                if let s = try? decoder.decode ([Snippet].self, from: data) {
+                    snippets = s
+                }
             }
         }
         loadKnownHosts()
@@ -377,6 +399,17 @@ class DataStore: ObservableObject {
         
         d.synchronize()
         saveKnownHosts ()
+    }
+    
+    func saveSnippets () {
+        guard let d = defaults else {
+            return
+        }
+        let coder = JSONEncoder ()
+        if let snippetData = try? coder.encode(snippets) {
+            d.set (snippetData, forKey: snippetArrayKey)
+        }
+        d.synchronize()
     }
     
     // Records the new host in the data store
