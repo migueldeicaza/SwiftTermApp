@@ -151,7 +151,7 @@ struct HostEditView: View {
         _alias = State (initialValue: host.alias)
         _hostname = State (initialValue: host.hostname)
         _backspaceAsControlH = State (initialValue: host.backspaceAsControlH)
-        _port = State (initialValue: "\(host.port)")
+        _port = State (initialValue: host.port == 22 ? "" : "\(host.port)")
         _usePassword = State (initialValue: host.usePassword)
         _username = State (initialValue: host.username)
         _password = State (initialValue: host.password)

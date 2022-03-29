@@ -3,6 +3,16 @@
     {
       "filename" : "suse.pdf",
       "idiom" : "universal"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "suse-1.pdf",
+      "idiom" : "universal"
     }
   ],
   "info" : {

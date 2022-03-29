@@ -3,6 +3,16 @@
     {
       "filename" : "redhat.pdf",
       "idiom" : "universal"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "redhat-1.pdf",
+      "idiom" : "universal"
     }
   ],
   "info" : {

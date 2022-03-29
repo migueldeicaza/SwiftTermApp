@@ -189,7 +189,7 @@ struct HomeView: View {
                 NavigationLink(
                     destination: HostKeysList (),
                     label: {
-                        Label("Known Host", systemImage: "lock.desktopcomputer")
+                        Label("Known Hosts", systemImage: "lock.desktopcomputer")
                     })
                 NavigationLink(
                     destination: SnippetBrowser(),

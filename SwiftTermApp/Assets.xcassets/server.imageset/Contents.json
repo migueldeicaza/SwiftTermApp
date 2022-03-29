@@ -3,6 +3,16 @@
     {
       "filename" : "server.pdf",
       "idiom" : "universal"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "server-1.pdf",
+      "idiom" : "universal"
     }
   ],
   "info" : {

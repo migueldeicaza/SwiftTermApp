@@ -34,7 +34,7 @@ struct LicenseFull: View {
                     .minimumScaleFactor(0.3)
                     .scaledToFit()
                 Spacer ()
-            }
+            }.padding ([.leading, .trailing])
         }
     }
 }
@@ -77,18 +77,19 @@ struct LicenseShort: View {
 struct CreditsView: View {
     
     var body: some View {
-        HStack {
-            Text ("Secret: \(instabugKey)")
-            Text ("SwiftTermApp is build using the kind work of many open source developers, these are the projects that are used by SwiftTermApp")
-        }
-        List {
-            // Seems like I no longer use it?
-            //LicenseShort (name: "LazyView", authors: "Chris Eidhof", license: "")
-            LicenseShort (name: "libssh", url: "https://www.libssh2.org", authors: "libssh2 project", license: "libssh")
-            LicenseShort (name: "OpenSSL", authors: "Eric Young, OpenSSL project", license: "openssl_1_1_1h")
-            LicenseShort (name: "SwCrypt", authors: "Soyer", license: "swcrypt")
-            LicenseShort (name: "SwiftTerm", authors: "Miguel de Icaza, others", license: "swiftterm")
-            
+        VStack {
+            HStack {
+                Text ("SwiftTermApp is build using the kind work of many open source developers, these are the projects that are used by SwiftTermApp")
+            }.padding()
+            List {
+                // Seems like I no longer use it?
+                //LicenseShort (name: "LazyView", authors: "Chris Eidhof", license: "")
+                LicenseShort (name: "libssh", url: "https://www.libssh2.org", authors: "libssh2 project", license: "libssh")
+                LicenseShort (name: "OpenSSL", authors: "Eric Young, OpenSSL project", license: "openssl_1_1_1h")
+                LicenseShort (name: "SwCrypt", authors: "Soyer", license: "swcrypt")
+                LicenseShort (name: "SwiftTerm", authors: "Miguel de Icaza, others", license: "swiftterm")
+                
+            }
         }
     }
 }
