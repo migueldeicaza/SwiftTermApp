@@ -210,6 +210,16 @@ struct HomeView: View {
                         Label("Credits", systemImage: "info.circle")
                     })
             }
+            
+            #if DEBUG
+            if FileManager.default.fileExists(atPath: "/tmp/enable-dangerous-diagnostics") {
+                Section {
+                    Button ("Diagnostics - Dump State (DANGEROUS, EXPOSES CONFIDENTIAL DATA in /TMP DUMP) ") {
+                        DataStore.shared.dumpData ()
+                    }
+                }
+            }
+            #endif
         }
         .listStyle(GroupedListStyle())
         .onChange(of: scenePhase) { newPhase in

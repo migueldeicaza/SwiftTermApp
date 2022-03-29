@@ -10,10 +10,7 @@ import SwiftUI
 
 struct DefaultHomeView: View {
     var body: some View {
-        Group {
-            Text("Detail view content goes here")
-        }
-        .navigationTitle(Text("Detail"))
+        SessionsView()
     }
 }
 

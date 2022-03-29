@@ -32,6 +32,10 @@ class Key: Codable, Identifiable {
         case name
         case publicKey
         case keyTag
+        #if DEBUG
+        case passphrase
+        case privateKey
+        #endif
     }
     
     public init (id: UUID = UUID(), type: KeyType = .rsa(4096), name: String = "", privateKey: String = "", publicKey: String = "", passphrase: String = "")
@@ -182,6 +186,9 @@ class Host: Codable, Identifiable {
         case background
         case lastUsed
         case reconnectType
+        #if DEBUG
+        case password
+        #endif
     }
 
     // Unique ID, used inside Swift to differentiate structures
@@ -319,7 +326,6 @@ class DataStore: ObservableObject {
     let keysArrayKey = "keysArray2"
     let snippetArrayKey = "snippetArray"
     let connectionsArrayKey = "connectionsArray"
-    
     public var knownHostsPath: String
     
     init ()
@@ -334,6 +340,50 @@ class DataStore: ObservableObject {
         }
         self.knownHostsPath = getKnownHostsPath()
         
+        #if DEBUG
+        let loadDebug = FileManager.default.fileExists(atPath: "/tmp/swiftterm-debug.hosts")
+        #else
+        let loadDebug = false
+        #endif
+        
+        if loadDebug {
+#if DEBUG
+            loadDataStoreFromDebug ()
+#endif
+        } else {
+            loadDataStoreFromDefaults ()
+        }
+    }
+    
+    #if DEBUG
+    func loadDataStoreFromDebug () {
+        let decoder = JSONDecoder ()
+        
+        func decode<T: Decodable> (_ file: String) -> [T] {
+            guard let data = try? Data (contentsOf: URL (fileURLWithPath: file)) else {
+                abort ()
+            }
+            return try! decoder.decode ([T].self, from: data)
+        }
+        hosts = decode ("/tmp/swiftterm-debug.hosts")
+        keys = decode ("/tmp/swiftterm-debug.keys")
+        snippets = decode ("/tmp/swiftterm-debug.snippets")
+    }
+    
+    func dumpData () {
+        let coder = JSONEncoder ()
+
+        func encode<T:Encodable> (_ file: String, _ values: [T]) {
+            let data = try! coder.encode(values)
+            try! data.write(to: URL (fileURLWithPath: file))
+        }
+        encode ("/tmp/swiftterm-debug.hosts", hosts)
+        encode ("/tmp/swiftterm-debug.keys", keys)
+        encode ("/tmp/swiftterm-debug.snippets", snippets)
+    }
+#endif
+
+    func loadDataStoreFromDefaults () {
         defaults = UserDefaults (suiteName: "SwiftTermApp")
         let decoder = JSONDecoder ()
         if let d = defaults {
