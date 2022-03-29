@@ -261,7 +261,7 @@ struct HostEditView: View {
                             }
                             
                             Button (action: { self.showingPassword.toggle () }, label: {
-                                Image(systemName: self.showingPassword ? "eye.slash" : "eye")
+                                Image(systemName: self.showingPassword ? "eye" : "eye.slash")
                                     
                             })
                         }
