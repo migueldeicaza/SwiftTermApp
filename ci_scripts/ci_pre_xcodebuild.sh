@@ -8,4 +8,4 @@
 echo running at 
 pwd
 
-echo "let instabugKey = \"${INSTABUG_SECRET}\"" > ${CI_WORKSPACE}SwiftTermApp/Secrets.swift
+echo "let instabugKey = \"${INSTABUG_SECRET}\"" > ${CI_WORKSPACE}/SwiftTermApp/Secrets.swift
