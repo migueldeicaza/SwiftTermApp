@@ -78,6 +78,7 @@ struct CreditsView: View {
     
     var body: some View {
         HStack {
+            Text ("Secret: \(instabugKey)")
             Text ("SwiftTermApp is build using the kind work of many open source developers, these are the projects that are used by SwiftTermApp")
         }
         List {
