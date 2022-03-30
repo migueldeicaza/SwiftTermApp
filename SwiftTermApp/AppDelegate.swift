@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Instabug
 
 @main
 struct SampleApp: App {
@@ -13,6 +14,9 @@ struct SampleApp: App {
     @State var launchHost: Host?
     
     init () {
+        Instabug.start(withToken: "CHANGE_ME", invocationEvents: [.floatingButton, .screenshot])
+        BugReporting.floatingButtonEdge = .maxXEdge
+        BugReporting.floatingButtonTopOffset = 20
         if settings.locationTrack {
             locationTrackerStart()
         }

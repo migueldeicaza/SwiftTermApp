@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "instabug-sp",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Instabug/Instabug-SP",
+      "state" : {
+        "revision" : "57d1ad2c1e789e8a6380aa0df36cde6d301cdb88",
+        "version" : "10.11.9"
+      }
+    },
+    {
       "identity" : "libssh2prebuild",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/migueldeicaza/Libssh2Prebuild",

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02628A0227F3D90100A0CAFF /* Instabug in Frameworks */ = {isa = PBXBuildFile; productRef = 02628A0127F3D90100A0CAFF /* Instabug */; };
 		4901167624553789002C1F85 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901167524553789002C1F85 /* AppDelegate.swift */; };
 		4901167A24553789002C1F85 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901167924553789002C1F85 /* Home.swift */; };
 		4901167C2455378A002C1F85 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4901167B2455378A002C1F85 /* Assets.xcassets */; };
@@ -196,6 +197,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				02628A0227F3D90100A0CAFF /* Instabug in Frameworks */,
 				49C1B6AF24625C7D00D54F6F /* SwiftTerm in Frameworks */,
 				4928BDEB27BF09BE00C180E6 /* CSSH in Frameworks */,
 			);
@@ -526,6 +528,7 @@
 			packageProductDependencies = (
 				49C1B6AE24625C7D00D54F6F /* SwiftTerm */,
 				4928BDEA27BF09BE00C180E6 /* CSSH */,
+				02628A0127F3D90100A0CAFF /* Instabug */,
 			);
 			productName = testMasterDetail;
 			productReference = 4901167224553789002C1F85 /* SwiftTermApp.app */;
@@ -603,6 +606,7 @@
 			packageReferences = (
 				49C1B6AD24625C7D00D54F6F /* XCRemoteSwiftPackageReference "SwiftTerm" */,
 				4928BDE927BF09BE00C180E6 /* XCRemoteSwiftPackageReference "Libssh2Prebuild" */,
+				02628A0027F3D90100A0CAFF /* XCRemoteSwiftPackageReference "Instabug-SP" */,
 			);
 			productRefGroup = 4901167324553789002C1F85 /* Products */;
 			projectDirPath = "";
@@ -1063,6 +1067,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		02628A0027F3D90100A0CAFF /* XCRemoteSwiftPackageReference "Instabug-SP" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Instabug/Instabug-SP";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.0.0;
+			};
+		};
 		4928BDE927BF09BE00C180E6 /* XCRemoteSwiftPackageReference "Libssh2Prebuild" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/migueldeicaza/Libssh2Prebuild";
@@ -1082,6 +1094,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		02628A0127F3D90100A0CAFF /* Instabug */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 02628A0027F3D90100A0CAFF /* XCRemoteSwiftPackageReference "Instabug-SP" */;
+			productName = Instabug;
+		};
 		4928BDEA27BF09BE00C180E6 /* CSSH */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4928BDE927BF09BE00C180E6 /* XCRemoteSwiftPackageReference "Libssh2Prebuild" */;
