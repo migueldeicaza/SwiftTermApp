@@ -16,7 +16,7 @@ struct SampleApp: App {
     init () {
         Instabug.start(withToken: "CHANGE_ME", invocationEvents: [.floatingButton, .screenshot])
         BugReporting.floatingButtonEdge = .maxXEdge
-        BugReporting.floatingButtonTopOffset = UIScreen.main.bounds.height - 125
+        BugReporting.floatingButtonTopOffset = 20
         if settings.locationTrack {
             locationTrackerStart()
         }
