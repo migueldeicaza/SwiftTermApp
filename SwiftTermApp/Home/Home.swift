@@ -43,7 +43,7 @@ struct LargeHomeView: View {
         NavigationView {
             HomeView ()
             DefaultHomeView ()
-        }.navigationViewStyle(.stack)
+        }
     }
 }
 

@@ -10,9 +10,14 @@ import Foundation
 import SwiftUI
 import UIKit
 
+//
+// This currently uses the .show(.primary), and .show(.secondary) to force the splitviewcontroller to act
+// but it could be changed to instead set the preferredSplitBehavior and preferredDisplayMode, although
+// this should likely be then changed if a terminal shows up, so that it can be hidden
 struct UIKitShowSidebar: UIViewRepresentable {
-  let showSidebar: Bool
-  
+    let activate: Bool
+    let showSidebar: Bool
+    
     func nextResponder<T> (target: UIResponder, of type: T.Type) -> T? {
         guard let nextValue = target.next  else {
             return nil
@@ -25,18 +30,27 @@ struct UIKitShowSidebar: UIViewRepresentable {
     
     func makeUIView(context: Context) -> some UIView {
         let uiView = UIView()
+        if !activate { return uiView }
         if self.showSidebar {
             DispatchQueue.main.async { [weak uiView] in
                 if let target = uiView?.next {
-                    nextResponder (target: target, of: UISplitViewController.self)?
-                        .show(.primary)
+                    let r = nextResponder (target: target, of: UISplitViewController.self)
+                    if let s = r {
+                        print (s.preferredDisplayMode)
+                    }
+                    r?.show(.primary)
                 }
             }
         } else {
             DispatchQueue.main.async { [weak uiView] in
                 if let target = uiView?.next {
-                    nextResponder (target: target, of: UISplitViewController.self)?
-                        .show(.secondary)
+                    let r = nextResponder (target: target, of: UISplitViewController.self)
+                    if let s = r {
+                        print (s.preferredDisplayMode)
+                    }
+                    //r?.preferredSplitBehavior = .tile
+                    //r?.preferredDisplayMode = .oneOverSecondary
+                    r?.show(.secondary)
                 }
             }
         }
@@ -44,6 +58,7 @@ struct UIKitShowSidebar: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: UIViewType, context: Context) {
+        if !activate { return }
         DispatchQueue.main.async { [weak uiView] in
             if let target = uiView?.next {
                 nextResponder(target: target, of: UISplitViewController.self)?
@@ -56,16 +71,17 @@ struct UIKitShowSidebar: UIViewRepresentable {
 struct NothingView: View {
     @State var showSidebar: Bool = false
     var body: some View {
-        Text("Nothing to see")
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            UIKitShowSidebar(showSidebar: showSidebar)
-                .frame(width: 0,height: 0)
-                .onAppear {
-                    showSidebar = true
-                }
-                .onDisappear {
-                    showSidebar = false
-                }
-        }
+        #if DEBUG
+        Text ("DEBUG: Using NothingView to force SplitViewController mode")
+            .bold()
+        #endif
+        UIKitShowSidebar(activate: UIDevice.current.userInterfaceIdiom == .pad, showSidebar: showSidebar)
+            .frame(width: 0,height: 0)
+            .onAppear {
+                showSidebar = true
+            }
+            .onDisappear {
+                showSidebar = false
+            }
     }
 }

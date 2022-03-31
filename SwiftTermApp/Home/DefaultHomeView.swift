@@ -11,6 +11,7 @@ import SwiftUI
 struct DefaultHomeView: View {
     var body: some View {
         SessionsView()
+        NothingView()
     }
 }
 
