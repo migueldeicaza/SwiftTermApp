@@ -39,12 +39,11 @@ struct CompactHomeView: View {
 }
 
 struct LargeHomeView: View {
-    
     var body: some View {
         NavigationView {
             HomeView ()
             DefaultHomeView ()
-        }
+        }.navigationViewStyle(.stack)
     }
 }
 
