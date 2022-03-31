@@ -19,7 +19,7 @@ struct SessionDetailsView: View {
 //                .fill(Color.gray.opacity(0.6))
                 
             HStack {
-                getImage(for: terminalView.host)
+                getHostImage(forKind: terminalView.host.hostKind)
                     .colorInvert()
                 VStack (alignment: .leading, spacing: 4) {
                     HStack {

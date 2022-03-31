@@ -12,6 +12,15 @@ import os
 
 var locationTracker: LocationTracker?
 var geoLog = Logger(subsystem: "org.tirania.SwiftTermApp", category: "geo")
+var lastLocation: CLLocation?
+
+// Returns the last known location that we have, nor nil if we do not have one
+func getLocation () -> HistoryLocation? {
+    guard let last = lastLocation else {
+        return nil
+    }
+    return HistoryLocation (latitude: last.coordinate.latitude, longitude: last.coordinate.longitude)
+}
 
 class LocationTracker: NSObject, CLLocationManagerDelegate {
     var locationManager: CLLocationManager
@@ -50,6 +59,7 @@ class LocationTracker: NSObject, CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         for loc in locations {
+            lastLocation = loc
             print ("Got new location \(loc)")
         }
     }

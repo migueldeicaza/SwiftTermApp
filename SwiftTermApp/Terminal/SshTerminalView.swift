@@ -28,7 +28,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     var completeConnectSetup: () -> () = { }
     var session: SocketSession!
     var sessionChannel: Channel?
-    
+
     // Session restoration:
     //
     // -2 -> Force new terminal
@@ -345,15 +345,42 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             }
         }
     }
+
+    // Logs a connection to the history
+    func historyRecordConnection (_ date: Date) {
+        let moc = globalHistoryController.container.viewContext
+        
+        let history = HistoryRecord(context: moc)
+        history.id = UUID()
+        history.hostId = host.id
+        history.date = date
+        history.hostname = host.hostname
+        history.username = host.username
+        history.hostkind = host.hostKind
+        history.port = Int32 (host.port)
+        
+        history.event = HistoryOperation.connected(at: getLocation()).getAsData()
+        do {
+            try moc.save()
+        } catch (let err) {
+            print ("Got \(err)")
+        }
+    }
+    
     // Delegate SocketSessionDelegate.loggedIn: invoked when the connection has been authenticated
     func loggedIn (session: Session) async {
         let _ = await setupChannel (session: session)
         // TODO log that error
         
+        // Save the time we connected, as the guess can take longer, but we will record soon
+        let connectionDate = Date ()
+        
         // If the user did not set an icon
         if host.hostKind == ""  {
             await self.guessOsIcon ()
+            
         }
+        historyRecordConnection (connectionDate)
     }
 
     init (frame: CGRect, host: Host, serial: Int = -1) throws

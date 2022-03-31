@@ -7,11 +7,14 @@
 
 import SwiftUI
 
+var globalHistoryController = HistoryController()
+
 @main
 struct SampleApp: App {
     @State var dates = [Date]()
     @State var launchHost: Host?
-    
+    @StateObject private var historyController = globalHistoryController
+
     init () {
         if settings.locationTrack {
             locationTrackerStart()
@@ -29,6 +32,7 @@ struct SampleApp: App {
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
                     locationTrackerSuspend()
                 }
+                .environment(\.managedObjectContext, historyController.container.viewContext)
         }
         .commands {
             TerminalCommands()

@@ -353,6 +353,14 @@ class DataStore: ObservableObject {
         } else {
             loadDataStoreFromDefaults ()
         }
+        updateHostMap ()
+    }
+
+    func updateHostMap () {
+        idToHost = [:]
+        for host in hosts {
+            idToHost [host.id] = host
+        }
     }
     
     #if DEBUG
@@ -462,6 +470,8 @@ class DataStore: ObservableObject {
         d.synchronize()
     }
     
+    var idToHost: [UUID:Host] = [:]
+    
     // Records the new host in the data store
     func save (host: Host)
     {
@@ -471,6 +481,7 @@ class DataStore: ObservableObject {
         } else {
             hosts.append(host)
         }
+        updateHostMap()
         saveState ()
     }
 
@@ -495,6 +506,7 @@ class DataStore: ObservableObject {
             SecItemDelete(query)
         }
         hosts.remove(atOffsets: offsets)
+        updateHostMap()
     }
     
     func used (host: Host)
