@@ -348,7 +348,7 @@ struct SettingsViewCore: View {
                 Toggle(isOn: $locationTrack) {
                     VStack (alignment: .leading){
                             Text ("Track Location")
-                        Text ("Tracks your location to keep the terminal running in the background").font (.subheadline).foregroundColor(.secondary)
+                        Text ("Tracks your location to keep the terminal running in the background, you can review the locations from the History tab").font (.subheadline).foregroundColor(.secondary)
                     }
                 }
 

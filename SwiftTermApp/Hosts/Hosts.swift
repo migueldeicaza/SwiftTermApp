@@ -8,14 +8,14 @@
 
 import SwiftUI
 
-func getImage (for host: Host) -> some View
+func getHostImage (forKind hostKind: String) -> some View
 {
-    if host.hostKind == "" {
+    if hostKind == "" {
         return Image (systemName: "desktopcomputer")
         .scaledToFit()
         .frame(width: 28, height: 28)
     } else {
-        return Image (host.hostKind)
+        return Image (hostKind)
         .resizable()
         .scaledToFit()
         .frame(width: 28, height: 28)
@@ -30,8 +30,9 @@ struct HostSummaryView: View {
     @State var active = false
     var body: some View {
         NavigationLink (destination: ConfigurableUITerminal(host: host, createNew: createNewTerm), isActive: $active) {
+            
             HStack (spacing: 12){
-                getImage (for: host)
+                getHostImage (forKind: host.hostKind)
                     .font (.system(size: 28))
                     .brightness(Connections.lookupActive(host: self.host) != nil ? 0 : 0.6)
                     //.colorMultiply(Color.white)

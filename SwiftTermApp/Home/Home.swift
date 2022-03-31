@@ -8,13 +8,6 @@
 
 import SwiftUI
 
-private let dateFormatter: DateFormatter = {
-    let dateFormatter = DateFormatter()
-    dateFormatter.dateStyle = .medium
-    dateFormatter.timeStyle = .medium
-    return dateFormatter
-}()
-
 struct ContentView: View {
 #if os(iOS)
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -200,6 +193,11 @@ struct HomeView: View {
                     destination: SettingsView(),
                     label: {
                         Label("Settings", systemImage: "gear")
+                    })
+                NavigationLink(
+                    destination: HistoryView(),
+                    label: {
+                        Label("History", systemImage: "clock")
                     })
             }
             
