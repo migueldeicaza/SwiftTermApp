@@ -46,8 +46,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     
     // Delegate SocketSessionDelegate.authenticate: invoked to trigger authentication
     func authenticate (session: Session) async -> String? {
-        
-        func loginWithKey (_ sshKey: Key) async -> String? {
+        @Sendable func loginWithKey (_ sshKey: Key) async -> String? {
             switch sshKey.type {
             case .rsa(_), .ecdsa(inEnclave: false):
                 var password: String
@@ -95,11 +94,18 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                 }
             }
         }
+        if authMethods.contains ("keyboard-interactive") {
+                if let error = await session.userAuthKeyboardInteractive(username: host.username, prompt: passwordPrompt) {
+                    cumulativeErrors.append(error)
+                } else {
+                    return nil
+                }
+        }
+
         if authMethods.contains ("password") && host.usePassword {
             if let error = await session.userAuthPassword (username: host.username, password: host.password) {
                 cumulativeErrors.append (error)
             }
-            return "Invalid password"
         }
         
         // Ok, none of the presets work, try all the public keys that have a passphrase
@@ -111,8 +117,18 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                 if skip != nil && skip!.id == sshKey.id {
                     continue
                 }
-                if let error = await loginWithKey (sshKey) {
-                    cumulativeErrors.append (error)
+                let passTask = Task.detached { () -> String? in
+                
+                    if let error = await loginWithKey (sshKey) {
+                        return error
+                    } else {
+                        return nil
+                    }
+                }
+                
+                let result = await passTask.result
+                if let error = try? result.get() {
+                    cumulativeErrors.append(error)
                 } else {
                     return nil
                 }
@@ -408,7 +424,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     }
     
     var passwordTextField: UITextField?
-    nonisolated func passwordPrompt (challenge: String) -> String {
+    nonisolated func passwordPrompt (challenge: String)-> String {
+        dispatchPrecondition(condition: .notOnQueue(DispatchQueue.main))
         let semaphore = DispatchSemaphore(value: 0)
         DispatchQueue.main.async {
             guard let vc = self.getParentViewController() else {
