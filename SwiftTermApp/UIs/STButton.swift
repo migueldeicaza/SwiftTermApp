@@ -33,6 +33,7 @@ struct STButton: View {
         .cornerRadius(12)
         .foregroundColor(colorScheme == .dark ? ButtonColors.darkHighColor : ButtonColors.highColor)
         .padding([.horizontal])
+        //.frame (maxWidth: 400)
     }
 }
 

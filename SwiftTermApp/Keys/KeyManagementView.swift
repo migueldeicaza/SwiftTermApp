@@ -22,7 +22,6 @@ struct PasteKeyButton: View {
 
 struct KeyManagementView: View {
     @State var newKeyShown = false
-    @State var addKeyManuallyShown = false
     @State var addFromFileShown = false
     @ObservedObject var store: DataStore = DataStore.shared
     @State private var editMode = EditMode.inactive
@@ -45,14 +44,6 @@ struct KeyManagementView: View {
         List {
             VStack {
                 CreateLocalKeyButtons ()
-                STButton (text: "Add Key", icon: "plus.circle", centered: false)
-                    .onTapGesture {
-                        self.addKeyManuallyShown = true
-                    }
-                    .sheet (isPresented: self.$addKeyManuallyShown) {
-                        AddKeyManually (key: Key(), addKeyManuallyShown: self.$addKeyManuallyShown)
-                    }
-
 //                STButton (text: "Import Key from File", icon: "folder.badge.plus", centered: false)
 //                    .onTapGesture {
 //                        self.addFromFileShown = true

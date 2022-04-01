@@ -17,19 +17,25 @@ import CryptoKit
 struct CreateLocalKeyButtons: View {
     @State var showEnclaveGenerator = false
     @State var showLocalGenerator = false
-    
+    @State var addKeyManuallyShown = false
+
     var body: some View {
-        VStack {
+        LazyVGrid (columns: [GridItem (.adaptive(minimum: 300))]) {
             if SecureEnclave.isAvailable {
-                STButton(text: "Create Enclave Key", icon: "plus.circle", centered: false)
+                STButton(text: "Create Enclave Key", icon: "lock.iphone", centered: false)
                     .onTapGesture {
                         self.showEnclaveGenerator = true
                     }
             }
 
-            STButton (text: "Create Key", icon: "plus.circle", centered: false)
+            STButton (text: "Create New Key", icon: "key", centered: false)
                 .onTapGesture {
                     self.showLocalGenerator = true
+                }
+            
+            STButton (text: "Add Existing Key", icon: "plus.circle", centered: false)
+                .onTapGesture {
+                    self.addKeyManuallyShown = true
                 }
         }
         .sheet(isPresented: self.$showLocalGenerator) {
@@ -37,6 +43,9 @@ struct CreateLocalKeyButtons: View {
         }
         .sheet(isPresented: self.$showEnclaveGenerator) {
             GenerateSecureEnclave (showGenerator: self.$showEnclaveGenerator)
+        }
+        .sheet (isPresented: self.$addKeyManuallyShown) {
+            AddKeyManually (key: Key(), addKeyManuallyShown: self.$addKeyManuallyShown)
         }
     }
 }
