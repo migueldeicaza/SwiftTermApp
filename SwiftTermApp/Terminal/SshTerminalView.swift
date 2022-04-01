@@ -94,13 +94,6 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                 }
             }
         }
-        if authMethods.contains ("keyboard-interactive") {
-                if let error = await session.userAuthKeyboardInteractive(username: host.username, prompt: passwordPrompt) {
-                    cumulativeErrors.append(error)
-                } else {
-                    return nil
-                }
-        }
 
         if authMethods.contains ("password") && host.usePassword {
             if let error = await session.userAuthPassword (username: host.username, password: host.password) {
