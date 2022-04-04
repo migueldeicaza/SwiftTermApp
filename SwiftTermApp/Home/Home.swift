@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Instabug
 
 private let dateFormatter: DateFormatter = {
     let dateFormatter = DateFormatter()
@@ -208,6 +209,11 @@ struct HomeView: View {
                     destination: CreditsView(),
                     label: {
                         Label("Credits", systemImage: "info.circle")
+                    })
+                Button (
+                    action: Instabug.show,
+                    label: {
+                        Label("Support", systemImage: "questionmark.circle")
                     })
             }
             

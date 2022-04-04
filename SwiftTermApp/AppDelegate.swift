@@ -14,12 +14,11 @@ struct SampleApp: App {
     @State var launchHost: Host?
     
     init () {
-        Instabug.start(withToken: "CHANGE_ME", invocationEvents: [.floatingButton, .screenshot])
-        BugReporting.floatingButtonEdge = .maxXEdge
-        BugReporting.floatingButtonTopOffset = UIScreen.main.bounds.height - 125
+        Instabug.start(withToken: "CHANGE_ME", invocationEvents: [.shake, .screenshot])
         if settings.locationTrack {
             locationTrackerStart()
         }
+        
     }
     
     var body: some Scene {
