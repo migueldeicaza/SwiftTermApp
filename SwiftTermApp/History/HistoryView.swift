@@ -31,15 +31,18 @@ struct Pair: View {
 
 struct MakeMap: View {
     @State var region: MKCoordinateRegion
+    @State var loc: HistoryLocation
     var body: some View {
-        return Map (coordinateRegion: $region)
+        return Map (coordinateRegion: $region, annotationItems: [loc]) { place in
+            MapPin(coordinate: place.coordinate)
+        }
     }
 }
 struct HistoryDetail: View {
     var historyRecord: HistoryRecord
     
     func render (_ sloc: HistoryLocation?) -> some View {
-        #if !test
+        #if test
         guard let loc = sloc else {
             return AnyView (Text ("Location unavailable"))
         }
@@ -48,13 +51,14 @@ struct HistoryDetail: View {
         #endif
         let long = loc.longitude.formatted(.number)
         let lat = loc.latitude.formatted(.number)
-        var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: loc.latitude, longitude: loc.longitude), span: MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5))
+        let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: loc.latitude, longitude: loc.longitude), span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
 
         return AnyView (VStack {
             Pair ("Longitude", "\(long)")
             Pair ("Latitude", "\(lat)")
-            MakeMap (region: region)
-                .frame(width: 300, height: 200)
+            MakeMap (region: region, loc: loc)
+                .frame(minWidth: 300, minHeight: 300)
+
         }.padding ([.leading]))
     }
     

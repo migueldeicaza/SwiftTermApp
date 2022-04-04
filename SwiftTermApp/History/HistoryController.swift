@@ -11,9 +11,14 @@ import CoreLocation
 import CoreData
 
 // Simplified version of a CLLocation, that can be serialized
-struct HistoryLocation: Codable {
+struct HistoryLocation: Codable, Identifiable {
+    var id = UUID()
     var latitude: CLLocationDegrees
     var longitude: CLLocationDegrees
+    
+    var coordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+    }
 }
 
 let historyEncoder = JSONEncoder()
