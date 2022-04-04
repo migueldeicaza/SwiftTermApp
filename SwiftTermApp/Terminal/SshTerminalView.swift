@@ -87,8 +87,16 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         // First, try to use what the user configured
         if authMethods.contains("publickey") && host.sshKey != nil {
             if let sshKey = DataStore.shared.keys.first(where: { $0.id == host.sshKey! }) {
-                if let error = await loginWithKey (sshKey) {
-                    cumulativeErrors.append (error)
+                let passTask = Task.detached { () -> String? in
+                    if let error = await loginWithKey (sshKey) {
+                        return error
+                    } else {
+                        return nil
+                    }
+                }
+                let result = await passTask.result
+                if let error = try? result.get() {
+                    cumulativeErrors.append(error)
                 } else {
                     return nil
                 }
