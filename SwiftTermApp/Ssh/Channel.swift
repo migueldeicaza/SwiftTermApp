@@ -18,13 +18,14 @@ public class Channel: Equatable {
     let bufferSize = 32*1024
     var sendQueue = DispatchQueue (label: "channelSend", qos: .userInitiated)
     var readCallback: ((Channel, Data?, Data?)async->())
-
+    var type: String
     
-    init (session: Session, channelHandle: OpaquePointer, readCallback: @escaping (Channel, Data?, Data?)async->()) {
+    init (session: Session, channelHandle: OpaquePointer, readCallback: @escaping (Channel, Data?, Data?)async->(), type: String) {
         self.channelHandle = channelHandle
         self.sessionActor = session.sessionActor
         self.session = session
         self.readCallback = readCallback
+        self.type = type
         buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
         bufferError = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
         libssh2_channel_set_blocking(channelHandle, 0)

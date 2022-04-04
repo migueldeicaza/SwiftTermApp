@@ -52,7 +52,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                 var password: String
                 
                 if SshUtil.openSSHKeyRequiresPassword(key: sshKey.privateKey) && sshKey.passphrase == "" {
-                    password = self.passwordPrompt (challenge: "Key requires password")
+                    password = self.passwordPrompt (challenge: "Key \(sshKey.name) requires a password to be unlocked")
                 } else {
                     password = sshKey.passphrase
                 }
@@ -106,6 +106,17 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         if authMethods.contains ("password") && host.usePassword {
             if let error = await session.userAuthPassword (username: host.username, password: host.password) {
                 cumulativeErrors.append (error)
+                
+                // If the password was empty, it could be either because the password for this account is empty
+                // or because we need to prompt, so if we get here, we tried the empty password and that
+                // did not work, so try prompting
+                if host.password == "" {
+                    if let error = await session.userAuthKeyboardInteractive(username: host.username, prompt: passwordPrompt) {
+                        cumulativeErrors.append(error)
+                    } else {
+                        return nil
+                    }
+                }
             } else {
                 return nil
             }
@@ -218,6 +229,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             return false
         }
         if await !checkHostIntegrity (host: self.host) {
+            print ("Host integrity failed")
             return false
         }
         
@@ -395,7 +407,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         let connectionDate = Date ()
         
         // If the user did not set an icon
-        if host.hostKind == ""  {
+        if true || host.hostKind == ""  {
             await self.guessOsIcon ()
             
         }
@@ -416,14 +428,14 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     }
   
     func getParentViewController () -> UIViewController? {
-       var parentResponder: UIResponder? = self
-       while parentResponder != nil {
-           parentResponder = parentResponder?.next
-           if let viewController = parentResponder as? UIViewController {
-               return viewController
-           }
-       }
-       return nil
+        var parentResponder: UIResponder? = self
+        while parentResponder != nil {
+            parentResponder = parentResponder?.next
+            if let viewController = parentResponder as? UIViewController {
+                return viewController
+            }
+        }
+        return getCurrentKeyWindow()?.rootViewController
     }
     
     var passwordTextField: UITextField?
@@ -611,9 +623,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             }
         }
         
-        if let _ = await knownHosts.readFile (filename: DataStore.shared.knownHostsPath) {
-            return false
-        }
+        await knownHosts.readFile (filename: DataStore.shared.knownHostsPath)
         
         if let keyAndType = await session.hostKey() {
             let res = knownHosts.check (hostName: host.hostname, port: Int32 (host.port), key: keyAndType.key)
