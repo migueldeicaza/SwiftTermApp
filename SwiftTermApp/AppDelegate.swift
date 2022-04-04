@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-
+import Instabug
 var globalHistoryController = HistoryController()
 
 @main
@@ -16,6 +16,9 @@ struct SampleApp: App {
     @StateObject private var historyController = globalHistoryController
 
     init () {
+        if instabugKey != "" {
+            Instabug.start(withToken: instabugKey, invocationEvents: [.shake, .screenshot])
+        }
         if settings.locationTrack {
             locationTrackerStart()
         }
