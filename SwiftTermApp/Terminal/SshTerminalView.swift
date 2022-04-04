@@ -98,6 +98,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         if authMethods.contains ("password") && host.usePassword {
             if let error = await session.userAuthPassword (username: host.username, password: host.password) {
                 cumulativeErrors.append (error)
+            } else {
+                return nil
             }
         }
         
