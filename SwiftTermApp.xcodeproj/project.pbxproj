@@ -37,6 +37,7 @@
 		4943DA6627F4B11A00E4E2F5 /* HistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA6527F4B11A00E4E2F5 /* HistoryController.swift */; };
 		4943DA6927F4B5BB00E4E2F5 /* History.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA6727F4B5BB00E4E2F5 /* History.xcdatamodeld */; };
 		4943DA6C27F5F90B00E4E2F5 /* DateFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA6B27F5F90B00E4E2F5 /* DateFormatting.swift */; };
+		4943DA8B27FB633B00E4E2F5 /* Instabug in Frameworks */ = {isa = PBXBuildFile; productRef = 4943DA8A27FB633B00E4E2F5 /* Instabug */; };
 		49584D83248C3BEA0081D015 /* MetalHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49584D82248C3BEA0081D015 /* MetalHost.swift */; };
 		49584D85248C3C500081D015 /* ShadersBase.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49584D84248C3C500081D015 /* ShadersBase.metal */; };
 		49584D87248C3C7F0081D015 /* PlasmaGlobe.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49584D86248C3C7F0081D015 /* PlasmaGlobe.metal */; };
@@ -204,6 +205,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4943DA8B27FB633B00E4E2F5 /* Instabug in Frameworks */,
 				49C1B6AF24625C7D00D54F6F /* SwiftTerm in Frameworks */,
 				4928BDEB27BF09BE00C180E6 /* CSSH in Frameworks */,
 			);
@@ -554,6 +556,7 @@
 			packageProductDependencies = (
 				49C1B6AE24625C7D00D54F6F /* SwiftTerm */,
 				4928BDEA27BF09BE00C180E6 /* CSSH */,
+				4943DA8A27FB633B00E4E2F5 /* Instabug */,
 			);
 			productName = testMasterDetail;
 			productReference = 4901167224553789002C1F85 /* SwiftTermApp.app */;
@@ -631,6 +634,7 @@
 			packageReferences = (
 				49C1B6AD24625C7D00D54F6F /* XCRemoteSwiftPackageReference "SwiftTerm" */,
 				4928BDE927BF09BE00C180E6 /* XCRemoteSwiftPackageReference "Libssh2Prebuild" */,
+				4943DA8927FB633B00E4E2F5 /* XCRemoteSwiftPackageReference "Instabug-SP" */,
 			);
 			productRefGroup = 4901167324553789002C1F85 /* Products */;
 			projectDirPath = "";
@@ -1103,6 +1107,14 @@
 				kind = branch;
 			};
 		};
+		4943DA8927FB633B00E4E2F5 /* XCRemoteSwiftPackageReference "Instabug-SP" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Instabug/Instabug-SP";
+			requirement = {
+				kind = revision;
+				revision = 57d1ad2c1e789e8a6380aa0df36cde6d301cdb88;
+			};
+		};
 		49C1B6AD24625C7D00D54F6F /* XCRemoteSwiftPackageReference "SwiftTerm" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/migueldeicaza/SwiftTerm.git";
@@ -1118,6 +1130,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 4928BDE927BF09BE00C180E6 /* XCRemoteSwiftPackageReference "Libssh2Prebuild" */;
 			productName = CSSH;
+		};
+		4943DA8A27FB633B00E4E2F5 /* Instabug */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4943DA8927FB633B00E4E2F5 /* XCRemoteSwiftPackageReference "Instabug-SP" */;
+			productName = Instabug;
 		};
 		49C1B6AE24625C7D00D54F6F /* SwiftTerm */ = {
 			isa = XCSwiftPackageProductDependency;
