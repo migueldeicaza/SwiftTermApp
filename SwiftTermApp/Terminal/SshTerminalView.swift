@@ -407,7 +407,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         let connectionDate = Date ()
         
         // If the user did not set an icon
-        if true || host.hostKind == ""  {
+        if host.hostKind == ""  {
             await self.guessOsIcon ()
             
         }
@@ -623,7 +623,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             }
         }
         
-        await knownHosts.readFile (filename: DataStore.shared.knownHostsPath)
+        let _ = await knownHosts.readFile (filename: DataStore.shared.knownHostsPath)
         
         if let keyAndType = await session.hostKey() {
             let res = knownHosts.check (hostName: host.hostname, port: Int32 (host.port), key: keyAndType.key)
