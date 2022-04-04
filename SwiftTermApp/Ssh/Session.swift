@@ -143,6 +143,7 @@ class Session: CustomDebugStringConvertible {
         }
         banner = await sessionActor.getBanner ()
         let failureReason = await delegate.authenticate(session: self)
+        print ("Authenticate result: \(failureReason)")
         if await authenticated {
             await delegate.loggedIn(session: self)
         } else {
@@ -210,7 +211,7 @@ class Session: CustomDebugStringConvertible {
         guard let channelHandle = await sessionActor.openChannel(type: type, windowSize: windowSize, packetSize: packetSize, readCallback: readCallback) else {
             return nil
         }
-        return Channel (session: self, channelHandle: channelHandle, readCallback: readCallback)
+        return Channel (session: self, channelHandle: channelHandle, readCallback: readCallback, type: type)
 
     }
     
