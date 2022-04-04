@@ -38,6 +38,8 @@
 		4943DA6927F4B5BB00E4E2F5 /* History.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA6727F4B5BB00E4E2F5 /* History.xcdatamodeld */; };
 		4943DA6C27F5F90B00E4E2F5 /* DateFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA6B27F5F90B00E4E2F5 /* DateFormatting.swift */; };
 		4943DA8B27FB633B00E4E2F5 /* Instabug in Frameworks */ = {isa = PBXBuildFile; productRef = 4943DA8A27FB633B00E4E2F5 /* Instabug */; };
+		4943DA8E27FB712F00E4E2F5 /* Onboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA8D27FB712F00E4E2F5 /* Onboard.swift */; };
+		4943DA9027FB754500E4E2F5 /* OnboardWelcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA8F27FB754500E4E2F5 /* OnboardWelcome.swift */; };
 		49584D83248C3BEA0081D015 /* MetalHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49584D82248C3BEA0081D015 /* MetalHost.swift */; };
 		49584D85248C3C500081D015 /* ShadersBase.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49584D84248C3C500081D015 /* ShadersBase.metal */; };
 		49584D87248C3C7F0081D015 /* PlasmaGlobe.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49584D86248C3C7F0081D015 /* PlasmaGlobe.metal */; };
@@ -143,6 +145,8 @@
 		4943DA6527F4B11A00E4E2F5 /* HistoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryController.swift; sourceTree = "<group>"; };
 		4943DA6827F4B5BB00E4E2F5 /* History.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = History.xcdatamodel; sourceTree = "<group>"; };
 		4943DA6B27F5F90B00E4E2F5 /* DateFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatting.swift; sourceTree = "<group>"; };
+		4943DA8D27FB712F00E4E2F5 /* Onboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Onboard.swift; sourceTree = "<group>"; };
+		4943DA8F27FB754500E4E2F5 /* OnboardWelcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardWelcome.swift; sourceTree = "<group>"; };
 		49584D82248C3BEA0081D015 /* MetalHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalHost.swift; sourceTree = "<group>"; };
 		49584D84248C3C500081D015 /* ShadersBase.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ShadersBase.metal; sourceTree = "<group>"; };
 		49584D86248C3C7F0081D015 /* PlasmaGlobe.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = PlasmaGlobe.metal; sourceTree = "<group>"; };
@@ -252,6 +256,7 @@
 		4901167424553789002C1F85 /* SwiftTermApp */ = {
 			isa = PBXGroup;
 			children = (
+				4943DA8C27FB711C00E4E2F5 /* FirstRun */,
 				4943DA6A27F5F8FD00E4E2F5 /* Utilities */,
 				4943DA6227F3BA3F00E4E2F5 /* History */,
 				4943DA5927EE5C1200E4E2F5 /* Command */,
@@ -356,6 +361,15 @@
 				4943DA6B27F5F90B00E4E2F5 /* DateFormatting.swift */,
 			);
 			path = Utilities;
+			sourceTree = "<group>";
+		};
+		4943DA8C27FB711C00E4E2F5 /* FirstRun */ = {
+			isa = PBXGroup;
+			children = (
+				4943DA8D27FB712F00E4E2F5 /* Onboard.swift */,
+				4943DA8F27FB754500E4E2F5 /* OnboardWelcome.swift */,
+			);
+			path = FirstRun;
 			sourceTree = "<group>";
 		};
 		49584D81248C3BD80081D015 /* Metal */ = {
@@ -700,6 +714,7 @@
 				493F4F3027613F1B00838AC7 /* Session.swift in Sources */,
 				49BA35A4267847E100B63510 /* PEMtoSSH.swift in Sources */,
 				4967BA04245A7AF300A9D2A6 /* SshUtil.swift in Sources */,
+				4943DA8E27FB712F00E4E2F5 /* Onboard.swift in Sources */,
 				49CA50E827EBBD0D00CA444E /* EnvironmentVariables.swift in Sources */,
 				493F4F3227650E7800838AC7 /* Errors.swift in Sources */,
 				49584D89248C3D570081D015 /* StarNest.metal in Sources */,
@@ -737,6 +752,7 @@
 				49A0A2C02491CDC4002593F7 /* InteractiveLogin.swift in Sources */,
 				4943DA6427F3BA5000E4E2F5 /* HistoryView.swift in Sources */,
 				49B84C5526813F9400B36066 /* HostAuthKeyMismatch.swift in Sources */,
+				4943DA9027FB754500E4E2F5 /* OnboardWelcome.swift in Sources */,
 				49B49D9C27A9B7F00031A9AE /* SFTP.swift in Sources */,
 				4943DA5627EE43D800E4E2F5 /* SnippetBrowser.swift in Sources */,
 				4923C56627319336000CC371 /* LocationTracking.swift in Sources */,

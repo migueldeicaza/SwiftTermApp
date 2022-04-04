@@ -115,7 +115,7 @@ struct SessionsView: View {
 
                 //}
             } else {
-                Text ("No active sessions")
+                NoSessionsView()
             }
             }
             Spacer ()
@@ -123,10 +123,25 @@ struct SessionsView: View {
     }
 }
 
+struct NoSessionsView: View {
+    var body: some View {
+        HStack {
+            Image (systemName: "terminal.fill")
+                .font (.system (size: 72))
+            VStack (alignment: .leading){
+                Text ("No active sessions")
+                    .font (.title)
+                Text ("Active SSH sessions will appear here")
+            }
+        }
+    }
+}
+
 struct SessionsView_Previews: PreviewProvider {
     static var v = SwiftUITerminal(host: DataStore.shared.hosts [0], existing: nil, createNew: true, interactive: true)
     static var previews: some View {
         Group {
+            NoSessionsView ()
             HStack {
                 // This merely triggers the creation of SwiftUITerminal, that register the connection
                 // necessary to show the SessionsView live

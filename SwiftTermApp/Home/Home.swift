@@ -126,12 +126,20 @@ func getCurrentKeyWindow () -> UIWindow? {
           .first
 }
 
+func getFirstRun () -> Bool {
+    let key = "launchedBefore"
+    let ran = UserDefaults.standard.bool(forKey: key)
+    UserDefaults.standard.set (true, forKey: key)
+    return !ran
+}
+
 struct HomeView: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @ObservedObject var connections = Connections.shared
     @Environment(\.scenePhase) var scenePhase
     @State var launchHost: Host? = nil
     @State var transientLaunch: Bool? = false
+    @State var firstRun = getFirstRun ()
     
     func sortDate (first: Host, second: Host) throws -> Bool
     {
@@ -256,6 +264,10 @@ struct HomeView: View {
                 }
             }
         }
+        .sheet (isPresented: $firstRun) {
+            OnboardWelcome (showOnboarding: $firstRun)
+        }
+
     }
 }
 

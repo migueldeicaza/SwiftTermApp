@@ -76,6 +76,10 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             }
         }
         
+        var user = host.username
+        if user == "" {
+            user = userPrompt ()
+        }
         let authMethods = await session.userAuthenticationList(username: host.username)
         
         if authMethods == "" {
@@ -438,6 +442,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         return getCurrentKeyWindow()?.rootViewController
     }
     
+    /// Interactive prompt to request a password
     var passwordTextField: UITextField?
     nonisolated func passwordPrompt (challenge: String)-> String {
         dispatchPrecondition(condition: .notOnQueue(DispatchQueue.main))
@@ -466,7 +471,36 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         let _ = semaphore.wait(timeout: DispatchTime.distantFuture)
         return promptedPassword
     }
-    
+
+    /// Interactive prompt to request a username
+    var usernameTextField: UITextField?
+    nonisolated func userPrompt ()-> String {
+        dispatchPrecondition(condition: .notOnQueue(DispatchQueue.main))
+        let semaphore = DispatchSemaphore(value: 0)
+        DispatchQueue.main.async {
+            guard let vc = self.getParentViewController() else {
+                return
+            }
+
+            let alertController = UIAlertController(title: "Username", message: "Enter your username", preferredStyle: .alert)
+            alertController.addTextField { [unowned self] (textField) in
+                textField.placeholder = ""
+                self.usernameTextField = textField
+            }
+            alertController.addAction(UIAlertAction(title: "OK", style: .default) { [unowned self] _ in
+                if let tf = self.usernameTextField {
+                    promptedUser = tf.text ?? ""
+                }
+                semaphore.signal()
+                
+            })
+            vc.present(alertController, animated: true, completion: nil)
+        }
+        
+        let _ = semaphore.wait(timeout: DispatchTime.distantFuture)
+        return promptedUser
+    }
+
     func displayError<T: View & ConnectionMessage> (_ msg: String) -> T? {
         dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
         
@@ -769,3 +803,4 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
 
 // TODO: This is a hack, it should be local to the function that uses, but I can not seem to convince swift to let mme do that.
 var promptedPassword: String = ""
+var promptedUser: String = ""
