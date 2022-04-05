@@ -99,41 +99,68 @@ struct SessionsView: View {
     var repeatCount: Int = 1
     
     var body: some View {
-        ScrollView {
-            LazyVGrid (columns: [ GridItem(.adaptive(minimum: 340, maximum: 1000)) ]){
-            if connections.connections.count > 0 {
-//                ForEach (connections.connections.indices) { idx in
-//                    ScreenOf (terminalView: self.connections.connections [idx])
-//                }
-                
-                // The repeat count here is just to exercise the preview, no really other
-                // reason
-                //ForEach (0..<repeatCount) { x in
+        if connections.connections.count > 0 {
+            ScrollView {
+                LazyVGrid (columns: [ GridItem(.adaptive(minimum: 340, maximum: 1000)) ]){
+                    //                ForEach (connections.connections.indices) { idx in
+                    //                    ScreenOf (terminalView: self.connections.connections [idx])
+                    //                }
+                    
+                    // The repeat count here is just to exercise the preview, no really other
+                    // reason
+                    //ForEach (0..<repeatCount) { x in
                     ForEach (connections.connections, id: \.id) { terminalView in
                         SessionView (terminalView: terminalView)
                     }
-
-                //}
-            } else {
-                NoSessionsView()
+                    
+                    //}
+                }
             }
-            }
-            Spacer ()
-        }.navigationTitle(Text("Sessions"))
+            .navigationTitle(Text("Sessions"))
+        } else {
+            NoSessionsView()
+                .navigationTitle(Text("Sessions"))
+        }
     }
 }
 
 struct NoSessionsView: View {
+    @ObservedObject var store: DataStore = DataStore.shared
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
     var body: some View {
-        HStack {
-            Image (systemName: "terminal.fill")
-                .font (.system (size: 72))
-            VStack (alignment: .leading){
-                Text ("No active sessions")
-                    .font (.title)
-                Text ("Active SSH sessions will appear here")
+        VStack {
+            Spacer ()
+            HStack {
+                //Spacer ()
+                Image (systemName: "terminal.fill")
+                    .font (.system (size: 72))
+                VStack (alignment: .leading){
+                    Text ("No active sessions")
+                        .font (.title)
+                    Text ("Active SSH sessions will appear here")
+                }
+                Spacer ()
             }
-        }
+            if self.store.recentIndices().count > 0 {
+                VStack (alignment: .leading){
+                    Text ("Recent Connections")
+                        .font (.title3)
+                    if horizontalSizeClass == .compact {
+                        RecentHostsView()
+                    } else {
+                        ScrollView {
+                            VStack {
+                                RecentHostsView (limit: 10)
+                            }
+                        }
+                    }
+                }.padding ([.top])
+            }
+            Spacer ()
+            Spacer ()
+            Spacer ()
+        }.padding (horizontalSizeClass == .compact ? 0 : 80)
     }
 }
 

@@ -158,9 +158,8 @@ struct HomeView: View {
             //QuickLaunch()
             if self.store.recentIndices().count > 0 {
                 Section (header: Text ("Recent")) {
-                    ForEach(self.store.recentIndices (), id: \.self) { idx in
-                        HostSummaryView (host: self.$store.hosts [idx])
-                    }
+                    
+                    RecentHostsView()
                     if transientLaunch ?? false == true {
                         NavigationLink ("Dynamic Launch", destination: ConfigurableUITerminal(host: launchHost, createNew: true), tag: true, selection: $transientLaunch)
                     }
@@ -267,7 +266,7 @@ struct HomeView: View {
         .sheet (isPresented: $firstRun) {
             OnboardWelcome (showOnboarding: $firstRun)
         }
-
+        .navigationBarTitle("Home")
     }
 }
 

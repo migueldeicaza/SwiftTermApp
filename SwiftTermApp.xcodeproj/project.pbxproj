@@ -40,6 +40,7 @@
 		4943DA8B27FB633B00E4E2F5 /* Instabug in Frameworks */ = {isa = PBXBuildFile; productRef = 4943DA8A27FB633B00E4E2F5 /* Instabug */; };
 		4943DA8E27FB712F00E4E2F5 /* Onboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA8D27FB712F00E4E2F5 /* Onboard.swift */; };
 		4943DA9027FB754500E4E2F5 /* OnboardWelcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA8F27FB754500E4E2F5 /* OnboardWelcome.swift */; };
+		4943DA9827FC87DE00E4E2F5 /* RecentHostsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA9727FC87DE00E4E2F5 /* RecentHostsView.swift */; };
 		49584D83248C3BEA0081D015 /* MetalHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49584D82248C3BEA0081D015 /* MetalHost.swift */; };
 		49584D85248C3C500081D015 /* ShadersBase.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49584D84248C3C500081D015 /* ShadersBase.metal */; };
 		49584D87248C3C7F0081D015 /* PlasmaGlobe.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49584D86248C3C7F0081D015 /* PlasmaGlobe.metal */; };
@@ -147,6 +148,7 @@
 		4943DA6B27F5F90B00E4E2F5 /* DateFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatting.swift; sourceTree = "<group>"; };
 		4943DA8D27FB712F00E4E2F5 /* Onboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Onboard.swift; sourceTree = "<group>"; };
 		4943DA8F27FB754500E4E2F5 /* OnboardWelcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardWelcome.swift; sourceTree = "<group>"; };
+		4943DA9727FC87DE00E4E2F5 /* RecentHostsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentHostsView.swift; sourceTree = "<group>"; };
 		49584D82248C3BEA0081D015 /* MetalHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalHost.swift; sourceTree = "<group>"; };
 		49584D84248C3C500081D015 /* ShadersBase.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ShadersBase.metal; sourceTree = "<group>"; };
 		49584D86248C3C7F0081D015 /* PlasmaGlobe.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = PlasmaGlobe.metal; sourceTree = "<group>"; };
@@ -455,6 +457,7 @@
 				4901167924553789002C1F85 /* Home.swift */,
 				49BA35E1267993E800B63510 /* DefaultHomeView.swift */,
 				49BA35F0267C3F2600B63510 /* CreditsView.swift */,
+				4943DA9727FC87DE00E4E2F5 /* RecentHostsView.swift */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -748,6 +751,7 @@
 				49584D87248C3C7F0081D015 /* PlasmaGlobe.metal in Sources */,
 				49584D8C248C41620081D015 /* MetalSwiftUI.swift in Sources */,
 				49A0A2BE2491C792002593F7 /* LazyView.swift in Sources */,
+				4943DA9827FC87DE00E4E2F5 /* RecentHostsView.swift in Sources */,
 				49F02ADF24610D7A00CFEB50 /* STFilePicker.swift in Sources */,
 				49A0A2C02491CDC4002593F7 /* InteractiveLogin.swift in Sources */,
 				4943DA6427F3BA5000E4E2F5 /* HistoryView.swift in Sources */,

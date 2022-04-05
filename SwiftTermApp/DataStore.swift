@@ -556,12 +556,12 @@ class DataStore: ObservableObject {
         return "none"
     }
     
-    // Returns the most recent 3 values
-    func recentIndices () -> [Int]
+    // Returns the most recent `limit` values
+    func recentIndices (limit: Int = 3) -> [Int]
     {
         var res: [Int] = []
         let sorted = hosts.sorted(by: {a, b in a.lastUsed > b.lastUsed })
-        for x in sorted.prefix(3) {
+        for x in sorted.prefix(limit) {
             if let idx = hosts.firstIndex(where: {$0.id == x.id }) {
                 res.append(idx)
             }
