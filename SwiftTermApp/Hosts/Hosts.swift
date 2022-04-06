@@ -34,12 +34,14 @@ struct HostSummaryView: View {
             HStack (spacing: 12){
                 getHostImage (forKind: host.hostKind)
                     .font (.system(size: 28))
+                    .foregroundColor(.primary)
                     .brightness(Connections.lookupActive(host: self.host) != nil ? 0 : 0.6)
                     //.colorMultiply(Color.white)
                 VStack (alignment: .leading, spacing: 4) {
                     HStack {
                         Text ("\(host.alias)")
                             .bold()
+                            .foregroundColor(.primary)
                         Spacer ()
                     }
                     Text (host.summary ())

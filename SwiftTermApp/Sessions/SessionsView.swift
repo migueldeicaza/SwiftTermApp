@@ -152,7 +152,7 @@ struct NoSessionsView: View {
                         ScrollView {
                             VStack {
                                 RecentHostsView (limit: 10)
-                            }
+                            }.padding()
                         }
                     }
                 }.padding ([.top])
