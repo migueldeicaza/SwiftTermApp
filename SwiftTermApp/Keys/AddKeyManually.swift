@@ -37,8 +37,12 @@ struct EditKey: View {
         _keyTag = State (initialValue: key.keyTag)
     }
     
+    var privateKeyComplete: Bool {
+        privateKey.contains("BEGIN OPENSSH PRIVATE KEY")
+    }
+    
     var disableSave: Bool {
-        name == "" || privateKey == ""
+        name == "" || !privateKeyComplete
     }
     
     func saveAndLeave ()
@@ -100,6 +104,10 @@ struct EditKey: View {
                             HStack {
                                 Text ("Private Key")
                                 Spacer ()
+                                if !privateKeyComplete {
+                                    Text ("Required")
+                                        .foregroundColor(.red)
+                                }
                                 ContentsFromFile (target: $privateKey)
                             }
                             HStack {
@@ -125,7 +133,6 @@ struct EditKey: View {
                                 .lineLimit(20)
                                 .autocapitalization(.none)
                                 .font(.system(size: 8, weight: .light, design: .monospaced))
-                            
                         }
                     }
                 }
@@ -137,8 +144,11 @@ struct EditKey: View {
                 }
                 ToolbarItem (placement: .navigationBarTrailing) {
                     Button("Save") { self.saveAndLeave() }
+                        .disabled (disableSave)
+
                 }
             }
+
         }.onAppear {
             self.setupKey ()
         }
