@@ -219,7 +219,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     }
     
     // UTF-8, allow setting cursor color, xterm mouse sequences, RGB colors using SGR, setting terminal title, fill rects, margin support
-    let tmuxFeatureFlags = "-T UTF-8,256,ccolor,mouse,RGB,title,rectfill,margins "
+    var tmuxFeatureFlags = "-T UTF-8,256,ccolor,mouse,RGB,title,rectfill,margins "
+    let tmuxLegacyFeatureFlags = "-u -2"
     let tmuxSessionPrefix = "SwiftTermApp-"
     
     func setupChannel (session: Session) async -> Bool {
@@ -295,6 +296,12 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     }
 
     func tmuxConnection (_ channel: Channel) async -> Bool {
+        let oldTmux = await session.runSimple(command: "tmux -V", lang: lang) { (out, err) -> Bool in
+            return out?.starts(with: "tmux 2.") ?? true
+        }
+        if oldTmux {
+            tmuxFeatureFlags = tmuxLegacyFeatureFlags
+        }
         let activeSessions = await session.runSimple(command: "tmux list-sessions -F '#{session_name},#{session_attached}'", lang: lang) { (out, err) -> [(id: Int, sessionCount: Int)] in
             var res: [(Int,Int)] = []
             guard let str = out else {
