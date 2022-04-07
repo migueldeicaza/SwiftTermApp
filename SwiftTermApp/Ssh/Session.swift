@@ -395,7 +395,7 @@ class SocketSession: Session {
             let session = SocketSession.getSocketSession(from: abstract)
             session.delegate.debug(session: session, alwaysDisplay: alwaysDisplay != 0, message: msg, language: lang)
         }
-
+        delegate.logConnection("NWConnection to \(host):\(port)")
         connection = NWConnection(host: NWEndpoint.Host (host), port: NWEndpoint.Port (integerLiteral: port), using: .tcp)
         super.init(delegate: delegate, send: send, recv: recv, disconnect: disconnect, debug: debug)
         
@@ -485,7 +485,6 @@ class SocketSession: Session {
        
     func connectionStateHandler (state: NWConnection.State) {
         switch state {
-            
         case .setup:
             log ("NWConnection state .setup")
         case .waiting(let detail):
