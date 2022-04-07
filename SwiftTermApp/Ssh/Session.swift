@@ -36,6 +36,9 @@ protocol SessionDelegate: AnyObject {
     
     /// Invoked when the remote end has been disconnected - TODO need to wire this up
     func remoteEndDisconnected (session: Session)
+    
+    /// Invoked to log connection startup information
+    func logConnection (_ msg: String)
 }
 
 /// We execute all calls to libssh2 on the ssh queue.
@@ -85,6 +88,10 @@ class Session: CustomDebugStringConvertible {
         sessionActor = SessionActor (send: send, recv: recv, disconnect: disconnect, debug: debug, opaque: opaqueHandle)
     }
     
+    func log (_ msg: String) {
+        delegate.logConnection(msg)
+    }
+
     var debugDescription: String {
         get { "<Invalid session: use a subclass>" }
     }
@@ -137,16 +144,25 @@ class Session: CustomDebugStringConvertible {
     
     func setupSshConnection () async
     {
-        if await handshake() != 0 {
+        log ("SSH: sending handshake")
+        let handshakeStatus = await handshake()
+        if handshakeStatus != 0 {
+            
+            log ("SSH: handshake error, code: \(libSsh2ErrorToString(error: handshakeStatus)) \(handshakeStatus)")
             // There was an error
             // TODO: handle this one
         }
         banner = await sessionActor.getBanner ()
         let failureReason = await delegate.authenticate(session: self)
-        print ("Authenticate result: \(failureReason)")
+        if let err = failureReason {
+            log ("SSH Authentication result: \(err)")
+        }
+        
         if await authenticated {
+            log ("SSH authenticated")
             await delegate.loggedIn(session: self)
         } else {
+            log ("SSH loginFailed")
             delegate.loginFailed (session: self, details: failureReason ?? "Internal error: authentication claims it worked, but libssh2 state indicates it is not authenticated")
         }
     }
@@ -402,10 +418,6 @@ class SocketSession: Session {
         }
     }
     
-    func log (_ msg: String) {
-        print ("SOCKET_SESSION_STATE: \(msg)")
-    }
-    
     // This is where the network callback will store incoming data, that is pulled out from the
     // the _recv callback methods
     var buffer: Data = Data ()
@@ -475,23 +487,24 @@ class SocketSession: Session {
         switch state {
             
         case .setup:
-            log ("setup")
+            log ("NWConnection state .setup")
         case .waiting(let detail):
-            log ("waiting (\(detail)")
+            log ("NWConnection state: .waiting (\(detail))")
         case .preparing:
-            log ("preparing")
+            log ("NWConnection state .preparing")
         case .ready:
-            log ("ready")
+            log ("NWConnection state .ready")
             startIO()
             Task {
                 await setupSshConnection ()
             }
         case .failed(_):
+            log ("NWConnection state .failed")
             delegate.remoteEndDisconnected(session: self)
         case .cancelled:
-            log ("canceled")
+            log ("NWConnection state .canceled")
         @unknown default:
-            log ("ERROR - UNKNONWN")
+            log ("NWConnection state is unknown")
         }
     }
     
