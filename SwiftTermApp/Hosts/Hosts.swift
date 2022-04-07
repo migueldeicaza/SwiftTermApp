@@ -170,29 +170,30 @@ struct HostsView : View {
     }
     
     var body: some View {
-        
-        List {
+        VStack {
             STButton (text: "Add Host", icon: "plus.circle")
                 .onTapGesture { self.showHostEdit = true }
 
-            Section {
-                ForEach(self.store.hosts.indices, id: \.self) { idx in
-                    iPadHostSummaryView (host: self.$store.hosts [idx])
+            List {
+                Section {
+                    ForEach(self.store.hosts.indices, id: \.self) { idx in
+                        iPadHostSummaryView (host: self.$store.hosts [idx])
+                    }
+                    .onDelete(perform: delete)
+                    .onMove(perform: move)
+                    //.environment(\.editMode, $editMode)
                 }
-                .onDelete(perform: delete)
-                .onMove(perform: move)
-                //.environment(\.editMode, $editMode)
             }
-        }
-        .listStyle(DefaultListStyle())
-        .navigationTitle(Text("Hosts"))
-        .toolbar {
-            ToolbarItem (placement: .navigationBarTrailing) {
-                EditButton ()
+            .listStyle(DefaultListStyle())
+            .navigationTitle(Text("Hosts"))
+            .toolbar {
+                ToolbarItem (placement: .navigationBarTrailing) {
+                    EditButton ()
+                }
             }
-        }
-        .sheet (isPresented: $showHostEdit) {
-            HostEditView(host: Host(), showingModal: self.$showHostEdit)
+            .sheet (isPresented: $showHostEdit) {
+                HostEditView(host: Host(), showingModal: self.$showHostEdit)
+            }
         }
     }
 }

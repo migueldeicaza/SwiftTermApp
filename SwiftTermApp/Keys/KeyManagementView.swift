@@ -41,9 +41,10 @@ struct KeyManagementView: View {
     }
 
     var body: some View {
-        List {
-            VStack {
-                CreateLocalKeyButtons ()
+        VStack {
+            CreateLocalKeyButtons ()
+            List {
+                
 //                STButton (text: "Import Key from File", icon: "folder.badge.plus", centered: false)
 //                    .onTapGesture {
 //                        self.addFromFileShown = true
