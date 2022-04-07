@@ -247,34 +247,6 @@ class Session: CustomDebugStringConvertible {
         return nil
     }
 
-    /// Runs a command on the remote server using the specified language, and delivers the data to the callback
-    /// - Parameters:
-    ///  - command: the command to execute on the remote server
-    ///  - lang: The desired value for the LANG environment variable to be set on the remote end
-    ///  - resultCallback: method that is invoked when the command completes containing the stdout and stderr results as Data parameters
-    public func runAsync (command: String, lang: String, resultCallback: @escaping (Data, Data)async->()) async {
-        var stdout = Data()
-        var stderr = Data()
-        
-        let _ = await runAsync (command: command, lang: lang) { channel, out, err in
-            //print ("Run callback for \(command) out=\(out?.count) err=\(err?.count) eof=\(channel.receivedEOF)")
-            if let gotOut = out {
-                stdout.append(gotOut)
-            }
-            if let gotErr = err {
-                stderr.append(gotErr)
-            }
-            if channel.receivedEOF {
-                DispatchQueue.main.async {
-                    abort ()
-                    // TODO: next line
-                    // resultCallback (stdout, stderr)
-                }
-                return
-            }
-        }
-    }
-    
     /// Runs a command on the remote server using the specified language, and delivers the data to the callback as strings
     /// - Parameters:
     ///  - command: the command to execute on the remote server
@@ -300,7 +272,7 @@ class Session: CustomDebugStringConvertible {
                     if let gotErr = err {
                         stderr.append(gotErr)
                     }
-                    if channel.receivedEOF {
+                    if await channel.receivedEOF {
                         let s = String (bytes: stdout, encoding: .utf8)
                         let e = String (bytes: stderr, encoding: .utf8)
 
@@ -486,21 +458,16 @@ class SocketSession: Session {
     // Since libssh2 does not provide a callback/completion system per channel, we inform
     // all registered channels that new data is available, so they can pull and process.
     func pingChannels () {
-        channelsLock.lock()
-        let copy = self.channels
-        
-        // Remove channels that have completed
-        channels = []
-        for x in copy {
-            if !x.receivedEOF {
-                channels.append (x)
-            }
-        }
-        channelsLock.unlock()
         Task {
-            for channel in copy {
-                await channel.ping()
+            var copy: [Channel] = []
+            for channel in channels {
+                if await channel.ping () {
+                    copy.append (channel)
+                }
             }
+            channelsLock.lock()
+            channels = copy
+            channelsLock.unlock()
         }
     }
        

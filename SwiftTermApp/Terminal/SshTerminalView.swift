@@ -211,7 +211,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             }
             #endif
         }
-        if channel.receivedEOF {
+        if channel.receivedEOFunsafe {
             DispatchQueue.main.async {
                 self.connectionClosed (receivedEOF: true)
             }

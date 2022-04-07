@@ -64,22 +64,30 @@ public class Channel: Equatable {
     }
     
     public var receivedEOF: Bool {
-        get {
-            return libssh2_channel_eof(channelHandle) == 1
+        get async {
+            return await sessionActor.receivedEof (channel: self)
         }
     }
-    
+
+    public var receivedEOFunsafe: Bool {
+        get {
+            return libssh2_channel_eof (channelHandle) == 1
+        }
+    }
+
     // Invoked when there is some data received on the session, and we try to fetch it for the channel
-    // if it is available, we dispatch it.
-    func ping () async {
-        let pair = await sessionActor.ping(channel: self)
+    // if it is available, we dispatch it.   Returns true if the channel is still active
+    func ping () async -> Bool {
+        var eof: Bool = true
+        let pair = await sessionActor.ping(channel: self, eofDetected: &eof)
         
-        if receivedEOF {
+        if eof {
             session.unregister(channel: self)
         }
         if let channelData = pair {
             await readCallback (self, channelData.0, channelData.1)
         }
+        return !eof
     }
     
     func close () async {
