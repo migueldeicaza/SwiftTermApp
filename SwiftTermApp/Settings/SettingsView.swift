@@ -12,7 +12,7 @@ import SwiftTerm
 // The application settings
 class Settings: ObservableObject {
     var defaults = UserDefaults (suiteName: "SwiftTermApp")
-
+    
     func updateKeepOn () {
         UIApplication.shared.isIdleTimerDisabled = keepOn && Connections.shared.connections.count > 0
     }
@@ -51,11 +51,25 @@ class Settings: ObservableObject {
             defaults?.set (fontName, forKey: "fontName")
         }
     }
-    @Published var fontSize: CGFloat = 10 {
+    let fontSizeKey = "fontSize2"
+    // 0 indicates "use system font", use `resolveFontSize` to get the actual size
+    @Published var fontSize: CGFloat {
         didSet {
-            defaults?.set (fontSize, forKey: "fontSize")
+            defaults?.set (fontSize, forKey: fontSizeKey)
         }
     }
+    
+    // fontSize reflects the font size configured, which can be zero to
+    // indicate "Use the system .body default", this one is resolved
+    // to the actual size
+    func resolveFontSize (_ size: CGFloat) -> CGFloat {
+        if size == 0 {
+            return UIFont.preferredFont(forTextStyle: .body).pointSize
+        } else {
+            return size
+        }
+    }
+    
     @Published var backgroundStyle: String = "" {
         didSet {
             defaults?.set (backgroundStyle, forKey: "backgroundStyle")
@@ -75,9 +89,12 @@ class Settings: ObservableObject {
         beepConfig = BeepKind (rawValue: defaults?.string(forKey: "beepConfig") ?? "vibrate") ?? .vibrate
         themeName = defaults?.string (forKey: "theme") ?? "Pro"
         fontName = defaults?.string (forKey: "fontName") ?? "Courier"
-        let fsize = defaults?.double(forKey: "fontSize") ?? 11
         
-        fontSize = CGFloat (fsize == 0.0 ? 11.0 : max (5.0, fsize))
+        if let fontSizeConfig = defaults?.double(forKey: fontSizeKey) {
+            fontSize = fontSizeConfig == 0 ? 0 : max (5.0, fontSizeConfig)
+        } else {
+            fontSize = 0
+        }
         backgroundStyle = defaults?.string (forKey: "backgroundStyle") ?? ""
     }
 }
@@ -153,18 +170,18 @@ struct FontSize: View {
     var fontName: String
     var size: CGFloat
     @Binding var currentSize: CGFloat
+    @State var caption = "Aa"
     
     var body: some View {
-        Text ("Aa")
+        Text (caption)
             .background(
-                RoundedRectangle (cornerRadius: 10, style: .continuous)
+                RoundedRectangle (cornerRadius: 5, style: .continuous)
                     .stroke(self.currentSize == size ? Color.accentColor : Color (#colorLiteral(red: 0.8039215803, green: 0.8039215803, blue: 0.8039215803, alpha: 1)), lineWidth: 2)
-                    .frame (width: 40, height: 40)
+                    .frame (width: caption == "Aa" ? 40 : nil, height: 40)
                     //.border(Color.black, width: 1)
-                    .foregroundColor(Color.red))
-            .font (.custom(fontName, size: size))
-        .padding()
-    
+                    )
+            .font (size == 0 ? .custom (fontName, size: UIFont.preferredFont(forTextStyle: .body).pointSize) : .custom(fontName, size: size))
+            .padding ()
     }
 }
 
@@ -217,14 +234,24 @@ struct FontSizeSelector: View {
     var fontName: String
     @Binding var fontSize: CGFloat
     
-    var fontSizes: [CGFloat] = [8, 10, 11, 12, 14, 18]
+    var fontSizes: [CGFloat] = [8, 10, 11, 12, 14, 18, 24]
 
     var body: some View {
-        HStack (alignment: .center){
-            ForEach (fontSizes, id: \.self) { size in
-                FontSize (fontName: self.fontName, size: size, currentSize: self.$fontSize)
-                    .onTapGesture {
-                        self.fontSize = size
+        HStack {
+            Text ("Size")
+            ScrollView (.horizontal, showsIndicators: true){
+                HStack (alignment: .center){
+                    FontSize (fontName: self.fontName, size: 0, currentSize: self.$fontSize, caption: " System ")
+                        .onTapGesture {
+                            self.fontSize = 0
+                        }
+                    
+                    ForEach (fontSizes, id: \.self) { size in
+                        FontSize (fontName: self.fontName, size: size, currentSize: self.$fontSize)
+                            .onTapGesture {
+                                self.fontSize = size
+                            }
+                    }
                 }
             }
         }
