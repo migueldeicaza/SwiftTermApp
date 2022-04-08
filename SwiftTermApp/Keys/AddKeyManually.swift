@@ -38,7 +38,7 @@ struct EditKey: View {
     }
     
     var privateKeyComplete: Bool {
-        privateKey.contains("BEGIN OPENSSH PRIVATE KEY")
+        return privateKey.contains (SshUtil.footerOpenSshPrivateKey) && privateKey.contains (SshUtil.headerOpenSshPrivateKey)
     }
     
     var disableSave: Bool {
