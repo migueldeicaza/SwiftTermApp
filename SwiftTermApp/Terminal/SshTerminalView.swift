@@ -715,7 +715,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
 //            switch k {
             switch res.status {
             case .notFound, .failure:
-                if await confirmHostAuthUnknown(hostKeyType: hostKeyType ?? "", key: keyAndType.key, fingerprint: await getFingerPrint(), knownHosts: knownHosts, host: host) {
+                if await confirmHostAuthUnknown(hostKeyType: hostKeyType, key: keyAndType.key, fingerprint: await getFingerPrint(), knownHosts: knownHosts, host: host) {
                     return true
                 }
                 await session.disconnect(description: "User did not accept this host")
