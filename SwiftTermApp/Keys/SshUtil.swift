@@ -158,6 +158,7 @@ class SshUtil {
         return String (data: data [4..<last], encoding: .utf8)
     }
     
+    /// Turns a `LIBSSH2_HOSTKEY_TYPE` constant into a string suitable to be shown to the user.
     public static func keyTypeName (_ type: Int32) -> String {
         switch type {
         case LIBSSH2_HOSTKEY_TYPE_UNKNOWN:
