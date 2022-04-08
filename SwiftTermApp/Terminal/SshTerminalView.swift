@@ -128,19 +128,23 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
 
         if authMethods.contains ("password") && host.usePassword {
-            if let error = await session.userAuthPassword (username: host.username, password: host.password) {
-                cumulativeErrors.append (error)
-                
-                // If the password was empty, it could be either because the password for this account is empty
-                // or because we need to prompt, so if we get here, we tried the empty password and that
-                // did not work, so try prompting
-                if host.password == "" {
-                    if let error = await session.userAuthKeyboardInteractive(username: host.username, prompt: passwordPrompt) {
-                        cumulativeErrors.append(error)
-                    } else {
-                        return nil
-                    }
+            let password: String
+            if host.password == "" {
+                password = await Task.detached {
+                    self.passwordPrompt(challenge: "Enter password")
+                    
+                }.value
+                if let error = await session.userAuthKeyboardInteractive(username: host.username, prompt: passwordPrompt) {
+                    cumulativeErrors.append(error)
+                } else {
+                    return nil
                 }
+            } else {
+                password = host.password
+            }
+            
+            if let error = await session.userAuthPassword (username: host.username, password: password) {
+                cumulativeErrors.append (error)
             } else {
                 return nil
             }
