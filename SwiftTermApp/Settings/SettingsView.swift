@@ -64,7 +64,10 @@ class Settings: ObservableObject {
     // to the actual size
     func resolveFontSize (_ size: CGFloat) -> CGFloat {
         if size == 0 {
-            return UIFont.preferredFont(forTextStyle: .body).pointSize
+            // This currently decides on the device size, probably should be based on the view.
+            let compact = UIScreen.main.traitCollection.horizontalSizeClass == .compact
+            
+            return UIFont.preferredFont(forTextStyle: compact ? .caption1 : .body).pointSize
         } else {
             return size
         }
@@ -180,7 +183,7 @@ struct FontSize: View {
                     .frame (width: caption == "Aa" ? 40 : nil, height: 40)
                     //.border(Color.black, width: 1)
                     )
-            .font (size == 0 ? .custom (fontName, size: UIFont.preferredFont(forTextStyle: .body).pointSize) : .custom(fontName, size: size))
+            .font (size == 0 ? .custom (fontName, size: settings.resolveFontSize (0)) : .custom(fontName, size: size))
             .padding ()
     }
 }
