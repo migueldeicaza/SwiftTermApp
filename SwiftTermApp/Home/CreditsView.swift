@@ -79,7 +79,7 @@ struct CreditsView: View {
     var body: some View {
         VStack {
             HStack {
-                Text ("SwiftTermApp is build using the kind work of many open source developers, these are the projects that are used by SwiftTermApp")
+                Text ("SwiftTermApp is built using the kind work of many open source developers, these are the projects that are used by SwiftTermApp")
             }.padding()
             List {
                 // Seems like I no longer use it?
