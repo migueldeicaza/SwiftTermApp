@@ -7,6 +7,8 @@
 //  Copyright © 2020 Miguel de Icaza. All rights reserved.
 //
 import Foundation
+import Instabug
+@_implementationOnly import CSSH
 
 class SshUtil {
     public static func encode (str: String) -> Data {
@@ -148,10 +150,33 @@ class SshUtil {
 
         let count = (data [0] << 24 | data [1] << 16 | data [2] << 8 | data [3])
         let last = 4 + count
-        if data.count < last {
+
+        // There was a crash in 4..<last reported, only thing I can think of is the number returned was a negative number?
+        if data.count < last || last <= 4 {
             return nil
         }
         return String (data: data [4..<last], encoding: .utf8)
+    }
+    
+    public static func keyTypeName (_ type: Int32) -> String {
+        switch type {
+        case LIBSSH2_HOSTKEY_TYPE_UNKNOWN:
+            return "unknown keytype"
+        case LIBSSH2_HOSTKEY_TYPE_RSA:
+            return "rsa"
+        case LIBSSH2_HOSTKEY_TYPE_DSS:
+            return "dss"
+        case LIBSSH2_HOSTKEY_TYPE_ECDSA_256:
+            return "ecdsa-sha2-nistp256"
+        case LIBSSH2_HOSTKEY_TYPE_ECDSA_384:
+            return "ecdsa-sha2-nistp384"
+        case LIBSSH2_HOSTKEY_TYPE_ECDSA_521:
+            return "ecdsa-sha2-nistp521"
+        case LIBSSH2_HOSTKEY_TYPE_ED25519:
+            return "ed25519"
+        default:
+            return "unknown keytype"
+        }
     }
 
     public static func openSSHKeyRequiresPassword (key: String) -> Bool {

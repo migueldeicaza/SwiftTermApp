@@ -709,7 +709,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         
         if let keyAndType = await session.hostKey() {
             let res = knownHosts.check (hostName: host.hostname, port: Int32 (host.port), key: keyAndType.key)
-            let hostKeyType = SshUtil.extractKeyType (keyAndType.key)
+            let hostKeyType = SshUtil.keyTypeName (keyAndType.type)
             
 //            var k: KnownHostStatus = .keyMismatch
 //            switch k {

@@ -18,6 +18,7 @@ struct SampleApp: App {
     init () {
         if instabugKey != "" {
             Instabug.start(withToken: instabugKey, invocationEvents: [.shake, .screenshot])
+            NetworkLogger.enabled = false
         }
         if settings.locationTrack {
             locationTrackerStart()
