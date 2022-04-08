@@ -497,8 +497,8 @@ class SocketSession: Session {
             Task {
                 await setupSshConnection ()
             }
-        case .failed(_):
-            log ("NWConnection state .failed")
+        case .failed(let details):
+            log ("NWConnection state .failed: \(details)n")
             delegate.remoteEndDisconnected(session: self)
         case .cancelled:
             log ("NWConnection state .canceled")

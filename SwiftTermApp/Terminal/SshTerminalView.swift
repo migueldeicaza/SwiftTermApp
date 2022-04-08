@@ -48,19 +48,37 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     // we start to output diagnostics on the connection
     var started: Date
     
+    // Logged messages
     var messages: [(time: Date, msg: String)]
+    var messageLock = NSLock ()
+    var messageLast = 0
+    
+    // During the startup, we can output to the console, but once the connection is established,
+    // we should not do this, as it will overlap the remote end data, and we need to show an
+    // UI instead
+    var canOutputToConsole = true
     func logConnection (_ msg: String) {
         let now = Date()
         
+        messageLock.lock()
         messages.append((now, msg))
+        messageLock.unlock()
         let secondsSinceStart = now.timeIntervalSince(started)
         
         // If after 4 seconds things do not progress, show all the diagnostics
         if secondsSinceStart > 4.0 {
-            for x in messages {
-                feed(text: "\(timeStampFormatter.string(from: x.time)): \(x.msg)\r\n")
+            messageLock.lock ()
+            let start = messageLast
+            let end = messages.count
+            messageLast = end
+            messageLock.unlock()
+            if canOutputToConsole {
+                DispatchQueue.main.async {
+                    for x in self.messages [start..<end] {
+                        self.feed(text: "\(timeStampFormatter.string(from: x.time)): \(x.msg)\r\n")
+                    }
+                }
             }
-            messages = []
         }
     }
     
@@ -198,17 +216,22 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
     }
     
-    func attemptReconnect () {
+    /// Attempts a reconnection and state restoration if the connection supports it, and returns true if it is being attempted, false otherwise
+    func attemptReconnect () -> Bool {
         if self.host.reconnectType == "tmux" {
             self.session.shutdown()
             self.session = SocketSession(host: host.hostname, port: UInt16 (host.port & 0xffff), delegate: self)
+            return true
         }
+        return false
     }
     
     // Delegate SessionDelegate.remoteEndDisconnected
     func remoteEndDisconnected(session: Session) {
         DispatchQueue.main.async {
-            self.attemptReconnect()
+            if !self.attemptReconnect() {
+                self.connectionError(error: "Remote end disconnected")
+            }
         }
     }
     
@@ -296,8 +319,11 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             }
             return false
         }
-        
+        logConnection ("Shell started up, activating")
         session.activate(channel: channel)
+        
+        // Now, make sure we process any data that might have been queued while we were setting up before the channel activation.
+        let _ = await channel.ping()
         return true
     }
 
@@ -450,7 +476,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     // Delegate SocketSessionDelegate.loggedIn: invoked when the connection has been authenticated
     func loggedIn (session: Session) async {
         let _ = await setupChannel (session: session)
-        // TODO log that error
+        
+        canOutputToConsole = false
         
         // Save the time we connected, as the guess can take longer, but we will record soon
         let connectionDate = Date ()
