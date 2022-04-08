@@ -23,6 +23,11 @@ struct SampleApp: App {
         if settings.locationTrack {
             locationTrackerStart()
         }
+//        for family in UIFont.familyNames.sorted() {
+//            let names = UIFont.fontNames(forFamilyName: family)
+//            print("Family: \(family) Font names: \(names)")
+//        }
+//        print ("here")
     }
     
     var body: some Scene {

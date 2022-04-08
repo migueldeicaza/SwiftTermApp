@@ -62,6 +62,7 @@ struct LicenseShort: View {
             VStack {
                 HStack {
                     Text ("\(name)")
+                        .bold()
                     Spacer ()
                 }
                 if let authors = authors {
@@ -88,7 +89,7 @@ struct CreditsView: View {
                 LicenseShort (name: "OpenSSL", authors: "Eric Young, OpenSSL project", license: "openssl_1_1_1h")
                 LicenseShort (name: "SwCrypt", authors: "Soyer", license: "swcrypt")
                 LicenseShort (name: "SwiftTerm", authors: "Miguel de Icaza, others", license: "swiftterm")
-                
+                LicenseShort (name: "Source Code Pro", url: "https://github.com/adobe-fonts/source-code-pro", authors: "Paul D. Hunt, Adobe Inc", license: "source-code-pro")
             }
         }
     }

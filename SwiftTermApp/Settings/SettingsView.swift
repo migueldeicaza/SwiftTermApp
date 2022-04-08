@@ -104,7 +104,7 @@ class Settings: ObservableObject {
 
 var settings = Settings()
 
-var fontNames: [String] = ["Courier", "Courier New", "Menlo", "SF Mono"]
+var fontNames: [String] = ["Courier", "Courier New", "Menlo", "SF Mono", "SourceCodePro-Medium"]
 
 enum BeepKind: String {
     case silent
@@ -222,10 +222,16 @@ struct ThemeSelector: View {
 struct FontSelector: View {
     @Binding var fontName: String
     
+    func mapName (_ fontName: String) -> String {
+        if fontName == "SourceCodePro-Medium" {
+            return "Source Code Pro"
+        }
+        return fontName
+    }
     var body: some View {
         Picker(selection: $fontName, label: Text ("Font")) {
             ForEach (fontNames, id: \.self) { fontName in
-                Text (fontName)
+                Text (mapName (fontName))
                     .font(.custom(fontName, size: 17))
                     .tag (fontName)
             }

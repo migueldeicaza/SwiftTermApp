@@ -41,6 +41,11 @@
 		4943DA8E27FB712F00E4E2F5 /* Onboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA8D27FB712F00E4E2F5 /* Onboard.swift */; };
 		4943DA9027FB754500E4E2F5 /* OnboardWelcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA8F27FB754500E4E2F5 /* OnboardWelcome.swift */; };
 		4943DA9827FC87DE00E4E2F5 /* RecentHostsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA9727FC87DE00E4E2F5 /* RecentHostsView.swift */; };
+		495512C92800BAE600B4CDA2 /* SourceCodePro-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 495512C82800BAE600B4CDA2 /* SourceCodePro-Medium.ttf */; };
+		495512CB2800BBB800B4CDA2 /* source-code-pro.txt in Resources */ = {isa = PBXBuildFile; fileRef = 495512CA2800BBB800B4CDA2 /* source-code-pro.txt */; };
+		495512CF2800BD2A00B4CDA2 /* SourceCodePro-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 495512CC2800BD2A00B4CDA2 /* SourceCodePro-Bold.ttf */; };
+		495512D02800BD2A00B4CDA2 /* SourceCodePro-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 495512CD2800BD2A00B4CDA2 /* SourceCodePro-BoldItalic.ttf */; };
+		495512D12800BD2A00B4CDA2 /* SourceCodePro-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 495512CE2800BD2A00B4CDA2 /* SourceCodePro-Italic.ttf */; };
 		49584D83248C3BEA0081D015 /* MetalHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49584D82248C3BEA0081D015 /* MetalHost.swift */; };
 		49584D85248C3C500081D015 /* ShadersBase.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49584D84248C3C500081D015 /* ShadersBase.metal */; };
 		49584D87248C3C7F0081D015 /* PlasmaGlobe.metal in Sources */ = {isa = PBXBuildFile; fileRef = 49584D86248C3C7F0081D015 /* PlasmaGlobe.metal */; };
@@ -149,6 +154,11 @@
 		4943DA8D27FB712F00E4E2F5 /* Onboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Onboard.swift; sourceTree = "<group>"; };
 		4943DA8F27FB754500E4E2F5 /* OnboardWelcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardWelcome.swift; sourceTree = "<group>"; };
 		4943DA9727FC87DE00E4E2F5 /* RecentHostsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentHostsView.swift; sourceTree = "<group>"; };
+		495512C82800BAE600B4CDA2 /* SourceCodePro-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SourceCodePro-Medium.ttf"; sourceTree = "<group>"; };
+		495512CA2800BBB800B4CDA2 /* source-code-pro.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "source-code-pro.txt"; sourceTree = "<group>"; };
+		495512CC2800BD2A00B4CDA2 /* SourceCodePro-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SourceCodePro-Bold.ttf"; sourceTree = "<group>"; };
+		495512CD2800BD2A00B4CDA2 /* SourceCodePro-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SourceCodePro-BoldItalic.ttf"; sourceTree = "<group>"; };
+		495512CE2800BD2A00B4CDA2 /* SourceCodePro-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SourceCodePro-Italic.ttf"; sourceTree = "<group>"; };
 		49584D82248C3BEA0081D015 /* MetalHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalHost.swift; sourceTree = "<group>"; };
 		49584D84248C3C500081D015 /* ShadersBase.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ShadersBase.metal; sourceTree = "<group>"; };
 		49584D86248C3C7F0081D015 /* PlasmaGlobe.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = PlasmaGlobe.metal; sourceTree = "<group>"; };
@@ -258,36 +268,37 @@
 		4901167424553789002C1F85 /* SwiftTermApp */ = {
 			isa = PBXGroup;
 			children = (
-				4943DA8C27FB711C00E4E2F5 /* FirstRun */,
-				4943DA6A27F5F8FD00E4E2F5 /* Utilities */,
-				4943DA6227F3BA3F00E4E2F5 /* History */,
+				497128C526656609005A2988 /* SwiftTermApp-Bridging-Header.h */,
+				490116832455378A002C1F85 /* Info.plist */,
+				4901167524553789002C1F85 /* AppDelegate.swift */,
+				49A4466026A3D76200A636DC /* Commands.swift */,
+				4967B9FB2459239700A9D2A6 /* Connections.swift */,
+				49011691245622C6002C1F85 /* DataStore.swift */,
+				499D36A52656B747004E307F /* QuickLauch.swift */,
+				4943DA5E27F385D500E4E2F5 /* Secrets.swift */,
+				4901167B2455378A002C1F85 /* Assets.xcassets */,
 				4943DA5927EE5C1200E4E2F5 /* Command */,
-				4943DA5427EE42FA00E4E2F5 /* Snippets */,
-				49F1D12927DA545C004A9CB1 /* Licenses */,
-				493F4F2E27613F0F00838AC7 /* Ssh */,
-				4923C56427319327000CC371 /* Location */,
-				49BA35EB267BE79A00B63510 /* HostKeys */,
-				49BA35DE267991B800B63510 /* Home */,
 				49B84C5626818C4700B36066 /* Extensions */,
 				49BA359F267846DE00B63510 /* External */,
-				49584D81248C3BD80081D015 /* Metal */,
-				49F0740A2481B3D100A83CDC /* Settings */,
-				49F073E7247B6B5E00A83CDC /* Sessions */,
-				49C1B6B3246260C000D54F6F /* Terminal */,
-				49C216C4245D102600280B6A /* Keys */,
+				4943DA8C27FB711C00E4E2F5 /* FirstRun */,
+				495512C72800BAB000B4CDA2 /* Fonts */,
+				4943DA6227F3BA3F00E4E2F5 /* History */,
+				49BA35DE267991B800B63510 /* Home */,
+				49BA35EB267BE79A00B63510 /* HostKeys */,
 				49C216C3245D101200280B6A /* Hosts */,
-				49B2473F245D09A50075F01B /* UIs */,
-				4901167524553789002C1F85 /* AppDelegate.swift */,
-				4943DA5E27F385D500E4E2F5 /* Secrets.swift */,
-				49A4466026A3D76200A636DC /* Commands.swift */,
-				4901167B2455378A002C1F85 /* Assets.xcassets */,
+				49C216C4245D102600280B6A /* Keys */,
 				490116802455378A002C1F85 /* LaunchScreen.storyboard */,
-				490116832455378A002C1F85 /* Info.plist */,
+				49F1D12927DA545C004A9CB1 /* Licenses */,
+				4923C56427319327000CC371 /* Location */,
+				49584D81248C3BD80081D015 /* Metal */,
 				4901167D2455378A002C1F85 /* Preview Content */,
-				49011691245622C6002C1F85 /* DataStore.swift */,
-				4967B9FB2459239700A9D2A6 /* Connections.swift */,
-				499D36A52656B747004E307F /* QuickLauch.swift */,
-				497128C526656609005A2988 /* SwiftTermApp-Bridging-Header.h */,
+				49F073E7247B6B5E00A83CDC /* Sessions */,
+				49F0740A2481B3D100A83CDC /* Settings */,
+				4943DA5427EE42FA00E4E2F5 /* Snippets */,
+				493F4F2E27613F0F00838AC7 /* Ssh */,
+				49C1B6B3246260C000D54F6F /* Terminal */,
+				49B2473F245D09A50075F01B /* UIs */,
+				4943DA6A27F5F8FD00E4E2F5 /* Utilities */,
 			);
 			path = SwiftTermApp;
 			sourceTree = "<group>";
@@ -372,6 +383,17 @@
 				4943DA8F27FB754500E4E2F5 /* OnboardWelcome.swift */,
 			);
 			path = FirstRun;
+			sourceTree = "<group>";
+		};
+		495512C72800BAB000B4CDA2 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				495512CC2800BD2A00B4CDA2 /* SourceCodePro-Bold.ttf */,
+				495512CD2800BD2A00B4CDA2 /* SourceCodePro-BoldItalic.ttf */,
+				495512CE2800BD2A00B4CDA2 /* SourceCodePro-Italic.ttf */,
+				495512C82800BAE600B4CDA2 /* SourceCodePro-Medium.ttf */,
+			);
+			path = Fonts;
 			sourceTree = "<group>";
 		};
 		49584D81248C3BD80081D015 /* Metal */ = {
@@ -537,6 +559,7 @@
 		49F1D12927DA545C004A9CB1 /* Licenses */ = {
 			isa = PBXGroup;
 			children = (
+				495512CA2800BBB800B4CDA2 /* source-code-pro.txt */,
 				49F1D13427DA5F11004A9CB1 /* libssh.txt */,
 				49F1D13327DA5F11004A9CB1 /* openssl_1_1_1h.txt */,
 				49F1D13527DA5F11004A9CB1 /* swcrypt.txt */,
@@ -669,13 +692,18 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				495512D12800BD2A00B4CDA2 /* SourceCodePro-Italic.ttf in Resources */,
 				49F1D13727DA5F11004A9CB1 /* openssl_1_1_1h.txt in Resources */,
 				49F1D13627DA5F11004A9CB1 /* swiftterm.txt in Resources */,
 				490116822455378A002C1F85 /* LaunchScreen.storyboard in Resources */,
 				49F1D13927DA5F11004A9CB1 /* swcrypt.txt in Resources */,
 				4901167F2455378A002C1F85 /* Preview Assets.xcassets in Resources */,
+				495512CF2800BD2A00B4CDA2 /* SourceCodePro-Bold.ttf in Resources */,
+				495512D02800BD2A00B4CDA2 /* SourceCodePro-BoldItalic.ttf in Resources */,
 				4901167C2455378A002C1F85 /* Assets.xcassets in Resources */,
+				495512CB2800BBB800B4CDA2 /* source-code-pro.txt in Resources */,
 				49F1D13827DA5F11004A9CB1 /* libssh.txt in Resources */,
+				495512C92800BAE600B4CDA2 /* SourceCodePro-Medium.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
