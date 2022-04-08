@@ -1134,7 +1134,7 @@
 			repositoryURL = "https://github.com/Instabug/Instabug-SP";
 			requirement = {
 				kind = revision;
-				revision = 57d1ad2c1e789e8a6380aa0df36cde6d301cdb88;
+				revision = 498b2bb7dd418c8faf24f41ed20c48a3de977a7e;
 			};
 		};
 		49C1B6AD24625C7D00D54F6F /* XCRemoteSwiftPackageReference "SwiftTerm" */ = {
