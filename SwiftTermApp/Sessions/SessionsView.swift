@@ -95,31 +95,39 @@ struct SessionView: View {
 ///
 struct SessionsView: View {
     @ObservedObject var connections = Connections.shared
-    // Just to help me exercise the preview
-    var repeatCount: Int = 1
+    @State var count: Int
+    
+    init ()
+    {
+        count = Connections.shared.connections.count
+    }
     
     var body: some View {
-        if connections.connections.count > 0 {
-            ScrollView {
-                LazyVGrid (columns: [ GridItem(.adaptive(minimum: 340, maximum: 1000)) ]){
-                    //                ForEach (connections.connections.indices) { idx in
-                    //                    ScreenOf (terminalView: self.connections.connections [idx])
-                    //                }
-                    
-                    // The repeat count here is just to exercise the preview, no really other
-                    // reason
-                    //ForEach (0..<repeatCount) { x in
-                    ForEach (connections.connections, id: \.id) { terminalView in
-                        SessionView (terminalView: terminalView)
+        HStack {
+            if count > 0 {
+                ScrollView {
+                    LazyVGrid (columns: [ GridItem(.adaptive(minimum: 340, maximum: 1000)) ]){
+                        //                ForEach (connections.connections.indices) { idx in
+                        //                    ScreenOf (terminalView: self.connections.connections [idx])
+                        //                }
+                        
+                        ForEach (connections.connections, id: \.id) { terminalView in
+                            SessionView (terminalView: terminalView)
+                        }
                     }
-                    
-                    //}
                 }
-            }
-            .navigationTitle(Text("Sessions"))
-        } else {
-            NoSessionsView()
                 .navigationTitle(Text("Sessions"))
+            } else {
+                NoSessionsView()
+                    .navigationTitle(Text("Sessions"))
+            }
+        }.onAppear {
+            // Need to get the count out at init and onAppear, rather than directly
+            // referencing it, otherwise when we create the connection, the view
+            // is recomputed causing the effect where it "pushes" the terminal, and
+            // then pops back up to the session small preview
+
+            count = Connections.shared.connections.count
         }
     }
 }
@@ -173,11 +181,11 @@ struct SessionsView_Previews: PreviewProvider {
                 // This merely triggers the creation of SwiftUITerminal, that register the connection
                 // necessary to show the SessionsView live
                 v.frame (width: 0, height: 0, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
-                SessionsView(repeatCount: 5)
+                SessionsView()
             }
-            SessionsView (repeatCount: 5)
+            SessionsView ()
                 .previewLayout(PreviewLayout.fixed(width:375,height:568))
-            SessionsView (repeatCount: 5)
+            SessionsView ()
                 .previewLayout(PreviewLayout.fixed(width:568,height:375))
 
         }
