@@ -52,14 +52,14 @@ struct KeyManagementView: View {
 //                    .sheet (isPresented: self.$addFromFileShown, onDismiss: { self.addFromFileShown = false }) {
 //                        STFilePicker()
 //                    }
+                ForEach(store.keys.indices, id: \.self){ idx in
+                    KeySummaryView (key: self.$store.keys [idx], action: self.action)
+                }
+                .onDelete(perform: delete)
+                .onMove(perform: move)
+                .environment(\.editMode, $editMode)
+                .cornerRadius(10)
             }
-            ForEach(store.keys.indices, id: \.self){ idx in
-                KeySummaryView (key: self.$store.keys [idx], action: self.action)
-            }
-            .onDelete(perform: delete)
-            .onMove(perform: move)
-            .environment(\.editMode, $editMode)
-            .cornerRadius(10)
         }
         .listStyle(DefaultListStyle())
         .navigationTitle("Keys")
