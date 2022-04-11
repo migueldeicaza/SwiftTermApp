@@ -58,10 +58,10 @@ public class AppTerminalView: TerminalView {
         // Changes that take place by global settings
         sizeChange = settings.$fontSize.sink { newSize in
             if !self.userOverrideSize {
-                self.updateFont (newSize: newSize)
+                self.updateFont (newSize: settings.resolveFontSize (newSize))
             }
         }
-        fontChange = settings.$fontName.sink { _ in self.updateFont (newSize: settings.fontSize) }
+        fontChange = settings.$fontName.sink { _ in self.updateFont (newSize: settings.resolveFontSize (settings.fontSize)) }
         themeChange = settings.$themeName.sink { _ in
             if self.useSharedTheme {
                 self.applyTheme(theme: settings.getTheme())

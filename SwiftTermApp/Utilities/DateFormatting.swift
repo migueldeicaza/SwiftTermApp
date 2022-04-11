@@ -15,6 +15,13 @@ let dateTimeFormatter: DateFormatter = {
     return dateFormatter
 }()
 
+let timeStampFormatter: DateFormatter = {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateStyle = .short
+    dateFormatter.timeStyle = .long
+    return dateFormatter
+}()
+
 let timeFormatter: DateFormatter = {
     let dateFormatter = DateFormatter()
     dateFormatter.dateStyle = .none

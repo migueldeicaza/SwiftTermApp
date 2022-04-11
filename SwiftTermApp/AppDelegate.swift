@@ -14,7 +14,17 @@ struct SampleApp: App {
     @State var dates = [Date]()
     @State var launchHost: Host?
     @StateObject private var historyController = globalHistoryController
+    @Environment(\.scenePhase) var scenePhase
 
+    func extendLifetime () {
+        // Attempts to keep the app alive, so our sockets are not killed within one second of going into the background
+        var backgroundHandle: UIBackgroundTaskIdentifier? = nil
+        backgroundHandle = UIApplication.shared.beginBackgroundTask(withName: "lifetime extender") {
+            if let handle = backgroundHandle {
+                UIApplication.shared.endBackgroundTask(handle)
+            }
+        }
+    }
     init () {
         if instabugKey != "" {
             Instabug.start(withToken: instabugKey, invocationEvents: [.shake, .screenshot])
@@ -36,10 +46,16 @@ struct SampleApp: App {
             Instabug.setValue(
                 "We're hard at work on the next SwiftTermApp release. Be sure to check TestFlight for new releases to make sure you're getting the best experience.", forStringWithKey: kIBGBetaWelcomeMessageFinishStepContent)
 
+            NetworkLogger.enabled = false
         }
         if settings.locationTrack {
             locationTrackerStart()
         }
+//        for family in UIFont.familyNames.sorted() {
+//            let names = UIFont.fontNames(forFamilyName: family)
+//            print("Family: \(family) Font names: \(names)")
+//        }
+//        print ("here")
     }
     
     var body: some Scene {
@@ -52,6 +68,11 @@ struct SampleApp: App {
                 }
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
                     locationTrackerSuspend()
+                }
+                .onChange(of: scenePhase) { newPhase in
+                    if newPhase == .background {
+                        extendLifetime ()
+                    }
                 }
                 .environment(\.managedObjectContext, historyController.container.viewContext)
         }

@@ -359,7 +359,8 @@ actor SessionActor {
         }
     }
 
-    public func ping (channel: Channel) async -> (Data?, Data?)? {
+    
+    public func ping (channel: Channel, eofDetected: inout Bool) async -> (Data?, Data?)? {
         // standard channel
         let channelHandle = channel.channelHandle
         let streamId: Int32 = 0
@@ -367,7 +368,8 @@ actor SessionActor {
         let bufferSize = channel.bufferSize
         ret = libssh2_channel_read_ex (channelHandle, streamId, channel.buffer, bufferSize)
         retError = libssh2_channel_read_ex (channelHandle, SSH_EXTENDED_DATA_STDERR, channel.bufferError, bufferSize)
-
+        eofDetected = libssh2_channel_eof(channelHandle) != 0
+        //print ("Ping on channel got \(ret) bytes")
         let data = ret >= 0 ? Data (bytesNoCopy: channel.buffer, count: ret, deallocator: .none) : nil
         let error = retError >= 0 ? Data (bytesNoCopy: channel.bufferError, count: retError, deallocator: .none) : nil
         //if ret >= 0 { dump (data!) }
@@ -394,6 +396,10 @@ actor SessionActor {
         let _ = await callSsh {
             libssh2_channel_close(channel.channelHandle)
         }
+    }
+    
+    public func receivedEof (channel: Channel) -> Bool {
+        return libssh2_channel_eof (channel.channelHandle) != 0
     }
     
     public func send (channel: Channel, data: Data, callback: @escaping (Int)->()) async {

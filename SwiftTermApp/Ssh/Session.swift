@@ -36,6 +36,9 @@ protocol SessionDelegate: AnyObject {
     
     /// Invoked when the remote end has been disconnected - TODO need to wire this up
     func remoteEndDisconnected (session: Session)
+    
+    /// Invoked to log connection startup information
+    func logConnection (_ msg: String)
 }
 
 /// We execute all calls to libssh2 on the ssh queue.
@@ -73,7 +76,7 @@ class Session: CustomDebugStringConvertible {
         let ptr = abstract.bindMemory(to: UnsafeRawPointer.self, capacity: 1)
         return Unmanaged<Session>.fromOpaque(ptr.pointee).takeUnretainedValue()
     }
-
+    
     public init (delegate: SessionDelegate, send: @escaping socketCbType, recv: @escaping socketCbType, disconnect: @escaping disconnectCbType, debug: @escaping debugCbType) {
         self.delegate = delegate
         
@@ -85,6 +88,10 @@ class Session: CustomDebugStringConvertible {
         sessionActor = SessionActor (send: send, recv: recv, disconnect: disconnect, debug: debug, opaque: opaqueHandle)
     }
     
+    func log (_ msg: String) {
+        delegate.logConnection(msg)
+    }
+
     var debugDescription: String {
         get { "<Invalid session: use a subclass>" }
     }
@@ -137,16 +144,25 @@ class Session: CustomDebugStringConvertible {
     
     func setupSshConnection () async
     {
-        if await handshake() != 0 {
+        log ("SSH: sending handshake")
+        let handshakeStatus = await handshake()
+        if handshakeStatus != 0 {
+            
+            log ("SSH: handshake error, code: \(libSsh2ErrorToString(error: handshakeStatus)) \(handshakeStatus)")
             // There was an error
             // TODO: handle this one
         }
         banner = await sessionActor.getBanner ()
         let failureReason = await delegate.authenticate(session: self)
-        print ("Authenticate result: \(failureReason)")
+        if let err = failureReason {
+            log ("SSH Authentication result: \(err)")
+        }
+        
         if await authenticated {
+            log ("SSH authenticated")
             await delegate.loggedIn(session: self)
         } else {
+            log ("SSH loginFailed")
             delegate.loginFailed (session: self, details: failureReason ?? "Internal error: authentication claims it worked, but libssh2 state indicates it is not authenticated")
         }
     }
@@ -247,34 +263,6 @@ class Session: CustomDebugStringConvertible {
         return nil
     }
 
-    /// Runs a command on the remote server using the specified language, and delivers the data to the callback
-    /// - Parameters:
-    ///  - command: the command to execute on the remote server
-    ///  - lang: The desired value for the LANG environment variable to be set on the remote end
-    ///  - resultCallback: method that is invoked when the command completes containing the stdout and stderr results as Data parameters
-    public func runAsync (command: String, lang: String, resultCallback: @escaping (Data, Data)async->()) async {
-        var stdout = Data()
-        var stderr = Data()
-        
-        let _ = await runAsync (command: command, lang: lang) { channel, out, err in
-            //print ("Run callback for \(command) out=\(out?.count) err=\(err?.count) eof=\(channel.receivedEOF)")
-            if let gotOut = out {
-                stdout.append(gotOut)
-            }
-            if let gotErr = err {
-                stderr.append(gotErr)
-            }
-            if channel.receivedEOF {
-                DispatchQueue.main.async {
-                    abort ()
-                    // TODO: next line
-                    // resultCallback (stdout, stderr)
-                }
-                return
-            }
-        }
-    }
-    
     /// Runs a command on the remote server using the specified language, and delivers the data to the callback as strings
     /// - Parameters:
     ///  - command: the command to execute on the remote server
@@ -300,7 +288,7 @@ class Session: CustomDebugStringConvertible {
                     if let gotErr = err {
                         stderr.append(gotErr)
                     }
-                    if channel.receivedEOF {
+                    if await channel.receivedEOF {
                         let s = String (bytes: stdout, encoding: .utf8)
                         let e = String (bytes: stderr, encoding: .utf8)
 
@@ -342,9 +330,9 @@ class Session: CustomDebugStringConvertible {
     func unregister (channel: Channel) {
         channelsLock.lock()
         if let index = channels.firstIndex(of: channel) {
-            print ("Channel removed")
             channels.remove (at: index)
         }
+        
         channelsLock.unlock()
     }
     
@@ -407,7 +395,7 @@ class SocketSession: Session {
             let session = SocketSession.getSocketSession(from: abstract)
             session.delegate.debug(session: session, alwaysDisplay: alwaysDisplay != 0, message: msg, language: lang)
         }
-
+        delegate.logConnection("NWConnection to \(host):\(port)")
         connection = NWConnection(host: NWEndpoint.Host (host), port: NWEndpoint.Port (integerLiteral: port), using: .tcp)
         super.init(delegate: delegate, send: send, recv: recv, disconnect: disconnect, debug: debug)
         
@@ -430,10 +418,6 @@ class SocketSession: Session {
         }
     }
     
-    func log (_ msg: String) {
-        print ("SOCKET_SESSION_STATE: \(msg)")
-    }
-    
     // This is where the network callback will store incoming data, that is pulled out from the
     // the _recv callback methods
     var buffer: Data = Data ()
@@ -453,7 +437,7 @@ class SocketSession: Session {
                 //print (data!.getDump(indent: "   IO> "))
                 self.buffer.append(received)
             } else {
-                print ("Data is null")
+                //print ("Data is null")
             }
             self.bufferError = error
             
@@ -486,45 +470,59 @@ class SocketSession: Session {
     // Since libssh2 does not provide a callback/completion system per channel, we inform
     // all registered channels that new data is available, so they can pull and process.
     func pingChannels () {
-        channelsLock.lock()
-        let copy = self.channels
-        
-        // Remove channels that have completed
-        channels = []
-        for x in copy {
-            if !x.receivedEOF {
-                channels.append (x)
-            }
-        }
-        channelsLock.unlock()
         Task {
+            // This lock is taken for too long over the iteration of the contents of channel
+            // in the future, we could track which channels are dead, and then remove the
+            // channels from channels, rather than the old race condition where the value
+            // of channels would be overwritten with the new result of "active", when a
+            // background thread might have added a new Channel, killing it in the process
+            channelsLock.lock()
+            let copy = channels
+            channelsLock.unlock()
+            var removeList: [Channel] = []
+            
             for channel in copy {
-                await channel.ping()
+                if await !channel.ping () {
+                    removeList.append (channel)
+                }
             }
+            channelsLock.lock ()
+            if removeList.count > 0 {
+                let currentCopy = channels
+                channels = []
+                for channel in currentCopy {
+                    if removeList.contains (channel) {
+                        // Do not add
+                    } else {
+                        channels.append (channel)
+                    }
+                }
+            }
+            channelsLock.unlock()
         }
     }
        
     func connectionStateHandler (state: NWConnection.State) {
         switch state {
-            
         case .setup:
-            log ("setup")
+            log ("NWConnection state .setup")
         case .waiting(let detail):
-            log ("waiting (\(detail)")
+            log ("NWConnection state: .waiting (\(detail))")
         case .preparing:
-            log ("preparing")
+            log ("NWConnection state .preparing")
         case .ready:
-            log ("ready")
+            log ("NWConnection state .ready")
             startIO()
             Task {
                 await setupSshConnection ()
             }
-        case .failed(_):
+        case .failed(let details):
+            log ("NWConnection state .failed: \(details)n")
             delegate.remoteEndDisconnected(session: self)
         case .cancelled:
-            log ("canceled")
+            log ("NWConnection state .canceled")
         @unknown default:
-            log ("ERROR - UNKNONWN")
+            log ("NWConnection state is unknown")
         }
     }
     
@@ -584,8 +582,9 @@ class SocketSession: Session {
             session.buffer.copyBytes(to: x, count: consumedBytes)
             session.buffer = session.buffer.dropFirst(consumedBytes)
             wasError = session.buffer.count == 0 && session.bufferError != nil ? session.bufferError : nil
+            //let n = session.buffer.count
             session.bufferLock.unlock()
-            
+            //print ("Retrieved \(consumedBytes) from the queue, and I have \(n) bytes left, requested=\(length)")
             // This is necessary for certain APIs in libssh2 that expect data to be received,
             // and do not cope with retrying properly: userauth_list for instance will happily
             // return EAGAIN, but if invoked at a later point again, it will resent the request

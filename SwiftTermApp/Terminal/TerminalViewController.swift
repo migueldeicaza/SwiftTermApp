@@ -68,7 +68,6 @@ class TerminalViewController: UIViewController {
             } else {
                 tv.applyTheme(theme: settings.getTheme(themeName: host.style))
             }
-            tv.feed(text: "Welcome to SwiftTerm\r\n\n")
             return tv
         } catch MyError.noValidKey(let msg) {
             terminalViewCreationError (msg)

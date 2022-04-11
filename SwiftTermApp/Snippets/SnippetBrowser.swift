@@ -23,31 +23,42 @@ struct SnippetBrowser: View {
     }
 
     var body: some View {
-        List {
+        VStack {
             STButton (text: "Add Snippet", icon: "plus.circle")
                 .onTapGesture {
                     self.activatedItem = Snippet(title: "", command: "", platforms: [])
                 }
-            Section {
-                ForEach(self.store.snippets.indices, id: \.self) { idx in
-                    SnippetSummary (snippet: store.snippets [idx])
-                    .onTapGesture {
-                        activatedItem = store.snippets [idx]
+            if self.store.snippets.count > 0 {
+                List {
+                    Section {
+                        ForEach(self.store.snippets.indices, id: \.self) { idx in
+                            SnippetSummary (snippet: store.snippets [idx])
+                            .onTapGesture {
+                                activatedItem = store.snippets [idx]
+                            }
+                        }
+                        .onDelete(perform: delete)
+                        .onMove(perform: move)
                     }
                 }
-                .onDelete(perform: delete)
-                .onMove(perform: move)
+                .listStyle(.grouped)
+                .navigationTitle(Text("Snippets"))
+                .toolbar {
+                    ToolbarItem (placement: .navigationBarTrailing) {
+                        EditButton ()
+                    }
+                }
+                .sheet (item: $activatedItem) { item in
+                    SnippetEditor (snippet: item)
+                }
+            } else {
+                HStack (alignment: .firstTextBaseline){
+                    Image (systemName: "note.text")
+                        .font (.title)
+                    Text ("Snippets are groups of commands that you can paste in your terminal with the snippet icon.")
+                        .font (.title)
+                }
             }
-        }
-        .listStyle(.grouped)
-        .navigationTitle(Text("Snippets"))
-        .toolbar {
-            ToolbarItem (placement: .navigationBarTrailing) {
-                EditButton ()
-            }
-        }
-        .sheet (item: $activatedItem) { item in
-            SnippetEditor (snippet: item)
         }
     }
 }
