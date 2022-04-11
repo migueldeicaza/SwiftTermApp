@@ -11,6 +11,8 @@ import Foundation
 
 /// Surfaces operations on channels
 public class Channel: Equatable {
+    static var serial = 0
+    static var channelLock = NSLock ()
     var channelHandle: OpaquePointer
     weak var sessionActor: SessionActor!
     weak var session: Session!
@@ -19,8 +21,14 @@ public class Channel: Equatable {
     var sendQueue = DispatchQueue (label: "channelSend", qos: .userInitiated)
     var readCallback: ((Channel, Data?, Data?)async->())
     var type: String
+    var id: Int
     
     init (session: Session, channelHandle: OpaquePointer, readCallback: @escaping (Channel, Data?, Data?)async->(), type: String) {
+        Channel.channelLock.lock ()
+        Channel.serial += 1
+        id = Channel.serial
+        Channel.channelLock.unlock ()
+        
         self.channelHandle = channelHandle
         self.sessionActor = session.sessionActor
         self.session = session
@@ -44,7 +52,6 @@ public class Channel: Equatable {
         lhs.channelHandle == rhs.channelHandle
     }
     
-
     public func setEnvironment (name: String, value: String) async {
         let _ = await sessionActor.setEnv (channel: self, name: name, value: value)
     }
@@ -81,9 +88,6 @@ public class Channel: Equatable {
         var eof: Bool = true
         let pair = await sessionActor.ping(channel: self, eofDetected: &eof)
         
-        if eof {
-            session.unregister(channel: self)
-        }
         if let channelData = pair {
             await readCallback (self, channelData.0, channelData.1)
         }

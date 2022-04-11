@@ -76,7 +76,7 @@ class Session: CustomDebugStringConvertible {
         let ptr = abstract.bindMemory(to: UnsafeRawPointer.self, capacity: 1)
         return Unmanaged<Session>.fromOpaque(ptr.pointee).takeUnretainedValue()
     }
-
+    
     public init (delegate: SessionDelegate, send: @escaping socketCbType, recv: @escaping socketCbType, disconnect: @escaping disconnectCbType, debug: @escaping debugCbType) {
         self.delegate = delegate
         
@@ -330,9 +330,9 @@ class Session: CustomDebugStringConvertible {
     func unregister (channel: Channel) {
         channelsLock.lock()
         if let index = channels.firstIndex(of: channel) {
-            print ("Channel removed")
             channels.remove (at: index)
         }
+        
         channelsLock.unlock()
     }
     
@@ -437,7 +437,7 @@ class SocketSession: Session {
                 //print (data!.getDump(indent: "   IO> "))
                 self.buffer.append(received)
             } else {
-                print ("Data is null")
+                //print ("Data is null")
             }
             self.bufferError = error
             
@@ -471,14 +471,33 @@ class SocketSession: Session {
     // all registered channels that new data is available, so they can pull and process.
     func pingChannels () {
         Task {
-            var copy: [Channel] = []
-            for channel in channels {
-                if await channel.ping () {
-                    copy.append (channel)
+            // This lock is taken for too long over the iteration of the contents of channel
+            // in the future, we could track which channels are dead, and then remove the
+            // channels from channels, rather than the old race condition where the value
+            // of channels would be overwritten with the new result of "active", when a
+            // background thread might have added a new Channel, killing it in the process
+            channelsLock.lock()
+            let copy = channels
+            channelsLock.unlock()
+            var removeList: [Channel] = []
+            
+            for channel in copy {
+                if await !channel.ping () {
+                    removeList.append (channel)
                 }
             }
-            channelsLock.lock()
-            channels = copy
+            channelsLock.lock ()
+            if removeList.count > 0 {
+                let currentCopy = channels
+                channels = []
+                for channel in currentCopy {
+                    if removeList.contains (channel) {
+                        // Do not add
+                    } else {
+                        channels.append (channel)
+                    }
+                }
+            }
             channelsLock.unlock()
         }
     }
@@ -563,8 +582,9 @@ class SocketSession: Session {
             session.buffer.copyBytes(to: x, count: consumedBytes)
             session.buffer = session.buffer.dropFirst(consumedBytes)
             wasError = session.buffer.count == 0 && session.bufferError != nil ? session.bufferError : nil
+            //let n = session.buffer.count
             session.bufferLock.unlock()
-            
+            //print ("Retrieved \(consumedBytes) from the queue, and I have \(n) bytes left, requested=\(length)")
             // This is necessary for certain APIs in libssh2 that expect data to be received,
             // and do not cope with retrying properly: userauth_list for instance will happily
             // return EAGAIN, but if invoked at a later point again, it will resent the request

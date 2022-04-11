@@ -499,7 +499,6 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         feed (text: "Welcome to SwiftTerm\r\n\n")
         logConnection("Starting connection to \(host.hostname)")
         session = SocketSession(host: host.hostname, port: UInt16 (host.port & 0xffff), delegate: self)
-        
         if !useDefaultBackground {
             updateBackground(background: host.background)
         }

@@ -369,7 +369,7 @@ actor SessionActor {
         ret = libssh2_channel_read_ex (channelHandle, streamId, channel.buffer, bufferSize)
         retError = libssh2_channel_read_ex (channelHandle, SSH_EXTENDED_DATA_STDERR, channel.bufferError, bufferSize)
         eofDetected = libssh2_channel_eof(channelHandle) != 0
-        
+        //print ("Ping on channel got \(ret) bytes")
         let data = ret >= 0 ? Data (bytesNoCopy: channel.buffer, count: ret, deallocator: .none) : nil
         let error = retError >= 0 ? Data (bytesNoCopy: channel.bufferError, count: retError, deallocator: .none) : nil
         //if ret >= 0 { dump (data!) }
