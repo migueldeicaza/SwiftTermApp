@@ -12,7 +12,7 @@ import SwiftUI
 
 struct SessionDetailsView: View {
     var terminalView: SshTerminalView
-    
+    @Binding var count: Int
     var body: some View {
         ZStack {
 //            Rectangle ()
@@ -36,6 +36,7 @@ struct SessionDetailsView: View {
                 }
                 Button (action: {
                     Connections.remove (self.terminalView)
+                    count = Connections.shared.connections.count
                 }) {
                     Image (systemName: "xmark.circle.fill")
                         .foregroundColor(Color.black)
@@ -53,11 +54,13 @@ struct SessionView: View {
     @Environment(\.colorScheme) var colorScheme
     var terminalView: SshTerminalView
     var immediateController: SwiftUITerminal
+    @Binding var count: Int
     
-    init (terminalView: SshTerminalView)
+    init (terminalView: SshTerminalView, count: Binding<Int>)
     {
         self.terminalView = terminalView
         self.immediateController = SwiftUITerminal(host: nil, existing: terminalView, createNew: false, interactive: false)
+        self._count = count
     }
     
     var body: some View {
@@ -77,7 +80,7 @@ struct SessionView: View {
                     Rectangle ()
                         .fill(Color.black.opacity(0.01))
                 }
-                SessionDetailsView (terminalView: terminalView)
+                SessionDetailsView (terminalView: terminalView, count: $count)
             }
             .padding (10)
                 //.background(Color (terminalView.nativeBackgroundColor.cgColor))
@@ -112,7 +115,7 @@ struct SessionsView: View {
                         //                }
                         
                         ForEach (connections.connections, id: \.id) { terminalView in
-                            SessionView (terminalView: terminalView)
+                            SessionView (terminalView: terminalView, count: $count)
                         }
                     }
                 }
