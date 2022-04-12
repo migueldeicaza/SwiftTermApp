@@ -276,6 +276,10 @@ struct HostEditView: View {
                                     .onTapGesture {
                                         self.sshKey = nil
                                     }
+                                    .accessibilityAction {
+                                        self.sshKey = nil
+                                    }
+                                    .accessibilityLabel("Remove Key")
                             } else {
                                 NavigationLink(destination: KeyManagementView(action: assignKey),
                                                isActive: self.$keySelectorIsActive) {

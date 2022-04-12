@@ -50,15 +50,16 @@ struct HostSummaryView: View {
                         .foregroundColor(.secondary)
                         .font(.footnote)
                 }
-                Button (action: {
-                    //
-                }) {
-                    Image (systemName: "square.and.pencil")
-                        .font(.system(size: 24))
-                }
+                Image (systemName: "square.and.pencil")
+                    .font(.system(size: 24))
+                    .foregroundColor(Color.accentColor)
                 .onTapGesture {
                     self.showingModal = true
                 }
+                .accessibilityAction {
+                    self.showingModal = true
+                }
+                .accessibilityLabel("Edit settings")
             }.sheet(isPresented: $showingModal) {
                 HostEditView(host: self.host, showingModal: self.$showingModal)
             }
