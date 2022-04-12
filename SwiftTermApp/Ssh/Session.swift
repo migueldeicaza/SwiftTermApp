@@ -139,7 +139,6 @@ class Session: CustomDebugStringConvertible {
         return "SHA256:" + d.base64EncodedString()
     }
     
-    var timeout: Date?
     public private(set) var banner: String = ""
     
     func setupSshConnection () async
@@ -374,11 +373,19 @@ class SocketSession: Session {
         self.port = port
         
         let send: socketCbType = { socket, buffer, length, flags, abstract in
-            SocketSession.send_callback(socket: socket, buffer: buffer, length: length, flags: flags, abstract: abstract)
+            let n = SocketSession.send_callback(socket: socket, buffer: buffer, length: length, flags: flags, abstract: abstract)
+            if debugIO {
+                print ("Sending \(length) bytes -> \(n)")
+            }
+            return n
         }
         
         let recv: socketCbType = { socket, buffer, length, flags, abstract in
-            return SocketSession.recv_callback(socket: socket, buffer: buffer, length: length, flags: flags, abstract: abstract)
+            let n = SocketSession.recv_callback(socket: socket, buffer: buffer, length: length, flags: flags, abstract: abstract)
+            if debugIO {
+                print ("Recv received: \(n)")
+            }
+            return n
         }
         let disconnect: disconnectCbType = { sess, reason, message, messageLen, language, languageLen, abstract in
             let session = Session.getSession(from: abstract)
@@ -433,11 +440,15 @@ class SocketSession: Session {
             var restart = true
             self.bufferLock.lock()
             if let received = data {
-                //print ("StartIO: Got data \(data?.count ?? -1) appending to \(self.buffer.count)")
+                if debugIO {
+                    print ("StartIO: Got data \(data?.count ?? -1) appending to \(self.buffer.count)")
+                }
                 //print (data!.getDump(indent: "   IO> "))
                 self.buffer.append(received)
             } else {
-                //print ("Data is null")
+                if debugIO {
+                    print ("Data is null")
+                }
             }
             self.bufferError = error
             
@@ -559,12 +570,18 @@ class SocketSession: Session {
         //print (data.getDump(indent: "   sending>"))
         let semaphore = DispatchSemaphore(value: 0)
         var sendError: NWError? = nil
+        if debugIO {
+            print ("NWConnection, sending \(data.count)")
+        }
         connection.send (content: data, completion: .contentProcessed { error in
             //print ("Send completed for \(data.count) bytes")
             sendError = error
             semaphore.signal()
         })
         semaphore.wait()
+        if debugIO {
+            print ("NWConnection, sent n: \(data.count) -> err=\(sendError?.debugDescription ?? "")")
+        }
         return successOrError (sendError, n: data.count)
     }
   
@@ -576,38 +593,17 @@ class SocketSession: Session {
         var consumedBytes = 0
         var wasError: NWError? = nil
         
-        while true {
-            session.bufferLock.lock ()
-            consumedBytes = min (length, session.buffer.count)
-            session.buffer.copyBytes(to: x, count: consumedBytes)
-            session.buffer = session.buffer.dropFirst(consumedBytes)
-            wasError = session.buffer.count == 0 && session.bufferError != nil ? session.bufferError : nil
-            //let n = session.buffer.count
-            session.bufferLock.unlock()
-            //print ("Retrieved \(consumedBytes) from the queue, and I have \(n) bytes left, requested=\(length)")
-            // This is necessary for certain APIs in libssh2 that expect data to be received,
-            // and do not cope with retrying properly: userauth_list for instance will happily
-            // return EAGAIN, but if invoked at a later point again, it will resent the request
-            // to the server, confusing the server.
-            //
-            // so we setup a timeout system that will guarantee data delivery within that timeout
-            // rather than returning "I do not have data yet"
-            if consumedBytes == 0 {
-                if let sessTimeout = session.timeout {
-                    //print ("Waiting for timeout \(sessTimeout) at \(Date())")
-                    if Date () < sessTimeout {
-                        Thread.sleep(forTimeInterval: 0.02)
-                    } else {
-                        break
-                    }
-                } else {
-                    break
-                }
-            } else {
-                break
-            }
+        session.bufferLock.lock ()
+        consumedBytes = min (length, session.buffer.count)
+        session.buffer.copyBytes(to: x, count: consumedBytes)
+        session.buffer = session.buffer.dropFirst(consumedBytes)
+        wasError = session.buffer.count == 0 && session.bufferError != nil ? session.bufferError : nil
+        if debugIO {
+            let n = session.buffer.count
+            print ("Retrieved \(consumedBytes) from the queue, and I have \(n) bytes left, requested=\(length)")
         }
-        
+        session.bufferLock.unlock()
+
         if consumedBytes == 0 {
             return Int (-EAGAIN)
         }

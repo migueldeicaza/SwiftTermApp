@@ -47,41 +47,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     // This is used to track when the session started, and if it is taking too long,
     // we start to output diagnostics on the connection
     var started: Date
-    
-    // Logged messages
-    var messages: [(time: Date, msg: String)]
-    var messageLock = NSLock ()
-    var messageLast = 0
-    
-    // During the startup, we can output to the console, but once the connection is established,
-    // we should not do this, as it will overlap the remote end data, and we need to show an
-    // UI instead
-    var canOutputToConsole = true
-    func logConnection (_ msg: String) {
-        let now = Date()
-        
-        messageLock.lock()
-        messages.append((now, msg))
-        messageLock.unlock()
-        let secondsSinceStart = now.timeIntervalSince(started)
-        
-        // If after 4 seconds things do not progress, show all the diagnostics
-        if secondsSinceStart > 4.0 {
-            messageLock.lock ()
-            let start = messageLast
-            let end = messages.count
-            messageLast = end
-            messageLock.unlock()
-            if canOutputToConsole {
-                DispatchQueue.main.async {
-                    for x in self.messages [start..<end] {
-                        self.feed(text: "\(timeStampFormatter.string(from: x.time)): \(x.msg)\r\n")
-                    }
-                }
-            }
-        }
-    }
-    
+
     // Delegate SocketSessionDelegate.authenticate: invoked to trigger authentication
     func authenticate (session: Session) async -> String? {
         @Sendable func loginWithKey (_ sshKey: Key) async -> String? {
@@ -118,8 +84,9 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         if user == "" {
             user = userPrompt ()
         }
-        let authMethods = await session.userAuthenticationList(username: host.username)
         
+        let authMethods = await session.userAuthenticationList(username: host.username)
+        logConnection("SSH: got \(authMethods)")
         if authMethods == "" {
             return nil
         }
@@ -130,6 +97,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         if authMethods.contains("publickey") && host.sshKey != nil {
             if let sshKey = DataStore.shared.keys.first(where: { $0.id == host.sshKey! }) {
                 let passTask = Task.detached { () -> String? in
+                    self.logConnection("SSH: attempting authentication with \(sshKey.name)")
                     if let error = await loginWithKey (sshKey) {
                         return error
                     } else {
@@ -138,6 +106,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                 }
                 let result = await passTask.result
                 if let error = try? result.get() {
+                    logConnection("SSH: authentication error \(error)")
                     cumulativeErrors.append(error)
                 } else {
                     return nil
@@ -145,26 +114,31 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             }
         }
 
+        // Some servers only send 'password', and not 'keyboard-interactive', so we want to prompt
+        // the user here.   But if the server does provide a keyboard-interactive, we should wait
+        // until later, so we can get all the server prompts
         if authMethods.contains ("password") && host.usePassword {
-            let password: String
+            let password: String?
             if host.password == "" {
-                password = await Task.detached {
-                    self.passwordPrompt(challenge: "Enter password")
-                    
-                }.value
-                if let error = await session.userAuthKeyboardInteractive(username: host.username, prompt: passwordPrompt) {
-                    cumulativeErrors.append(error)
+                if !authMethods.contains ("keyboard-interactive"){
+                    logConnection("SSH: requesting keyboard input password")
+                    password = await Task.detached {
+                        self.passwordPrompt(challenge: "Enter password")
+                    }.value
                 } else {
-                    return nil
+                    password = nil
                 }
             } else {
                 password = host.password
             }
-            
-            if let error = await session.userAuthPassword (username: host.username, password: password) {
-                cumulativeErrors.append (error)
-            } else {
-                return nil
+            if let password = password {
+                logConnection("SSH: attempting authentication with password")
+                if let error = await session.userAuthPassword (username: host.username, password: password) {
+                    logConnection("SSH: authentication error \(error)")
+                    cumulativeErrors.append (error)
+                } else {
+                    return nil
+                }
             }
         }
         
@@ -178,7 +152,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                     continue
                 }
                 let passTask = Task.detached { () -> String? in
-                
+                    self.logConnection("SSH: attempting authentication with public key \(sshKey.name)")
                     if let error = await loginWithKey (sshKey) {
                         return error
                     } else {
@@ -188,6 +162,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                 
                 let result = await passTask.result
                 if let error = try? result.get() {
+                    logConnection("SSH: authentication error \(error)")
                     cumulativeErrors.append(error)
                 } else {
                     return nil
@@ -196,13 +171,19 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
 
         if authMethods.contains ("keyboard-interactive") {
-                if let error = await session.userAuthKeyboardInteractive(username: host.username, prompt: passwordPrompt) {
-                    cumulativeErrors.append(error)
-                } else {
-                    return nil
-                }
+            logConnection("SSH: attempting keyboard-interactive authentication")
+
+            if let error = await session.userAuthKeyboardInteractive(username: host.username, prompt: passwordPrompt) {
+                logConnection("SSH: authentication error \(error)")
+                
+                cumulativeErrors.append(error)
+            } else {
+                return nil
+            }
         }
-        
+        if cumulativeErrors.last == nil {
+            logConnection("SSH: No valid authentication options available \(authMethods)")
+        }
         return cumulativeErrors.last ?? "No valid autentication options available: \(authMethods)"
     }
     
@@ -505,9 +486,9 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     {
         self.serial = serial
         self.started = Date()
-        self.messages = []
         try super.init (frame: frame, host: host)
         feed (text: "Welcome to SwiftTerm\r\n\n")
+        startConnectionMonitor ()
         logConnection("Starting connection to \(host.hostname)")
         session = SocketSession(host: host.hostname, port: UInt16 (host.port & 0xffff), delegate: self)
         if !useDefaultBackground {
@@ -884,6 +865,63 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
     }
     
+    /// Connection Logging
+    
+    class MessageManager {
+        // Logged messages
+        var messages: [(time: Date, msg: String)] = []
+        var messageLock = NSLock ()
+        var messageLast = 0
+        
+        func log (_ msg: String) {
+            messageLock.lock()
+            messages.append((Date(), msg))
+            messageLock.unlock()
+        }
+        
+        func getMessages () -> ArraySlice<(time: Date, msg: String)> {
+            messageLock.lock ()
+            let start = messageLast
+            let end = messages.count
+            messageLast = end
+            messageLock.unlock()
+
+            return messages [start..<end]
+        }
+    }
+    
+    let messageManager: MessageManager = MessageManager ()
+    // During the startup, we can output to the console, but once the connection is established,
+    // we should not do this, as it will overlap the remote end data, and we need to show an
+    // UI instead
+    var canOutputToConsole = true
+    nonisolated func logConnection (_ msg: String) {
+        messageManager.log(msg)
+    }
+ 
+    // Number of seconds before we start logging diagnostics information if the connection does not succeed
+    let connectionMonitorDelay = 4.0
+    
+    // The monitor is only active at startup
+    func startConnectionMonitor () {
+        DispatchQueue.main.asyncAfter(deadline: .now() + connectionMonitorDelay){
+            if self.canOutputToConsole {
+                self.flushMessages ()
+            }
+        }
+    }
+
+    func flushMessages () {
+        DispatchQueue.main.async {
+            guard self.canOutputToConsole else {
+                return
+            }
+            for x in self.messageManager.getMessages() {
+                self.feed(text: "\(timeStampFormatter.string(from: x.time)): \(x.msg)\r\n")
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now()+0.5, execute: self.flushMessages)
+        }
+    }
 }
 
 // TODO: This is a hack, it should be local to the function that uses, but I can not seem to convince swift to let mme do that.

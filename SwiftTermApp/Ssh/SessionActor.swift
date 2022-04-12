@@ -21,6 +21,7 @@ typealias disconnectCbType = @convention(c) (UnsafeRawPointer, CInt,
                                            UnsafePointer<CChar>, CInt,
                                            UnsafePointer<CChar>, CInt, UnsafeRawPointer) -> Void
 
+var debugIO = false
 ///
 /// Surfaces the libssh2 `Session` APIs and puts them behind an actor, ensuring that all operations on it
 /// are serialized.   This API surface is not only for the session, but also for any types that are thread-bound
@@ -67,6 +68,9 @@ actor SessionActor {
     var suspendedTasks = 0
     func track (task: @escaping queuedOp) {
         if task () {
+            if debugIO {
+                print ("Suspending task due to EAGAIN")
+            }
             suspendedTasks += 1
             tasks.append (task)
         }
@@ -149,6 +153,9 @@ actor SessionActor {
         let copy = tasks
         tasks = []
         
+        if debugIO {
+            print ("pinging tasks #\(copy.count)")
+        }
         for task in copy {
             if task() {
                 tasks.append(task)

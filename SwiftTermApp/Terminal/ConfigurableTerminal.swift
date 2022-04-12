@@ -72,6 +72,7 @@ struct ConfigurableUITerminal: View {
     @State var interactive: Bool = true
     @State var showConfig: Bool = false
     @State var showCommand: Bool = false
+    @State var showClose: Bool = false
 
     func topMostViewController (_ t: UIViewController) -> UIViewController {
         if let presented = t.presentedViewController {
