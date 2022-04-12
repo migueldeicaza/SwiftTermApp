@@ -22,21 +22,21 @@ struct CreateLocalKeyButtons: View {
     var body: some View {
         LazyVGrid (columns: [GridItem (.adaptive(minimum: 300))]) {
             if SecureEnclave.isAvailable {
-                STButton(text: "Create Enclave Key", icon: "lock.iphone", centered: false)
-                    .onTapGesture {
+                STButton(text: "Create Enclave Key", icon: "lock.iphone", centered: false) {
                         self.showEnclaveGenerator = true
-                    }
+                }
+                .keyboardShortcut(KeyEquivalent("e"), modifiers: [.command])
             }
 
-            STButton (text: "Create New Key", icon: "key", centered: false)
-                .onTapGesture {
-                    self.showLocalGenerator = true
-                }
+            STButton (text: "Create New Key", icon: "key", centered: false) {
+                self.showLocalGenerator = true
+            }
+            .keyboardShortcut(KeyEquivalent("n"), modifiers: [.command])
             
-            STButton (text: "Add Existing Key", icon: "plus.circle", centered: false)
-                .onTapGesture {
-                    self.addKeyManuallyShown = true
-                }
+            STButton (text: "Add Existing Key", icon: "plus.circle", centered: false){
+                self.addKeyManuallyShown = true
+            }
+            .keyboardShortcut(KeyEquivalent("a"), modifiers: [.command])
         }
         .sheet(isPresented: self.$showLocalGenerator) {
             GenerateKey (showGenerator: self.$showLocalGenerator)

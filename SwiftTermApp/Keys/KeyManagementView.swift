@@ -12,9 +12,8 @@ struct PasteKeyButton: View {
     @Binding var addKeyManuallyShown: Bool
     
     var body: some View {
-        STButton (text: "Create", icon: "plus.circle")
-            .onTapGesture {
-                self.addKeyManuallyShown = true
+        STButton (text: "Create", icon: "plus.circle") {
+            self.addKeyManuallyShown = true
         }
     }
 }

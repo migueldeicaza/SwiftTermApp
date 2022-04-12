@@ -134,6 +134,7 @@
 		490A187C26AA60980034B2BF /* HostConnectionError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostConnectionError.swift; sourceTree = "<group>"; };
 		4911B3032463AD3E00816BAA /* GenerateKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateKey.swift; sourceTree = "<group>"; };
 		49148F98268AB0B0000AB718 /* InputKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputKeyboard.swift; sourceTree = "<group>"; };
+		4914FE062805C0350065E13B /* SwiftTerm */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SwiftTerm; path = ../SwiftTerm; sourceTree = "<group>"; };
 		49184C5C27BC1BA900335BFB /* ConnectionMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionMessage.swift; sourceTree = "<group>"; };
 		49184C5E27BC1CAA00335BFB /* GenericConnectionIssue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericConnectionIssue.swift; sourceTree = "<group>"; };
 		4923C56527319336000CC371 /* LocationTracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationTracking.swift; sourceTree = "<group>"; };
@@ -247,6 +248,7 @@
 		4901166924553789002C1F85 = {
 			isa = PBXGroup;
 			children = (
+				4914FE062805C0350065E13B /* SwiftTerm */,
 				4943DA6027F388C700E4E2F5 /* ci_scripts */,
 				4901167424553789002C1F85 /* SwiftTermApp */,
 				49F1D13F27DAB782004A9CB1 /* UITests */,
@@ -976,6 +978,7 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "Accent Color";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"SwiftTermApp/Preview Content\"";
 				DEVELOPMENT_TEAM = PJQC57N853;
@@ -1002,6 +1005,7 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "Accent Color";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"SwiftTermApp/Preview Content\"";
 				DEVELOPMENT_TEAM = PJQC57N853;

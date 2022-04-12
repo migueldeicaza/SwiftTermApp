@@ -281,20 +281,18 @@ struct LiveBackgroundSelector: View {
         ScrollView (.horizontal, showsIndicators: false) {
             HStack {
                 ForEach (shaders, id: \.self) { name in
-                    
-                    MetalView(shaderFunc: name)
-                        .frame(width: 120, height: 90)
-                    .border (self.selected == name ? Color.accentColor : Color.clear, width: 2)
-                        .onTapGesture {
-                            self.selected = name
-                        }
-                    .overlay (
-                        Text (shaderToHuman [name] ?? name)
-                            .shadow(color: Color.red, radius: 10, x: 5, y: 5)
-                            .foregroundColor(Color.white)
-                            
-                        .padding(8)
-                        , alignment: .topLeading)
+                    Button (action: { self.selected = name}) {
+                        MetalView(shaderFunc: name)
+                            .frame(width: 120, height: 90)
+                            .border (self.selected == name ? Color.accentColor : Color.clear, width: 2)
+                            .overlay (
+                                Text (shaderToHuman [name] ?? name)
+                                    .shadow(color: Color.red, radius: 10, x: 5, y: 5)
+                                    .foregroundColor(Color.white)
+                                
+                                    .padding(8)
+                                , alignment: .topLeading)
+                    }
                 }
             }
         }

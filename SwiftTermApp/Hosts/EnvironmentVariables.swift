@@ -33,10 +33,9 @@ struct EnvironmentVariables: View {
     
     var body: some View {
         List {
-            STButton (text: "Add Variable", icon: "plus.circle")
-                .onTapGesture {
-                    activatedItem = EnvSelection (name: "", value: "")
-                }
+            STButton (text: "Add Variable", icon: "plus.circle") {
+                activatedItem = EnvSelection (name: "", value: "")
+            }
 
             Section {
                 ForEach(variables.sorted(by: >), id: \.key) { key, value in

@@ -24,10 +24,9 @@ struct SnippetBrowser: View {
 
     var body: some View {
         VStack {
-            STButton (text: "Add Snippet", icon: "plus.circle")
-                .onTapGesture {
-                    self.activatedItem = Snippet(title: "", command: "", platforms: [])
-                }
+            STButton (text: "Add Snippet", icon: "plus.circle") {
+                self.activatedItem = Snippet(title: "", command: "", platforms: [])
+            }
             if self.store.snippets.count > 0 {
                 List {
                     Section {
@@ -48,18 +47,20 @@ struct SnippetBrowser: View {
                         EditButton ()
                     }
                 }
-                .sheet (item: $activatedItem) { item in
-                    SnippetEditor (snippet: item)
-                }
             } else {
-                HStack (alignment: .firstTextBaseline){
+                HStack (alignment: .center){
                     Image (systemName: "note.text")
                         .font (.title)
                     Text ("Snippets are groups of commands that you can paste in your terminal with the snippet icon.")
-                        .font (.title)
+                        .font (.body)
                 }
+                Spacer ()
             }
         }
+        .sheet (item: $activatedItem) { item in
+            SnippetEditor (snippet: item)
+        }
+
     }
 }
 

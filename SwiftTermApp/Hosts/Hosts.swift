@@ -28,6 +28,7 @@ struct HostSummaryView: View {
     @State var createNewTerm = false
     //@Environment(\.editMode) var editMode
     @State var active = false
+    
     var body: some View {
         NavigationLink (destination: ConfigurableUITerminal(host: host, createNew: createNewTerm), isActive: $active) {
             
@@ -171,8 +172,9 @@ struct HostsView : View {
     
     var body: some View {
         VStack {
-            STButton (text: "Add Host", icon: "plus.circle")
-                .onTapGesture { self.showHostEdit = true }
+            STButton (text: "Add Host", icon: "plus.circle") {
+                self.showHostEdit = true
+            }
 
             List {
                 Section {
