@@ -18,7 +18,7 @@ struct EnvironmentVariableEdit: View {
     // If it is a new variable, do not allow overriding an existing value
     var disableSave: Bool {
         get {
-            newVariable && variables.keys.contains(variable.name)
+            (newVariable && variables.keys.contains(variable.name)) || variable.name == ""
         }
     }
     
@@ -34,8 +34,10 @@ struct EnvironmentVariableEdit: View {
                                 Button {
                                     print("Edit button was tapped")
                                 } label: {
-                                    Text("Name Conflict")
-                                        .foregroundColor(.red)
+                                    if variable.name != ""  {
+                                        Text("Name Conflict")
+                                            .foregroundColor(.red)
+                                    }
                                 }
                             }
                         }
