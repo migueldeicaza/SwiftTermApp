@@ -34,26 +34,39 @@ struct HostKeysList: View {
     @State var showInfo = false
     
     var body: some View {
-        List {
-            ForEach (store.knownHosts) { record in
-                VStack (alignment: .leading) {
-                    HStack {
-                        Text ("Endpoint:")
-                        Spacer ()
-                        Text ("\(record.host)")
+        VStack {
+            if store.knownHosts.count == 0 {
+                HStack (alignment: .top){
+                    Image (systemName: "lock.desktopcomputer")
+                        .font (.title)
+                    Text ("The lists of hosts you have connected to, along with their fingerprints will be listed here.   These fingerprints are checked on each connection to ensure that a machine is not swapped behind your back and you get tricked into logging into a machine controlled by an adversary")
+                        .font (.body)
+                }.padding ()
+                Spacer ()
+                
+            } else {
+                List {
+                    ForEach (store.knownHosts) { record in
+                        VStack (alignment: .leading) {
+                            HStack {
+                                Text ("Endpoint:")
+                                Spacer ()
+                                Text ("\(record.host)")
+                            }
+                            HStack {
+                                Text ("Key Type:")
+                                Spacer ()
+                                Text ("\(record.keyType)")
+                            }
+                            Text ("Key:")
+                            Text ("\(record.key)")
+                                .font(.system(size: 12, weight: .light, design: .monospaced))
+                            
+                        }
                     }
-                    HStack {
-                        Text ("Key Type:")
-                        Spacer ()
-                        Text ("\(record.keyType)")
-                    }
-                    Text ("Key:")
-                    Text ("\(record.key)")
-                        .font(.system(size: 12, weight: .light, design: .monospaced))
-                    
+                    .onDelete(perform: delete)
                 }
             }
-            .onDelete(perform: delete)
         }
         .toolbar {
             ToolbarItem (placement: .navigationBarTrailing) {

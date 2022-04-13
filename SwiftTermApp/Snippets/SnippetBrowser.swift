@@ -48,12 +48,12 @@ struct SnippetBrowser: View {
                     }
                 }
             } else {
-                HStack (alignment: .center){
+                HStack (alignment: .top){
                     Image (systemName: "note.text")
                         .font (.title)
                     Text ("Snippets are groups of commands that you can paste in your terminal with the snippet icon.")
                         .font (.body)
-                }
+                }.padding ()
                 Spacer ()
             }
         }
