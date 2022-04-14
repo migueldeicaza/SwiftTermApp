@@ -354,6 +354,7 @@ class DataStore: ObservableObject {
             loadDataStoreFromDefaults ()
         }
         updateHostMap ()
+        loadKnownHosts()
     }
 
     func updateHostMap () {

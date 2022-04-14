@@ -265,11 +265,6 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             }
             return false
         }
-        if await !checkHostIntegrity (host: self.host) {
-            logConnection("SSH: Host integrity failed")
-            return false
-        }
-        
         // Pass the environment variables
         for (envKey, envVar) in host.environmentVariables {
             await channel.setEnvironment(name: envKey, value: envVar)
@@ -689,7 +684,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     /// known hosts
     ///
     /// Returns true on success, false on error
-    func checkHostIntegrity (host: Host) async -> Bool {
+    func checkHostIntegrity () async -> Bool {
         guard let knownHosts = await session.makeKnownHost() else {
             return false
         }

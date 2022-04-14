@@ -16,6 +16,9 @@ import CryptoKit
 @_implementationOnly import CSSH
 
 protocol SessionDelegate: AnyObject {
+    /// Called to validate the integridy of the host, returns true if we should proceed, or false if there is a problem
+    func checkHostIntegrity () async -> Bool
+    
     /// Called to authenticate the user on the network queue, once the
     /// connection has been established.
     /// - Parameter session: identifies the session that this callback is for
@@ -152,6 +155,12 @@ class Session: CustomDebugStringConvertible {
             // TODO: handle this one
         }
         banner = await sessionActor.getBanner ()
+        if await !delegate.checkHostIntegrity () {
+            log ("SSH: Host integrity failed")
+            return 
+        }
+        
+
         let failureReason = await delegate.authenticate(session: self)
         if let err = failureReason {
             log ("SSH Authentication result: \(err)")
