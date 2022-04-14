@@ -1,6 +1,6 @@
 # SwiftTermApp
 
-SwiftTermApp is a terminal emulator and SSH cliennt application for iOS
+SwiftTermApp is a terminal emulator and SSH client application for iOS
 using the [SwiftTerm](https://github.com/migueldeicaza/SwiftTerm) engine and written in SwiftUI.
 
 Some of the features:
