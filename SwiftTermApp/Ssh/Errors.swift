@@ -60,6 +60,6 @@ public func libSsh2ErrorToString (error: CInt) -> String {
     case LIBSSH2_ERROR_CHANNEL_WINDOW_FULL: return "LIBSSH2_ERROR_CHANNEL_WINDOW_FULL"
     case LIBSSH2_ERROR_KEYFILE_AUTH_FAILED: return "LIBSSH2_ERROR_KEYFILE_AUTH_FAILED"
     default:
-        return "Unknown SSH2 Code"
+        return "Unknown SSH2 Code: \(error)"
     }
 }

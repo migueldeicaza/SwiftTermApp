@@ -86,7 +86,7 @@ class LibsshKnownHost {
             keyTypeCode = LIBSSH2_KNOWNHOST_KEY_ECDSA_384
         case "ecdsa-sha2-nistp521":
             keyTypeCode = LIBSSH2_KNOWNHOST_KEY_ECDSA_521
-        case "ssh-ed25519":
+        case "ssh-ed25519", "ed25519":
             keyTypeCode = LIBSSH2_KNOWNHOST_KEY_ED25519
         default:
             return "knownHost.add: the provided key type is \(keyType) which is not currently supported"

@@ -199,10 +199,23 @@ actor SessionActor {
         }
     }
     
+    public var lastError: String {
+        get {
+            var dataBuffer: UnsafeMutablePointer <CChar>?
+
+            libssh2_session_last_error(self.sessionHandle, &dataBuffer, nil, 0)
+            if let cstr = dataBuffer {
+                return String (validatingUTF8: cstr) ?? "Unable to convert binary blob to valid string while retrieving error information"
+            } else {
+                return "No detail provided"
+            }
+        }
+    }
+    
     public func userAuthKeyboardInteractive (username: String) async -> String? {
         return await authErrorToString(code: callSsh {
             let usernameCount = UInt32 (username.utf8.count)
-            return libssh2_userauth_keyboard_interactive_ex(self.sessionHandle, username, usernameCount) { name, nameLen, instruction, instructionLen, numPrompts, prompts, responses, abstract in
+            let ret = libssh2_userauth_keyboard_interactive_ex(self.sessionHandle, username, usernameCount) { name, nameLen, instruction, instructionLen, numPrompts, prompts, responses, abstract in
                 let session = Session.getSession(from: abstract!)
                 
                 for i in 0..<Int(numPrompts) {
@@ -223,6 +236,7 @@ actor SessionActor {
                     responses?[i] = response
                 }
             }
+            return ret
         })
     }
     
@@ -322,8 +336,8 @@ actor SessionActor {
         let ret = await callSsh {
             libssh2_knownhost_addc(knownHost.khHandle, fullhostname, empty, &kcopy, kcopy.count, comment, comment.utf8.count, LIBSSH2_KNOWNHOST_TYPE_PLAIN | LIBSSH2_KNOWNHOST_KEYENC_RAW | keyTypeCode, nil)
         }
-        
-        return libSsh2ErrorToString(error: ret)
+
+        return ret == 0 ? nil : libSsh2ErrorToString(error: ret)
     }
     public func disconnect (reason: Int32 = SSH_DISCONNECT_BY_APPLICATION, description: String) async {
         let _ = await callSsh {

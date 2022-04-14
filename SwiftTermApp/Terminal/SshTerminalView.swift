@@ -115,19 +115,16 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
 
         // Some servers only send 'password', and not 'keyboard-interactive', so we want to prompt
-        // the user here.   But if the server does provide a keyboard-interactive, we should wait
-        // until later, so we can get all the server prompts
+        // the user here.   On the other hand, some servers advertise keyboard-interactive, but
+        // fail if we attempt an interactive login.  Perhaps this needs a loop around the process
+        // to attempt the methods
         if authMethods.contains ("password") && host.usePassword {
             let password: String?
             if host.password == "" {
-                if !authMethods.contains ("keyboard-interactive"){
-                    logConnection("SSH: requesting keyboard input password")
-                    password = await Task.detached {
-                        self.passwordPrompt(challenge: "Enter password")
-                    }.value
-                } else {
-                    password = nil
-                }
+                logConnection("SSH: requesting keyboard input password")
+                password = await Task.detached {
+                    self.passwordPrompt(challenge: "Enter password")
+                }.value
             } else {
                 password = host.password
             }
@@ -265,6 +262,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             }
             return false
         }
+        session.activate(channel: channel)
+
         // Pass the environment variables
         for (envKey, envVar) in host.environmentVariables {
             await channel.setEnvironment(name: envKey, value: envVar)
@@ -282,7 +281,6 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
         if host.reconnectType == "tmux" {
             if await tmuxConnection (channel) {
-                session.activate(channel: channel)
                 return true
             }
         }
@@ -296,7 +294,6 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             return false
         }
         logConnection ("Shell started up, activating")
-        session.activate(channel: channel)
         
         // Now, make sure we process any data that might have been queued while we were setting up before the channel activation.
         let _ = await channel.ping()
