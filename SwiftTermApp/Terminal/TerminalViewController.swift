@@ -190,14 +190,17 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
         super.init ()
     }
 
+    // This might be called in a view that has no viewController
     func rehost ()
     {
         if let tv = terminalView {
-            viewController.view.addSubview(tv)
+            if let vc = viewController {
+                vc.view.addSubview(tv)
+            }
         }
     }
     
-    var viewController: TerminalViewController!
+    var viewController: TerminalViewController?
 
     func makeUIViewController(context: UIViewControllerRepresentableContext<SwiftUITerminal>) -> TerminalViewController {
         
@@ -205,15 +208,18 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
         case .host(host: let host, createNew: let createNew):
             if !createNew {
                 if let v = Connections.lookupActive(host: host) {
-                    viewController = TerminalViewController(terminalView: v, interactive: interactive)
-                    return viewController
+                    let ret = TerminalViewController(terminalView: v, interactive: interactive)
+                    viewController = ret
+                    return ret
                 }
             }
-            viewController = TerminalViewController (host: host, interactive: interactive, serial: -2)
-            return viewController
+            let ret = TerminalViewController (host: host, interactive: interactive, serial: -2)
+            viewController = ret
+            return ret
         case .rehost(rehost: let terminalView):
-            viewController = TerminalViewController(terminalView: terminalView, interactive: interactive)
-            return viewController
+            let ret = TerminalViewController(terminalView: terminalView, interactive: interactive)
+            viewController = ret
+            return ret
         }
     }
   
