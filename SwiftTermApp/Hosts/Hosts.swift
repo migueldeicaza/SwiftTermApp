@@ -177,26 +177,36 @@ struct HostsView : View {
                 self.showHostEdit = true
             }
 
-            List {
-                Section {
-                    ForEach(self.store.hosts.indices, id: \.self) { idx in
-                        iPadHostSummaryView (host: self.$store.hosts [idx])
+            if store.hosts.count == 0 {
+                HStack (alignment: .top){
+                    Image (systemName: "desktopcomputer")
+                        .font (.title)
+                    Text ("Create a host to define a machine you want to connect to.")
+                        .font (.body)
+                }.padding ()
+                Spacer ()
+            } else {
+                List {
+                    Section {
+                        ForEach(self.store.hosts.indices, id: \.self) { idx in
+                            iPadHostSummaryView (host: self.$store.hosts [idx])
+                        }
+                        .onDelete(perform: delete)
+                        .onMove(perform: move)
+                        //.environment(\.editMode, $editMode)
                     }
-                    .onDelete(perform: delete)
-                    .onMove(perform: move)
-                    //.environment(\.editMode, $editMode)
                 }
-            }
-            .listStyle(DefaultListStyle())
-            .navigationTitle(Text("Hosts"))
-            .toolbar {
-                ToolbarItem (placement: .navigationBarTrailing) {
-                    EditButton ()
+                .listStyle(DefaultListStyle())
+                .navigationTitle(Text("Hosts"))
+                .toolbar {
+                    ToolbarItem (placement: .navigationBarTrailing) {
+                        EditButton ()
+                    }
                 }
-            }
-            .sheet (isPresented: $showHostEdit) {
-                HostEditView(host: Host(), showingModal: self.$showHostEdit)
-            }
+                .sheet (isPresented: $showHostEdit) {
+                    HostEditView(host: Host(), showingModal: self.$showHostEdit)
+                }
+                }
         }
     }
 }

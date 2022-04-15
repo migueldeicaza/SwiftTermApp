@@ -42,25 +42,34 @@ struct KeyManagementView: View {
     var body: some View {
         VStack {
             CreateLocalKeyButtons ()
-            List {
-                
-//                STButton (text: "Import Key from File", icon: "folder.badge.plus", centered: false)
-//                    .onTapGesture {
-//                        self.addFromFileShown = true
-//                    }
-//                    .sheet (isPresented: self.$addFromFileShown, onDismiss: { self.addFromFileShown = false }) {
-//                        STFilePicker()
-//                    }
-                ForEach(store.keys.indices, id: \.self){ idx in
-                    KeySummaryView (key: self.$store.keys [idx], action: self.action)
-                }
-                .onDelete(perform: delete)
-                .onMove(perform: move)
-                .environment(\.editMode, $editMode)
-                .cornerRadius(10)
+            if store.keys.count != 0 {
+                HStack (alignment: .top){
+                    Image (systemName: "key")
+                        .font (.title)
+                    Text ("Keys allow you to easily log into hosts without having to type in passwords.\n\n[Learn More...](https://github.com/migueldeicaza/SwiftTermApp/wiki/Keys)")
+                        .font (.body)
+                }.padding ()
+                Spacer ()
+            } else {
+                List {
+                    
+    //                STButton (text: "Import Key from File", icon: "folder.badge.plus", centered: false)
+    //                    .onTapGesture {
+    //                        self.addFromFileShown = true
+    //                    }
+    //                    .sheet (isPresented: self.$addFromFileShown, onDismiss: { self.addFromFileShown = false }) {
+    //                        STFilePicker()
+    //                    }
+                    ForEach(store.keys.indices, id: \.self){ idx in
+                        KeySummaryView (key: self.$store.keys [idx], action: self.action)
+                    }
+                    .onDelete(perform: delete)
+                    .onMove(perform: move)
+                    .environment(\.editMode, $editMode)
+                    .cornerRadius(10)
+                }.listStyle(DefaultListStyle())
             }
         }
-        .listStyle(DefaultListStyle())
         .navigationTitle("Keys")
         .toolbar {
             ToolbarItem (placement: .navigationBarTrailing) {
