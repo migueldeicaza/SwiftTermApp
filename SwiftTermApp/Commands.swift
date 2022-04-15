@@ -71,48 +71,48 @@ struct TerminalCommands: Commands {
             Button ("Escape", action: {
                 guard let current = TerminalViewController.visibleTerminal else { return }
                 current.send([0x1b])
-            }).keyboardShortcut(KeyEquivalent("`"), modifiers: [.control])
+            }).keyboardShortcut(KeyEquivalent("["), modifiers: [.control])
             Button ("F1", action: {
                 guard let current = TerminalViewController.visibleTerminal else { return }
                 current.send(EscapeSequences.cmdF [0])
-            }).keyboardShortcut(KeyEquivalent ("1"), modifiers: [.command, .option])
+            }).keyboardShortcut(KeyEquivalent ("1"), modifiers: [.command, .shift])
             Button ("F2", action: {
                 guard let current = TerminalViewController.visibleTerminal else { return }
                 current.send(EscapeSequences.cmdF [1])
-            }).keyboardShortcut(KeyEquivalent ("2"), modifiers: [.command, .option])
+            }).keyboardShortcut(KeyEquivalent ("2"), modifiers: [.command, .shift])
             Button ("F3", action: {
                 guard let current = TerminalViewController.visibleTerminal else { return }
                 current.send(EscapeSequences.cmdF [2])
-            }).keyboardShortcut(KeyEquivalent ("3"), modifiers: [.command, .option])
+            }).keyboardShortcut(KeyEquivalent ("3"), modifiers: [.command, .shift])
             Button ("F4", action: {
                 guard let current = TerminalViewController.visibleTerminal else { return }
                 current.send(EscapeSequences.cmdF [3])
-            }).keyboardShortcut(KeyEquivalent ("4"), modifiers: [.command, .option])
+            }).keyboardShortcut(KeyEquivalent ("4"), modifiers: [.command, .shift])
             Button ("F5", action: {
                 guard let current = TerminalViewController.visibleTerminal else { return }
                 current.send(EscapeSequences.cmdF [4])
-            }).keyboardShortcut(KeyEquivalent ("5"), modifiers: [.command, .option])
+            }).keyboardShortcut(KeyEquivalent ("5"), modifiers: [.command, .shift])
             HStack {
                 Button ("F6", action: {
                     guard let current = TerminalViewController.visibleTerminal else { return }
                     current.send(EscapeSequences.cmdF [5])
-                }).keyboardShortcut(KeyEquivalent ("6"), modifiers: [.command, .option])
+                }).keyboardShortcut(KeyEquivalent ("6"), modifiers: [.command, .shift])
                 Button ("F7", action: {
                     guard let current = TerminalViewController.visibleTerminal else { return }
                     current.send(EscapeSequences.cmdF [6])
-                }).keyboardShortcut(KeyEquivalent ("7"), modifiers: [.command, .option])
+                }).keyboardShortcut(KeyEquivalent ("7"), modifiers: [.command, .shift])
                 Button ("F8", action: {
                     guard let current = TerminalViewController.visibleTerminal else { return }
                     current.send(EscapeSequences.cmdF [7])
-                }).keyboardShortcut(KeyEquivalent ("8"), modifiers: [.command, .option])
+                }).keyboardShortcut(KeyEquivalent ("8"), modifiers: [.command, .shift])
                 Button ("F9", action: {
                     guard let current = TerminalViewController.visibleTerminal else { return }
                     current.send(EscapeSequences.cmdF [8])
-                }).keyboardShortcut(KeyEquivalent ("9"), modifiers: [.command, .option])
+                }).keyboardShortcut(KeyEquivalent ("9"), modifiers: [.command, .shift])
                 Button ("F10", action: {
                     guard let current = TerminalViewController.visibleTerminal else { return }
                     current.send(EscapeSequences.cmdF [9])
-                }).keyboardShortcut(KeyEquivalent ("0"), modifiers: [.command, .option])
+                }).keyboardShortcut(KeyEquivalent ("0"), modifiers: [.command, .shift])
             }
         }
     }
