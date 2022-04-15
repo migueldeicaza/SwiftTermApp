@@ -91,10 +91,26 @@ public class MetalHost {
         startTime = CACurrentMediaTime()
         time = startTime
         deltaTime = 0
+        
+        let notificationCenter = NotificationCenter.default
+
+        notificationCenter.addObserver(self, selector: #selector(appMovedToBackground), name: UIApplication.willResignActiveNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(appMovedToForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
+    }
+    
+    @objc func appMovedToBackground () {
+        stopRunning()
+    }
+
+    @objc func appMovedToForeground () {
+        startRunning()
     }
     
     deinit {
         stopRunning()
+        let notificationCenter = NotificationCenter.default
+
+        notificationCenter.removeObserver(self)
     }
     
     static func makeRenderPipelineState (device: MTLDevice, library: MTLLibrary, fragmentFunction: String) -> MTLRenderPipelineState?
@@ -203,8 +219,8 @@ public class MetalHost {
         target.contentsScale = window.screen.nativeScale
         startRunning()
     }
+    
     @objc func tick (from displayLink: CADisplayLink) {
          redraw ()
     }
-    
 }
