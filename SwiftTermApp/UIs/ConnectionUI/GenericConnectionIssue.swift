@@ -23,8 +23,9 @@ struct GenericConnectionIssue: View, ConnectionMessage {
         VStack (alignment: .center){
             HStack (alignment: .center){
                 Image (systemName: "desktopcomputer.trianglebadge.exclamationmark")
+                    .symbolRenderingMode(.multicolor)
                     .resizable()
-                    .aspectRatio(1, contentMode: .fit)
+                    .aspectRatio(contentMode: .fit)
                     .frame(width: 30)
                     .padding (10)
                 Text ("\(host.alias)")
@@ -51,10 +52,10 @@ struct GenericConnectionIssue: View, ConnectionMessage {
 
 struct TmuxSessionGone_Previews: PreviewProvider {
     struct WrapperView: View {
-        var host = Host ()
+        var host = Host (alias: "dbserver", hostname: "dbserver.prod.east.com")
         
         var body: some View {
-            HostConnectionError(host: host, error: "Test")
+            HostConnectionError(host: host, error: "Other end got unhappy")
         }
     }
     static var previews: some View {

@@ -16,10 +16,12 @@ struct HostConnectionClosed: View {
     var body: some View {
         VStack (alignment: .center){
             HStack (alignment: .center){
+                
                 Image (systemName: receivedEOF ? "info.circle" : "desktopcomputer.trianglebadge.exclamationmark")
+                    .symbolRenderingMode(.multicolor)
                     .resizable()
-                    .aspectRatio(1, contentMode: .fit)
-                    .frame(width: 30)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 40)
                     .padding (10)
                 Text ("\(host.alias)")
                     .font(.title)
@@ -29,7 +31,7 @@ struct HostConnectionClosed: View {
             .background(Color(UIColor.secondarySystemBackground))
             //.background(.yellow)
             VStack (alignment: .center){
-                Text ("Connection to \(host.hostname):\(String (host.port))" + (receivedEOF ? " was closed" : " terminated"))
+                Text ("Connection to `\(host.hostname):\(String (host.port))` \(receivedEOF ? " was closed" : " terminated")")
                     .padding ([.bottom])
                 Spacer ()
                 HStack (alignment: .center, spacing: 20) {
@@ -50,7 +52,7 @@ struct HostConnectionClosed_Previews: PreviewProvider {
     }
     
     struct WrapperView: View {
-        var host = Host ()
+        var host = Host (alias: "dbserver", hostname: "dbserver-1.prod.com")
         
         var body: some View {
             HostConnectionClosed(host: host, receivedEOF: false)

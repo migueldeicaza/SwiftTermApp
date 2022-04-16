@@ -19,8 +19,10 @@ struct HostAuthUnknown: View {
         VStack (alignment: .leading){
             HStack (alignment: .center){
                 Image (systemName: "info.circle")
+                    .symbolRenderingMode(.hierarchical)
                     .resizable()
                     .aspectRatio(1, contentMode: .fit)
+                    .foregroundColor(Color.accentColor)
                     .frame(width: 30)
                     .padding (10)
                 Text ("Host: \(alias)")

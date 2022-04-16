@@ -90,6 +90,7 @@ struct ContentsFromFile: View {
             .sheet(isPresented: self.$pickerShown) {
                 FilePicker (callback: self.setTarget)
             }
+            .help ("Pick a file")
     }
 }
 

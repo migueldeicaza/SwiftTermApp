@@ -16,7 +16,7 @@ struct HostAuthKeyMismatch: View {
     
     var body: some View {
         VStack (alignment: .leading){
-            HStack (alignment: .center){
+            HStack (alignment: .top){
                 Image (systemName: "exclamationmark.triangle")
                     .resizable()
                     .aspectRatio(1, contentMode: .fit)

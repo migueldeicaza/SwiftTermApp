@@ -18,8 +18,9 @@ struct HostConnectionError: View {
         VStack (alignment: .center){
             HStack (alignment: .center){
                 Image (systemName: "desktopcomputer.trianglebadge.exclamationmark")
+                    .symbolRenderingMode(.multicolor)
                     .resizable()
-                    .aspectRatio(1, contentMode: .fit)
+                    .aspectRatio(contentMode: .fit)
                     .frame(width: 30)
                     .padding (10)
                 Text ("\(host.alias)")
@@ -30,7 +31,7 @@ struct HostConnectionError: View {
             .background(Color(UIColor.secondarySystemBackground))
             //.background(.yellow)
             VStack (alignment: .center){
-                Text ("Connection to \(host.hostname):\(String (host.port)): \(error)")
+                Text ("`\(host.hostname):\(String (host.port))` - Connection error\n\nDetails: \(error)")
                     .padding ([.bottom])
                 HStack (alignment: .center, spacing: 20) {
                     Button ("Ok") { ok () }
@@ -50,10 +51,10 @@ struct HostConnectionError_Previews: PreviewProvider {
     }
     
     struct WrapperView: View {
-        var host = Host ()
+        var host = Host (alias: "dbserver", hostname: "dbserver.domain.com")
         
         var body: some View {
-            HostConnectionError(host: host, error: "Test")
+            HostConnectionError(host: host, error: "Connection closed")
         }
     }
 }
