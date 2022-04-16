@@ -197,16 +197,16 @@ struct HostsView : View {
                     }
                 }
                 .listStyle(DefaultListStyle())
-                .navigationTitle(Text("Hosts"))
                 .toolbar {
                     ToolbarItem (placement: .navigationBarTrailing) {
                         EditButton ()
                     }
                 }
-                .sheet (isPresented: $showHostEdit) {
-                    HostEditView(host: Host(), showingModal: self.$showHostEdit)
-                }
-                }
+            }
+        }
+        .navigationTitle(Text("Hosts"))
+        .sheet (isPresented: $showHostEdit) {
+            HostEditView(host: Host(), showingModal: self.$showHostEdit)
         }
     }
 }
