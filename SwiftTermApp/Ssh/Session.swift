@@ -169,11 +169,13 @@ class Session: CustomDebugStringConvertible {
         if await authenticated {
             log ("SSH authenticated")
             await delegate.loggedIn(session: self)
+            await startTracking ()
         } else {
             log ("SSH loginFailed")
             delegate.loginFailed (session: self, details: failureReason ?? "Internal error: authentication claims it worked, but libssh2 state indicates it is not authenticated")
         }
     }
+
     
     /// Determines if the session has been authenticated
     public var authenticated: Bool {
@@ -361,6 +363,10 @@ class Session: CustomDebugStringConvertible {
         await sessionActor.disconnect (reason: reason, description: description)
     }
 
+    var track: HostTracking?
+    func startTracking () async {
+        track = await HostTracking (self)
+    }
 }
 
 /// A session powered by an NWConnection socket
@@ -491,6 +497,7 @@ class SocketSession: Session {
     // all registered channels that new data is available, so they can pull and process.
     func pingChannels () {
         Task {
+            print ("pinging channels")
             // This lock is taken for too long over the iteration of the contents of channel
             // in the future, we could track which channels are dead, and then remove the
             // channels from channels, rather than the old race condition where the value
