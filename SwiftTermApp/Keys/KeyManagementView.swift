@@ -42,7 +42,7 @@ struct KeyManagementView: View {
     var body: some View {
         VStack {
             CreateLocalKeyButtons ()
-            if store.keys.count != 0 {
+            if store.keys.count == 0 {
                 HStack (alignment: .top){
                     Image (systemName: "key")
                         .font (.title)
