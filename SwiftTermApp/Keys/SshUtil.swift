@@ -7,7 +7,7 @@
 //  Copyright © 2020 Miguel de Icaza. All rights reserved.
 //
 import Foundation
-import Instabug
+
 @_implementationOnly import CSSH
 
 class SshUtil {
