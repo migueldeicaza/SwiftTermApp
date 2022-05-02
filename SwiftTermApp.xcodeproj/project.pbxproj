@@ -20,6 +20,8 @@
 		49011692245622C6002C1F85 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49011691245622C6002C1F85 /* DataStore.swift */; };
 		490A187D26AA60980034B2BF /* HostConnectionError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490A187C26AA60980034B2BF /* HostConnectionError.swift */; };
 		4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4911B3032463AD3E00816BAA /* GenerateKey.swift */; };
+		4912EB6228207D210083638C /* swiftui-introspect.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4912EB6128207D210083638C /* swiftui-introspect.txt */; };
+		4912EB6828207E5C0083638C /* Introspect in Frameworks */ = {isa = PBXBuildFile; productRef = 4912EB6728207E5C0083638C /* Introspect */; };
 		49148F99268AB0B0000AB718 /* InputKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49148F98268AB0B0000AB718 /* InputKeyboard.swift */; };
 		49184C5D27BC1BA900335BFB /* ConnectionMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49184C5C27BC1BA900335BFB /* ConnectionMessage.swift */; };
 		49184C5F27BC1CAA00335BFB /* GenericConnectionIssue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49184C5E27BC1CAA00335BFB /* GenericConnectionIssue.swift */; };
@@ -133,6 +135,8 @@
 		490A187226A7BE190034B2BF /* SwiftTermApp.UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwiftTermApp.UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		490A187C26AA60980034B2BF /* HostConnectionError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostConnectionError.swift; sourceTree = "<group>"; };
 		4911B3032463AD3E00816BAA /* GenerateKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateKey.swift; sourceTree = "<group>"; };
+		4912EB6128207D210083638C /* swiftui-introspect.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swiftui-introspect.txt"; sourceTree = "<group>"; };
+		4912EB69282087530083638C /* SwiftTerm */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SwiftTerm; path = ../SwiftTerm; sourceTree = "<group>"; };
 		49148F98268AB0B0000AB718 /* InputKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputKeyboard.swift; sourceTree = "<group>"; };
 		49184C5C27BC1BA900335BFB /* ConnectionMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionMessage.swift; sourceTree = "<group>"; };
 		49184C5E27BC1CAA00335BFB /* GenericConnectionIssue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericConnectionIssue.swift; sourceTree = "<group>"; };
@@ -222,6 +226,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				02C2FCC8282017A9005EDEC2 /* Shake in Frameworks */,
+				4912EB6828207E5C0083638C /* Introspect in Frameworks */,
 				49C1B6AF24625C7D00D54F6F /* SwiftTerm in Frameworks */,
 				4928BDEB27BF09BE00C180E6 /* CSSH in Frameworks */,
 			);
@@ -247,6 +252,7 @@
 		4901166924553789002C1F85 = {
 			isa = PBXGroup;
 			children = (
+				4912EB69282087530083638C /* SwiftTerm */,
 				4943DA6027F388C700E4E2F5 /* ci_scripts */,
 				4901167424553789002C1F85 /* SwiftTermApp */,
 				49F1D13F27DAB782004A9CB1 /* UITests */,
@@ -564,6 +570,7 @@
 				49F1D13327DA5F11004A9CB1 /* openssl_1_1_1h.txt */,
 				49F1D13527DA5F11004A9CB1 /* swcrypt.txt */,
 				49F1D13227DA5F11004A9CB1 /* swiftterm.txt */,
+				4912EB6128207D210083638C /* swiftui-introspect.txt */,
 			);
 			path = Licenses;
 			sourceTree = "<group>";
@@ -597,6 +604,7 @@
 				49C1B6AE24625C7D00D54F6F /* SwiftTerm */,
 				4928BDEA27BF09BE00C180E6 /* CSSH */,
 				02C2FCC7282017A9005EDEC2 /* Shake */,
+				4912EB6728207E5C0083638C /* Introspect */,
 			);
 			productName = testMasterDetail;
 			productReference = 4901167224553789002C1F85 /* SwiftTermApp.app */;
@@ -675,6 +683,7 @@
 				49C1B6AD24625C7D00D54F6F /* XCRemoteSwiftPackageReference "SwiftTerm" */,
 				4928BDE927BF09BE00C180E6 /* XCRemoteSwiftPackageReference "Libssh2Prebuild" */,
 				02C2FCC6282017A9005EDEC2 /* XCRemoteSwiftPackageReference "shake-ios" */,
+				4912EB6628207E5C0083638C /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */,
 			);
 			productRefGroup = 4901167324553789002C1F85 /* Products */;
 			projectDirPath = "";
@@ -701,6 +710,7 @@
 				495512CF2800BD2A00B4CDA2 /* SourceCodePro-Bold.ttf in Resources */,
 				495512D02800BD2A00B4CDA2 /* SourceCodePro-BoldItalic.ttf in Resources */,
 				4901167C2455378A002C1F85 /* Assets.xcassets in Resources */,
+				4912EB6228207D210083638C /* swiftui-introspect.txt in Resources */,
 				495512CB2800BBB800B4CDA2 /* source-code-pro.txt in Resources */,
 				49F1D13827DA5F11004A9CB1 /* libssh.txt in Resources */,
 				495512C92800BAE600B4CDA2 /* SourceCodePro-Medium.ttf in Resources */,
@@ -1151,17 +1161,25 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		4928BDE927BF09BE00C180E6 /* XCRemoteSwiftPackageReference "Libssh2Prebuild" */ = {
+		02C2FCC6282017A9005EDEC2 /* XCRemoteSwiftPackageReference "shake-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/migueldeicaza/Libssh2Prebuild";
+			repositoryURL = "https://github.com/shakebugs/shake-ios";
 			requirement = {
 				branch = master;
 				kind = branch;
 			};
 		};
-		02C2FCC6282017A9005EDEC2 /* XCRemoteSwiftPackageReference "shake-ios" */ = {
+		4912EB6628207E5C0083638C /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/shakebugs/shake-ios";
+			repositoryURL = "https://github.com/siteline/SwiftUI-Introspect.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.4;
+			};
+		};
+		4928BDE927BF09BE00C180E6 /* XCRemoteSwiftPackageReference "Libssh2Prebuild" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/migueldeicaza/Libssh2Prebuild";
 			requirement = {
 				branch = master;
 				kind = branch;
@@ -1182,6 +1200,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 02C2FCC6282017A9005EDEC2 /* XCRemoteSwiftPackageReference "shake-ios" */;
 			productName = Shake;
+		};
+		4912EB6728207E5C0083638C /* Introspect */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4912EB6628207E5C0083638C /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */;
+			productName = Introspect;
 		};
 		4928BDEA27BF09BE00C180E6 /* CSSH */ = {
 			isa = XCSwiftPackageProductDependency;

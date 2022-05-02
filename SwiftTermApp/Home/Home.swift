@@ -8,6 +8,7 @@
 
 import SwiftUI
 import Shake
+import Introspect
 
 struct ContentView: View {
 #if os(iOS)
@@ -40,12 +41,36 @@ struct CompactHomeView: View {
 }
 
 struct LargeHomeView: View {
-    
+    @State var controller: UISplitViewController?
+    @State var savedMode: UISplitViewController.DisplayMode = .automatic
+    @Environment(\.scenePhase) var scenePhase
+
     var body: some View {
         NavigationView {
             HomeView ()
+            
             DefaultHomeView ()
+        }.introspectSplitViewController { x in
+            controller = x
+            savedMode = x.displayMode
+        }.onChange(of: scenePhase) { newPhase in
+            switch newPhase {
+            case .active:
+                if let c = controller {
+                    c.preferredDisplayMode = savedMode
+                }
+                
+                break
+            case .inactive:
+                break
+            case .background:
+                savedMode = controller?.displayMode ?? UISplitViewController.DisplayMode.automatic
+                break
+            default:
+                break
+            }
         }
+
     }
 }
 
