@@ -1,1 +1,2 @@
-let instabugKey = ""
+let shakeId = ""
+let shakeKey = ""

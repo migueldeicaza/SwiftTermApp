@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02C2FCC8282017A9005EDEC2 /* Shake in Frameworks */ = {isa = PBXBuildFile; productRef = 02C2FCC7282017A9005EDEC2 /* Shake */; };
 		4901167624553789002C1F85 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901167524553789002C1F85 /* AppDelegate.swift */; };
 		4901167A24553789002C1F85 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901167924553789002C1F85 /* Home.swift */; };
 		4901167C2455378A002C1F85 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4901167B2455378A002C1F85 /* Assets.xcassets */; };
@@ -38,7 +39,6 @@
 		4943DA6627F4B11A00E4E2F5 /* HistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA6527F4B11A00E4E2F5 /* HistoryController.swift */; };
 		4943DA6927F4B5BB00E4E2F5 /* History.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA6727F4B5BB00E4E2F5 /* History.xcdatamodeld */; };
 		4943DA6C27F5F90B00E4E2F5 /* DateFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA6B27F5F90B00E4E2F5 /* DateFormatting.swift */; };
-		4943DA8B27FB633B00E4E2F5 /* Instabug in Frameworks */ = {isa = PBXBuildFile; productRef = 4943DA8A27FB633B00E4E2F5 /* Instabug */; };
 		4943DA8E27FB712F00E4E2F5 /* Onboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA8D27FB712F00E4E2F5 /* Onboard.swift */; };
 		4943DA9027FB754500E4E2F5 /* OnboardWelcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA8F27FB754500E4E2F5 /* OnboardWelcome.swift */; };
 		4943DA9827FC87DE00E4E2F5 /* RecentHostsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA9727FC87DE00E4E2F5 /* RecentHostsView.swift */; };
@@ -224,7 +224,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4943DA8B27FB633B00E4E2F5 /* Instabug in Frameworks */,
+				02C2FCC8282017A9005EDEC2 /* Shake in Frameworks */,
 				49C1B6AF24625C7D00D54F6F /* SwiftTerm in Frameworks */,
 				4928BDEB27BF09BE00C180E6 /* CSSH in Frameworks */,
 			);
@@ -609,7 +609,7 @@
 			packageProductDependencies = (
 				49C1B6AE24625C7D00D54F6F /* SwiftTerm */,
 				4928BDEA27BF09BE00C180E6 /* CSSH */,
-				4943DA8A27FB633B00E4E2F5 /* Instabug */,
+				02C2FCC7282017A9005EDEC2 /* Shake */,
 			);
 			productName = testMasterDetail;
 			productReference = 4901167224553789002C1F85 /* SwiftTermApp.app */;
@@ -687,7 +687,7 @@
 			packageReferences = (
 				49C1B6AD24625C7D00D54F6F /* XCRemoteSwiftPackageReference "SwiftTerm" */,
 				4928BDE927BF09BE00C180E6 /* XCRemoteSwiftPackageReference "Libssh2Prebuild" */,
-				4943DA8927FB633B00E4E2F5 /* XCRemoteSwiftPackageReference "Instabug-SP" */,
+				02C2FCC6282017A9005EDEC2 /* XCRemoteSwiftPackageReference "shake-ios" */,
 			);
 			productRefGroup = 4901167324553789002C1F85 /* Products */;
 			projectDirPath = "";
@@ -1173,12 +1173,12 @@
 				kind = branch;
 			};
 		};
-		4943DA8927FB633B00E4E2F5 /* XCRemoteSwiftPackageReference "Instabug-SP" */ = {
+		02C2FCC6282017A9005EDEC2 /* XCRemoteSwiftPackageReference "shake-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Instabug/Instabug-SP";
+			repositoryURL = "https://github.com/shakebugs/shake-ios";
 			requirement = {
-				kind = revision;
-				revision = 498b2bb7dd418c8faf24f41ed20c48a3de977a7e;
+				branch = master;
+				kind = branch;
 			};
 		};
 		49C1B6AD24625C7D00D54F6F /* XCRemoteSwiftPackageReference "SwiftTerm" */ = {
@@ -1192,15 +1192,15 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		02C2FCC7282017A9005EDEC2 /* Shake */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 02C2FCC6282017A9005EDEC2 /* XCRemoteSwiftPackageReference "shake-ios" */;
+			productName = Shake;
+		};
 		4928BDEA27BF09BE00C180E6 /* CSSH */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4928BDE927BF09BE00C180E6 /* XCRemoteSwiftPackageReference "Libssh2Prebuild" */;
 			productName = CSSH;
-		};
-		4943DA8A27FB633B00E4E2F5 /* Instabug */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4943DA8927FB633B00E4E2F5 /* XCRemoteSwiftPackageReference "Instabug-SP" */;
-			productName = Instabug;
 		};
 		49C1B6AE24625C7D00D54F6F /* SwiftTerm */ = {
 			isa = XCSwiftPackageProductDependency;
