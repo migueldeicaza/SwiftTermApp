@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import Instabug
+import Shake
 
 struct ContentView: View {
 #if os(iOS)
@@ -216,7 +216,7 @@ struct HomeView: View {
                         Label("Credits", systemImage: "info.circle")
                     })
                 Button (
-                    action: Instabug.show,
+                    action: Shake.show,
                     label: {
                         Label("Support", systemImage: "questionmark.circle")
                     })

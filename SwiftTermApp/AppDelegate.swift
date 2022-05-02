@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Instabug
+import Shake
 var globalHistoryController = HistoryController()
 
 @main
@@ -26,27 +26,8 @@ struct SampleApp: App {
         }
     }
     init () {
-        if instabugKey != "" {
-            Instabug.start(withToken: instabugKey, invocationEvents: [.shake, .screenshot])
-            Instabug.welcomeMessageMode = IBGWelcomeMessageMode.beta
-
-            // "beta" mode messages
-            Instabug.setValue(
-                "Welcome to the SwiftTermApp beta!", forStringWithKey: kIBGBetaWelcomeMessageWelcomeStepTitle)
-            Instabug.setValue(
-                "Thanks for helping us improve SwiftTermApp. We are looking forward to hearing your feedback.", forStringWithKey: kIBGBetaWelcomeMessageWelcomeStepContent)
-            
-            Instabug.setValue(
-                "How to report a bug?", forStringWithKey: kIBGBetaWelcomeMessageHowToReportStepTitle)
-            Instabug.setValue(
-                "Shake your device or use the 'Support' menu option to report a bug or to share feedback or a feature request.", forStringWithKey: kIBGBetaWelcomeMessageHowToReportStepContent)
-            
-            Instabug.setValue(
-                "Happy SSHing!", forStringWithKey: kIBGBetaWelcomeMessageFinishStepTitle)
-            Instabug.setValue(
-                "We're hard at work on the next SwiftTermApp release. Be sure to check TestFlight for new releases to make sure you're getting the best experience.", forStringWithKey: kIBGBetaWelcomeMessageFinishStepContent)
-
-            NetworkLogger.enabled = false
+        if shakeKey != "" {
+            Shake.start(clientId: shakeId, clientSecret: shakeKey)
         }
         if settings.locationTrack {
             locationTrackerStart()
