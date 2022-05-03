@@ -25,6 +25,11 @@ class Settings: ObservableObject {
         }
     }
     
+    @Published var promptShown: Bool = false {
+        didSet {
+            defaults?.set (promptShown, forKey: "NetworkPromptShown")
+        }
+    }
     @Published var locationTrack: Bool = false {
         didSet {
             if locationTrack {

@@ -22,6 +22,7 @@
 		4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4911B3032463AD3E00816BAA /* GenerateKey.swift */; };
 		4912EB6228207D210083638C /* swiftui-introspect.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4912EB6128207D210083638C /* swiftui-introspect.txt */; };
 		4912EB6828207E5C0083638C /* Introspect in Frameworks */ = {isa = PBXBuildFile; productRef = 4912EB6728207E5C0083638C /* Introspect */; };
+		4912EB6B2821D99B0083638C /* TriggerConnectionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4912EB6A2821D99B0083638C /* TriggerConnectionRequest.swift */; };
 		49148F99268AB0B0000AB718 /* InputKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49148F98268AB0B0000AB718 /* InputKeyboard.swift */; };
 		49184C5D27BC1BA900335BFB /* ConnectionMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49184C5C27BC1BA900335BFB /* ConnectionMessage.swift */; };
 		49184C5F27BC1CAA00335BFB /* GenericConnectionIssue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49184C5E27BC1CAA00335BFB /* GenericConnectionIssue.swift */; };
@@ -137,6 +138,7 @@
 		4911B3032463AD3E00816BAA /* GenerateKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateKey.swift; sourceTree = "<group>"; };
 		4912EB6128207D210083638C /* swiftui-introspect.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swiftui-introspect.txt"; sourceTree = "<group>"; };
 		4912EB69282087530083638C /* SwiftTerm */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SwiftTerm; path = ../SwiftTerm; sourceTree = "<group>"; };
+		4912EB6A2821D99B0083638C /* TriggerConnectionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriggerConnectionRequest.swift; sourceTree = "<group>"; };
 		49148F98268AB0B0000AB718 /* InputKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputKeyboard.swift; sourceTree = "<group>"; };
 		49184C5C27BC1BA900335BFB /* ConnectionMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionMessage.swift; sourceTree = "<group>"; };
 		49184C5E27BC1CAA00335BFB /* GenericConnectionIssue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericConnectionIssue.swift; sourceTree = "<group>"; };
@@ -334,6 +336,7 @@
 				498DC727279A09FA003EC3CC /* LibsshKnownHost.swift */,
 				49B49D9B27A9B7F00031A9AE /* SFTP.swift */,
 				49B49DB027AC70B40031A9AE /* SessionActor.swift */,
+				4912EB6A2821D99B0083638C /* TriggerConnectionRequest.swift */,
 			);
 			path = Ssh;
 			sourceTree = "<group>";
@@ -775,6 +778,7 @@
 				49B49DB327B218960031A9AE /* DataExtensions.swift in Sources */,
 				4967BA0224592D3600A9D2A6 /* SessionsView.swift in Sources */,
 				49BA35F1267C3F2600B63510 /* CreditsView.swift in Sources */,
+				4912EB6B2821D99B0083638C /* TriggerConnectionRequest.swift in Sources */,
 				49B49DB127AC70B40031A9AE /* SessionActor.swift in Sources */,
 				498DC728279A09FA003EC3CC /* LibsshKnownHost.swift in Sources */,
 				4973B42C24650B440087D978 /* UIViewController+SwiftUI.swift in Sources */,
