@@ -1,0 +1,41 @@
+{
+  "pins" : [
+    {
+      "identity" : "libssh2prebuild",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/migueldeicaza/Libssh2Prebuild",
+      "state" : {
+        "branch" : "master",
+        "revision" : "2b9a34880aa7906a76872ac03077ea5aa313c72b"
+      }
+    },
+    {
+      "identity" : "shake-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/shakebugs/shake-ios",
+      "state" : {
+        "branch" : "master",
+        "revision" : "c94e4c9437f1c1f8090f494a80ef7a1345f5fa1c"
+      }
+    },
+    {
+      "identity" : "swiftterm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/migueldeicaza/SwiftTerm.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "f2c34f123dad7a42ba8fc8b8286dc3ca0b42b37d"
+      }
+    },
+    {
+      "identity" : "swiftui-introspect",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/siteline/SwiftUI-Introspect.git",
+      "state" : {
+        "revision" : "f2616860a41f9d9932da412a8978fec79c06fe24",
+        "version" : "0.1.4"
+      }
+    }
+  ],
+  "version" : 2
+}
