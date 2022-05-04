@@ -1,0 +1,34 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "CSSH",
+        "repositoryURL": "https://github.com/migueldeicaza/Libssh2Prebuild",
+        "state": {
+          "branch": "master",
+          "revision": "2b9a34880aa7906a76872ac03077ea5aa313c72b",
+          "version": null
+        }
+      },
+      {
+        "package": "Shake",
+        "repositoryURL": "https://github.com/shakebugs/shake-ios",
+        "state": {
+          "branch": "master",
+          "revision": "c94e4c9437f1c1f8090f494a80ef7a1345f5fa1c",
+          "version": null
+        }
+      },
+      {
+        "package": "Introspect",
+        "repositoryURL": "https://github.com/siteline/SwiftUI-Introspect.git",
+        "state": {
+          "branch": null,
+          "revision": "f2616860a41f9d9932da412a8978fec79c06fe24",
+          "version": "0.1.4"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
