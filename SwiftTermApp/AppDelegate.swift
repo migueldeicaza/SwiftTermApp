@@ -28,6 +28,9 @@ struct SampleApp: App {
     init () {
         if shakeKey != "" {
             Shake.start(clientId: shakeId, clientSecret: shakeKey)
+            if let userId = UIDevice.current.identifierForVendor?.uuidString {
+                Shake.registerUser(userId: userId)
+            }
         }
         if settings.locationTrack {
             locationTrackerStart()
