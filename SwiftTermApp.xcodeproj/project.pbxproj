@@ -141,7 +141,6 @@
 		49184C5C27BC1BA900335BFB /* ConnectionMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionMessage.swift; sourceTree = "<group>"; };
 		49184C5E27BC1CAA00335BFB /* GenericConnectionIssue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericConnectionIssue.swift; sourceTree = "<group>"; };
 		4923C56527319336000CC371 /* LocationTracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationTracking.swift; sourceTree = "<group>"; };
-		4933CB60280BB7FD00565B2A /* SwiftTerm */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SwiftTerm; path = ../SwiftTerm; sourceTree = "<group>"; };
 		4933CB62280C5C2700565B2A /* HostTracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostTracking.swift; sourceTree = "<group>"; };
 		493F4F2F27613F1B00838AC7 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		493F4F3127650E7800838AC7 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
@@ -523,7 +522,6 @@
 		49C1B6B8246263F100D54F6F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				4933CB60280BB7FD00565B2A /* SwiftTerm */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
