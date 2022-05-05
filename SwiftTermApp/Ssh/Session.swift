@@ -74,15 +74,17 @@ class Session: CustomDebugStringConvertible {
     // Where we post interesting events about this session
     weak var delegate: SessionDelegate!
     
+    var host: Host
+    
     // Turns the libssh2 abstract pointer (which is a pointer to the value passed) into a strong type
     static func getSession (from abstract: UnsafeRawPointer) -> Session {
         let ptr = abstract.bindMemory(to: UnsafeRawPointer.self, capacity: 1)
         return Unmanaged<Session>.fromOpaque(ptr.pointee).takeUnretainedValue()
     }
     
-    public init (delegate: SessionDelegate, send: @escaping socketCbType, recv: @escaping socketCbType, disconnect: @escaping disconnectCbType, debug: @escaping debugCbType) {
+    public init (host: Host, delegate: SessionDelegate, send: @escaping socketCbType, recv: @escaping socketCbType, disconnect: @escaping disconnectCbType, debug: @escaping debugCbType) {
         self.delegate = delegate
-        
+        self.host = host
         channelsLock = NSLock ()
         
         // Init this first, we will wipe it out soon enough
@@ -371,16 +373,11 @@ class Session: CustomDebugStringConvertible {
 /// The NWConnection read loop will pull data on a dedicated network queue and place accumulate the
 /// results in buffers that are later pulled out from the SSH queue.
 class SocketSession: Session {
-    var host: String
-    var port: UInt16
     var connection: NWConnection
     static var networkQueue: DispatchQueue = DispatchQueue.global (qos: .userInitiated)
     
     /// Creates a SocketSession to the specified host and port, using the provided delegate
-    public init (host: String, port: UInt16, delegate: SessionDelegate) {
-        self.host = host
-        self.port = port
-        
+    public init (host: Host, delegate: SessionDelegate) {
         let send: socketCbType = { socket, buffer, length, flags, abstract in
             let n = SocketSession.send_callback(socket: socket, buffer: buffer, length: length, flags: flags, abstract: abstract)
             if debugIO {
@@ -411,9 +408,9 @@ class SocketSession: Session {
             let session = SocketSession.getSocketSession(from: abstract)
             session.delegate.debug(session: session, alwaysDisplay: alwaysDisplay != 0, message: msg, language: lang)
         }
-        delegate.logConnection("NWConnection to \(host):\(port)")
-        connection = NWConnection(host: NWEndpoint.Host (host), port: NWEndpoint.Port (integerLiteral: port), using: .tcp)
-        super.init(delegate: delegate, send: send, recv: recv, disconnect: disconnect, debug: debug)
+        delegate.logConnection("NWConnection to \(host.hostname):\(host.port)")
+        connection = NWConnection(host: NWEndpoint.Host (host.hostname), port: NWEndpoint.Port (integerLiteral: UInt16 (host.port & 0xffff)), using: .tcp)
+        super.init(host: host, delegate: delegate, send: send, recv: recv, disconnect: disconnect, debug: debug)
         
         connection.stateUpdateHandler = connectionStateHandler
         connection.start (queue: SocketSession.networkQueue)
@@ -430,7 +427,7 @@ class SocketSession: Session {
 
     override var debugDescription: String {
         get {
-            return "SocketSession on \(host):\(port) status=\(connection.state)"
+            return "SocketSession on \(host.hostname):\(host.port) status=\(connection.state)"
         }
     }
     

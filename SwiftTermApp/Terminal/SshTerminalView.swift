@@ -198,7 +198,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     func attemptReconnect () -> Bool {
         if self.host.reconnectType == "tmux" {
             self.session.shutdown()
-            self.session = SocketSession(host: host.hostname, port: UInt16 (host.port & 0xffff), delegate: self)
+            self.session = SocketSession(host: host, delegate: self)
             return true
         }
         return false
@@ -482,7 +482,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         feed (text: "Welcome to SwiftTerm\r\n\n")
         startConnectionMonitor ()
         logConnection("Starting connection to \(host.hostname)")
-        session = SocketSession(host: host.hostname, port: UInt16 (host.port & 0xffff), delegate: self)
+        session = SocketSession(host: host, delegate: self)
         if !useDefaultBackground {
             updateBackground(background: host.background)
         }
