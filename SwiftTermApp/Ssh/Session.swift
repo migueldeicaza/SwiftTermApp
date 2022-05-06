@@ -13,11 +13,14 @@ import Foundation
 import Network
 import CryptoKit
 
+// Necessary for the UI pieces
+import SwiftUI
+
 @_implementationOnly import CSSH
 
 protocol SessionDelegate: AnyObject {
     /// Called to validate the integridy of the host, returns true if we should proceed, or false if there is a problem
-    func checkHostIntegrity () async -> Bool
+    //func checkHostIntegrity () async -> Bool
     
     /// Called to authenticate the user on the network queue, once the
     /// connection has been established.
@@ -42,6 +45,9 @@ protocol SessionDelegate: AnyObject {
     
     /// Invoked to log connection startup information
     func logConnection (_ msg: String)
+    
+    /// Gets a UIViewController to host error messages
+    func getParentViewController () -> UIViewController?
 }
 
 /// We execute all calls to libssh2 on the ssh queue.
@@ -146,6 +152,113 @@ class Session: CustomDebugStringConvertible {
     
     public private(set) var banner: String = ""
     
+    func getHostName (host: Host) -> String {
+        if host.port != 22 {
+            return "\(host.hostname):\(host.port)"
+        }
+        return host.hostname
+    }
+    
+    
+    
+    /// Checks that we are connecting to the host we thought we were,
+    /// this uses and updates the `known_hosts` database to track the
+    /// known hosts
+    ///
+    /// Returns true on success, false on error
+    func checkHostIntegrity () async -> Bool {
+        guard let knownHosts = await makeKnownHost() else {
+            return false
+        }
+        
+        @MainActor
+        func getFingerPrint () async -> String {
+            guard let bytes = await getFingerprintBytes() else { return "Unknown" }
+            let d = Data (bytes)
+            return "SHA256:" + d.base64EncodedString()
+        }
+        
+        func closeConnection (description: String) {
+            
+        }
+        
+        @MainActor
+        func confirmHostAuthUnknown (hostKeyType: String, key: [Int8], fingerprint: String, knownHosts: LibsshKnownHost, host: Host) async -> Bool {
+
+            let ok: Bool = await withCheckedContinuation { c in
+                if let parent = delegate.getParentViewController() {
+                    var window: UIHostingController<HostAuthUnknown>!
+                    window = UIHostingController<HostAuthUnknown>(rootView: HostAuthUnknown(alias: self.host.alias, hostString: getHostName(host: host), fingerprint: fingerprint, cancelCallback: {
+                            // TODO: Connections.remove(self)
+                            window.dismiss (animated: true) { c.resume(returning: false) }
+                        }, okCallback: {
+                            window.dismiss (animated: true) {
+                                c.resume(returning: true)
+                            }
+                        }))
+                    parent.present(window, animated: true, completion: nil)
+                } else {
+                    c.resume(returning: false)
+                }
+            }
+            
+            if ok {
+                if let addError = await knownHosts.add(hostname: self.host.hostname, port: Int32 (self.host.port), key: key, keyType: hostKeyType, comment: self.host.alias) {
+                    print ("Error adding host to knownHosts: \(addError)")
+                }
+                if let writeError = await knownHosts.writeFile(filename: DataStore.shared.knownHostsPath) {
+                    print ("Error writing knownhosts file \(writeError)")
+                }
+                DataStore.shared.loadKnownHosts()
+            }
+            return ok
+        }
+        @MainActor
+        func showHostKeyMismatch (fingerprint: String) async {
+            let _: Void = await withCheckedContinuation { c in
+                //TODO: Connections.remove (self)
+                if let parent = delegate.getParentViewController() {
+                    var window: UIHostingController<HostAuthKeyMismatch>!
+                    
+                    window = UIHostingController<HostAuthKeyMismatch>(rootView: HostAuthKeyMismatch(alias: self.host.alias, hostString: self.getHostName(host: host), fingerprint: fingerprint, callback: {
+                        window.dismiss(animated: true, completion: {
+                            c.resume()
+                        })
+                        
+                    }))
+                    parent.present(window, animated: true, completion: nil)
+                }
+            }
+        }
+        
+        let _ = await knownHosts.readFile (filename: DataStore.shared.knownHostsPath)
+        
+        if let keyAndType = await hostKey() {
+            let res = knownHosts.check (hostName: host.hostname, port: Int32 (host.port), key: keyAndType.key)
+            let hostKeyType = SshUtil.keyTypeName (keyAndType.type)
+            
+//            var k: KnownHostStatus = .keyMismatch
+//            switch k {
+            switch res.status {
+            case .notFound, .failure:
+                if await confirmHostAuthUnknown(hostKeyType: hostKeyType, key: keyAndType.key, fingerprint: await getFingerPrint(), knownHosts: knownHosts, host: host) {
+                    return true
+                }
+                await disconnect(description: "User did not accept this host")
+                return false
+
+            case .keyMismatch:
+                await showHostKeyMismatch (fingerprint: await getFingerPrint())
+                await disconnect(description: "Known host key mismatch")
+                return false
+            case .match:
+                // We are good!
+                break
+            }
+        }
+        return true
+    }
+    
     func setupSshConnection () async
     {
         log ("SSH: sending handshake")
@@ -157,7 +270,7 @@ class Session: CustomDebugStringConvertible {
             // TODO: handle this one
         }
         banner = await sessionActor.getBanner ()
-        if await !delegate.checkHostIntegrity () {
+        if await !checkHostIntegrity () {
             log ("SSH: Host integrity failed")
             return 
         }
