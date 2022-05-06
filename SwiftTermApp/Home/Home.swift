@@ -241,7 +241,7 @@ struct HomeView: View {
                         Label("Credits", systemImage: "info.circle")
                     })
                 Button (
-                    action: Shake.show,
+                    action: { Shake.show(.home) },
                     label: {
                         Label("Support", systemImage: "questionmark.circle")
                     })
