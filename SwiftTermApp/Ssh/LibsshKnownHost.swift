@@ -28,7 +28,7 @@ class LibsshKnownHost {
         
         let r = libssh2_knownhost_checkp(khHandle, hostName, port, &kcopy, key.count, LIBSSH2_KNOWNHOST_TYPE_PLAIN | LIBSSH2_KNOWNHOST_KEYENC_RAW, &ptr)
         defer {
-            ptr?.deallocate()
+            //ptr?.deallocate()
         }
         switch r {
             

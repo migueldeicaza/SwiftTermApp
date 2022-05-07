@@ -22,6 +22,7 @@
 		4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4911B3032463AD3E00816BAA /* GenerateKey.swift */; };
 		4912EB6228207D210083638C /* swiftui-introspect.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4912EB6128207D210083638C /* swiftui-introspect.txt */; };
 		4912EB6828207E5C0083638C /* Introspect in Frameworks */ = {isa = PBXBuildFile; productRef = 4912EB6728207E5C0083638C /* Introspect */; };
+		4912EB752826EE1F0083638C /* Dialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4912EB742826EE1F0083638C /* Dialogs.swift */; };
 		49148F99268AB0B0000AB718 /* InputKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49148F98268AB0B0000AB718 /* InputKeyboard.swift */; };
 		49184C5D27BC1BA900335BFB /* ConnectionMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49184C5C27BC1BA900335BFB /* ConnectionMessage.swift */; };
 		49184C5F27BC1CAA00335BFB /* GenericConnectionIssue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49184C5E27BC1CAA00335BFB /* GenericConnectionIssue.swift */; };
@@ -136,6 +137,7 @@
 		490A187C26AA60980034B2BF /* HostConnectionError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostConnectionError.swift; sourceTree = "<group>"; };
 		4911B3032463AD3E00816BAA /* GenerateKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateKey.swift; sourceTree = "<group>"; };
 		4912EB6128207D210083638C /* swiftui-introspect.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swiftui-introspect.txt"; sourceTree = "<group>"; };
+		4912EB742826EE1F0083638C /* Dialogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dialogs.swift; sourceTree = "<group>"; };
 		49148F98268AB0B0000AB718 /* InputKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputKeyboard.swift; sourceTree = "<group>"; };
 		49184C5C27BC1BA900335BFB /* ConnectionMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionMessage.swift; sourceTree = "<group>"; };
 		49184C5E27BC1CAA00335BFB /* GenericConnectionIssue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericConnectionIssue.swift; sourceTree = "<group>"; };
@@ -447,6 +449,7 @@
 				49A0A2BF2491CDC4002593F7 /* InteractiveLogin.swift */,
 				49BA35A526784B6B00B63510 /* Passphrase.swift */,
 				49F1D14927DD0FFF004A9CB1 /* SideHostStatus.swift */,
+				4912EB742826EE1F0083638C /* Dialogs.swift */,
 			);
 			path = UIs;
 			sourceTree = "<group>";
@@ -797,6 +800,7 @@
 				4943DA5627EE43D800E4E2F5 /* SnippetBrowser.swift in Sources */,
 				4923C56627319336000CC371 /* LocationTracking.swift in Sources */,
 				49011690245607F7002C1F85 /* Hosts.swift in Sources */,
+				4912EB752826EE1F0083638C /* Dialogs.swift in Sources */,
 				4911B3042463AD3E00816BAA /* GenerateKey.swift in Sources */,
 				49F1D14A27DD0FFF004A9CB1 /* SideHostStatus.swift in Sources */,
 				4943DA5F27F385D500E4E2F5 /* Secrets.swift in Sources */,
