@@ -289,7 +289,7 @@ class Session: CustomDebugStringConvertible {
                 // on first login.
                 var usedHardeningUntilBugTracked = false
                 
-                let _ = await runAsync(command: command, lang: lang) { channel, out, err in
+                let _ = await runAsync(command: command, lang: lang) { [weak self] channel, out, err in
                     if let gotOut = out {
                         stdout.append(gotOut)
                     }
@@ -301,7 +301,7 @@ class Session: CustomDebugStringConvertible {
                         let e = String (bytes: stderr, encoding: .utf8)
 
                         let r = await resultCallback (s, e)
-                        
+                        self?.unregister(channel: channel)
                         print ("Resuming for command \(command)")
                         if !usedHardeningUntilBugTracked {
                             c.resume(returning: r)

@@ -42,6 +42,8 @@ public class Channel: Equatable {
     deinit {
         let s = sessionActor!
         let t = channelHandle
+        buffer.deallocate()
+        bufferError.deallocate()
         Task {
             await s.free (channelHandle: t)
         }
