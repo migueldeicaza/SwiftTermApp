@@ -44,6 +44,16 @@ struct OnboardWelcome: View {
                         .minimumScaleFactor(0.7)
                     Spacer ()
                 }.padding()
+                
+                HStack (alignment: .top){
+                    Image (systemName: "questionmark")
+                        .font(.system(size: 30))
+                        .foregroundColor(Color.accentColor)
+                        .frame(minWidth: 50)
+                    Text ("Need help?  Shake your device or use the 'Support' menu option to report a bug or to share feedback or a feature request.")
+                        .minimumScaleFactor(0.7)
+                    Spacer ()
+                }.padding()
                 Button ("Dismiss") {
                     showOnboarding = false
                 }

@@ -56,23 +56,34 @@ public class AppTerminalView: TerminalView {
         super.init (frame: frame)
         
         // Changes that take place by global settings
-        sizeChange = settings.$fontSize.sink { newSize in
+        sizeChange = settings.$fontSize.sink { [weak self] newSize in
+            guard let self = self else { return }
             if !self.userOverrideSize {
                 self.updateFont (newSize: settings.resolveFontSize (newSize))
             }
         }
-        fontChange = settings.$fontName.sink { _ in self.updateFont (newSize: settings.resolveFontSize (settings.fontSize)) }
-        themeChange = settings.$themeName.sink { _ in
+        fontChange = settings.$fontName.sink { [weak self] _ in
+            guard let self = self else { return }
+
+            self.updateFont (newSize: settings.resolveFontSize (settings.fontSize))
+        }
+        themeChange = settings.$themeName.sink { [weak self] _ in
+            guard let self = self else { return }
+
             if self.useSharedTheme {
                 self.applyTheme(theme: settings.getTheme())
             }
         }
-        backgroundChange = settings.$backgroundStyle.sink { _ in
+        backgroundChange = settings.$backgroundStyle.sink { [weak self] _ in
+            guard let self = self else { return }
+
             self.updateBackground (background: self.useDefaultBackground ? settings.backgroundStyle : host.background)
         }
         
         /// Changes that can happen on the host itself
-        hostChange = DataStore.shared.runtimeVisibleChanges.sink { host in
+        hostChange = DataStore.shared.runtimeVisibleChanges.sink { [weak self] host in
+            guard let self = self else { return }
+
             if host.id == self.host.id {
                 self.updateBackground (background: self.useDefaultBackground ? settings.backgroundStyle : host.background)
                 
