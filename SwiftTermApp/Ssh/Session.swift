@@ -19,18 +19,12 @@ import SwiftUI
 @_implementationOnly import CSSH
 
 protocol SessionDelegate: AnyObject {
-    /// Called to validate the integridy of the host, returns true if we should proceed, or false if there is a problem
+    /// MOVEDD Called to validate the integridy of the host, returns true if we should proceed, or false if there is a problem
     //func checkHostIntegrity () async -> Bool
     
-    /// Called to authenticate the user on the network queue, once the
-    /// connection has been established.
-    /// - Parameter session: identifies the session that this callback is for
-    /// - Returns: nil on success, or a human-readable description as a string on error
-    func authenticate (session: Session) async -> String?
+    //func authenticate (session: Session) async -> String?
     
-    /// Called if we failed to login on the network queue
-    /// - Parameter session: identifies the session that this callback is for
-    func loginFailed (session: Session, details: String)
+    //func loginFailed (session: Session, details: String)
     
     /// Called when we are authenticated on the network queue, and channels can be opened
     /// - Parameter session: identifies the session that this callback is for
@@ -43,11 +37,8 @@ protocol SessionDelegate: AnyObject {
     /// Invoked when the remote end has been disconnected - TODO need to wire this up
     func remoteEndDisconnected (session: Session)
     
-    /// Invoked to log connection startup information
-    func logConnection (_ msg: String)
-    
     /// Gets a UIViewController to host error messages
-    func getParentViewController () -> UIViewController?
+    func getParentViewController () -> UIViewController
 }
 
 /// We execute all calls to libssh2 on the ssh queue.
@@ -99,10 +90,6 @@ class Session: CustomDebugStringConvertible {
         sessionActor = SessionActor (send: send, recv: recv, disconnect: disconnect, debug: debug, opaque: opaqueHandle)
     }
     
-    func log (_ msg: String) {
-        delegate.logConnection(msg)
-    }
-
     var debugDescription: String {
         get { "<Invalid session: use a subclass>" }
     }
@@ -159,8 +146,6 @@ class Session: CustomDebugStringConvertible {
         return host.hostname
     }
     
-    
-    
     /// Checks that we are connecting to the host we thought we were,
     /// this uses and updates the `known_hosts` database to track the
     /// known hosts
@@ -182,24 +167,23 @@ class Session: CustomDebugStringConvertible {
             
         }
         
+        /// Prompts the user to confirm the authenticity of the host when a new host is discovered
+        /// - Returns: true if the user allowed to proceed, false otherwise
         @MainActor
         func confirmHostAuthUnknown (hostKeyType: String, key: [Int8], fingerprint: String, knownHosts: LibsshKnownHost, host: Host) async -> Bool {
-
             let ok: Bool = await withCheckedContinuation { c in
-                if let parent = delegate.getParentViewController() {
-                    var window: UIHostingController<HostAuthUnknown>!
-                    window = UIHostingController<HostAuthUnknown>(rootView: HostAuthUnknown(alias: self.host.alias, hostString: getHostName(host: host), fingerprint: fingerprint, cancelCallback: {
-                            // TODO: Connections.remove(self)
-                            window.dismiss (animated: true) { c.resume(returning: false) }
-                        }, okCallback: {
-                            window.dismiss (animated: true) {
-                                c.resume(returning: true)
-                            }
-                        }))
-                    parent.present(window, animated: true, completion: nil)
-                } else {
-                    c.resume(returning: false)
-                }
+                let parent = delegate.getParentViewController()
+                
+                var window: UIHostingController<HostAuthUnknown>!
+                window = UIHostingController<HostAuthUnknown>(rootView: HostAuthUnknown(alias: self.host.alias, hostString: getHostName(host: host), fingerprint: fingerprint, cancelCallback: {
+                    // TODO: Connections.remove(self)
+                    window.dismiss (animated: true) { c.resume(returning: false) }
+                }, okCallback: {
+                    window.dismiss (animated: true) {
+                        c.resume(returning: true)
+                    }
+                }))
+                parent.present(window, animated: true, completion: nil)
             }
             
             if ok {
@@ -213,21 +197,22 @@ class Session: CustomDebugStringConvertible {
             }
             return ok
         }
+        
+        /// Displays a message informing the user that there has been a host mismatch key
         @MainActor
         func showHostKeyMismatch (fingerprint: String) async {
             let _: Void = await withCheckedContinuation { c in
                 //TODO: Connections.remove (self)
-                if let parent = delegate.getParentViewController() {
-                    var window: UIHostingController<HostAuthKeyMismatch>!
+                let parent = delegate.getParentViewController()
+                var window: UIHostingController<HostAuthKeyMismatch>!
+                
+                window = UIHostingController<HostAuthKeyMismatch>(rootView: HostAuthKeyMismatch(alias: self.host.alias, hostString: self.getHostName(host: host), fingerprint: fingerprint, callback: {
+                    window.dismiss(animated: true, completion: {
+                        c.resume()
+                    })
                     
-                    window = UIHostingController<HostAuthKeyMismatch>(rootView: HostAuthKeyMismatch(alias: self.host.alias, hostString: self.getHostName(host: host), fingerprint: fingerprint, callback: {
-                        window.dismiss(animated: true, completion: {
-                            c.resume()
-                        })
-                        
-                    }))
-                    parent.present(window, animated: true, completion: nil)
-                }
+                }))
+                parent.present(window, animated: true, completion: nil)
             }
         }
         
@@ -259,37 +244,237 @@ class Session: CustomDebugStringConvertible {
         return true
     }
     
+    /// Connection Logging
+    class MessageManager {
+        // Logged messages
+        var messages: [(time: Date, msg: String)] = []
+        var messageLock = NSLock ()
+        var messageLast = 0
+        
+        func log (_ msg: String) {
+            messageLock.lock()
+            messages.append((Date(), msg))
+            messageLock.unlock()
+        }
+        
+        func getMessages () -> ArraySlice<(time: Date, msg: String)> {
+            messageLock.lock ()
+            let start = messageLast
+            let end = messages.count
+            messageLast = end
+            messageLock.unlock()
+
+            return messages [start..<end]
+        }
+    }
+    
+    let messageManager: MessageManager = MessageManager ()
+    nonisolated func logConnection (_ msg: String) {
+        messageManager.log(msg)
+    }
+
+    func passwordPrompt (challenge: String) -> String {
+        return Dialogs.password(vc: delegate.getParentViewController(), challenge: challenge)
+    }
+    
+    /// Called to authenticate the user on the network queue, once the
+    /// connection has been established.
+    /// - Parameter session: identifies the session that this callback is for
+    /// - Returns: nil on success, or a human-readable description as a string on error
+    func authenticate () async -> String? {
+        @Sendable func loginWithKey (_ sshKey: Key) async -> String? {
+            switch sshKey.type {
+            case .rsa(_), .ecdsa(inEnclave: false):
+                var password: String
+                
+                if SshUtil.openSSHKeyRequiresPassword(key: sshKey.privateKey) && sshKey.passphrase == "" {
+                    password = passwordPrompt (challenge: "Key \(sshKey.name) requires a password to be unlocked")
+                } else {
+                    password = sshKey.passphrase
+                }
+                
+                return await userAuthPublicKeyFromMemory (username: host.username,
+                                                          passPhrase: password,
+                                                          publicKey: sshKey.publicKey,
+                                                          privateKey: sshKey.privateKey)
+            case .ecdsa(inEnclave: true):
+                if let keyHandle = sshKey.getKeyHandle() {
+                    return await userAuthWithCallback(username: host.username, publicKey: sshKey.getPublicKeyAsData()) { dataToSign in
+                        var error: Unmanaged<CFError>?
+                        guard let signed = SecKeyCreateSignature(keyHandle, .ecdsaSignatureMessageX962SHA256, dataToSign as CFData, &error) else {
+                            return nil
+                        }
+                        return signed as NSData as Data
+                    }
+                } else {
+                    return "Could not fetch the enclave key"
+                }
+            }
+        }
+        
+        var user = host.username
+        if user == "" {
+            user = Dialogs.user(vc: delegate.getParentViewController())
+        }
+        
+        let authMethods = await userAuthenticationList(username: host.username)
+        logConnection("SSH: got \(authMethods)")
+        if authMethods == "" {
+            return nil
+        }
+        
+        var cumulativeErrors: [String] = []
+        
+        // First, try to use what the user configured
+        if authMethods.contains("publickey") && host.sshKey != nil {
+            if let sshKey = DataStore.shared.keys.first(where: { $0.id == host.sshKey! }) {
+                let passTask = Task.detached { () -> String? in
+                    self.logConnection("SSH: attempting authentication with \(sshKey.name)")
+                    if let error = await loginWithKey (sshKey) {
+                        return error
+                    } else {
+                        return nil
+                    }
+                }
+                let result = await passTask.result
+                if let error = try? result.get() {
+                    logConnection("SSH: authentication error \(error)")
+                    cumulativeErrors.append(error)
+                } else {
+                    return nil
+                }
+            }
+        }
+
+        // Some servers only send 'password', and not 'keyboard-interactive', so we want to prompt
+        // the user here.   On the other hand, some servers advertise keyboard-interactive, but
+        // fail if we attempt an interactive login.  Perhaps this needs a loop around the process
+        // to attempt the methods
+        if authMethods.contains ("password") && host.usePassword {
+            let password: String?
+            if host.password == "" {
+                logConnection("SSH: requesting keyboard input password")
+                password = await Task.detached {
+                    self.passwordPrompt(challenge: "Enter password")
+                }.value
+            } else {
+                password = host.password
+            }
+            if let password = password {
+                logConnection("SSH: attempting authentication with password")
+                if let error = await userAuthPassword (username: host.username, password: password) {
+                    logConnection("SSH: authentication error \(error)")
+                    cumulativeErrors.append (error)
+                } else {
+                    return nil
+                }
+            }
+        }
+        
+        // Ok, none of the presets work, try all the public keys that have a passphrase
+        if authMethods.contains ("publickey") {
+            let skip = host.sshKey == nil ? nil : DataStore.shared.keys.first(where: { $0.id == host.sshKey! })
+            
+            for sshKey in DataStore.shared.keys {
+                // Skip the key that was original bound to it
+                if skip != nil && skip!.id == sshKey.id {
+                    continue
+                }
+                let passTask = Task.detached { () -> String? in
+                    self.logConnection("SSH: attempting authentication with public key \(sshKey.name)")
+                    if let error = await loginWithKey (sshKey) {
+                        return error
+                    } else {
+                        return nil
+                    }
+                }
+                
+                let result = await passTask.result
+                if let error = try? result.get() {
+                    logConnection("SSH: authentication error \(error)")
+                    cumulativeErrors.append(error)
+                } else {
+                    return nil
+                }
+            }
+        }
+
+        if authMethods.contains ("keyboard-interactive") {
+            logConnection("SSH: attempting keyboard-interactive authentication")
+
+            if let error = await userAuthKeyboardInteractive(username: host.username, prompt: passwordPrompt) {
+                logConnection("SSH: authentication error \(error)")
+                
+                cumulativeErrors.append(error)
+            } else {
+                return nil
+            }
+        }
+        if cumulativeErrors.last == nil {
+            logConnection("SSH: No valid authentication options available \(authMethods)")
+        }
+        return cumulativeErrors.last ?? "No valid autentication options available: \(authMethods)"
+    }
+        
     func setupSshConnection () async
     {
-        log ("SSH: sending handshake")
+        logConnection ("SSH: sending handshake")
         let handshakeStatus = await handshake()
         if handshakeStatus != 0 {
             
-            log ("SSH: handshake error, code: \(libSsh2ErrorToString(error: handshakeStatus)) \(handshakeStatus)")
+            logConnection ("SSH: handshake error, code: \(libSsh2ErrorToString(error: handshakeStatus)) \(handshakeStatus)")
             // There was an error
             // TODO: handle this one
         }
         banner = await sessionActor.getBanner ()
         if await !checkHostIntegrity () {
-            log ("SSH: Host integrity failed")
+            logConnection ("SSH: Host integrity failed")
             return 
         }
         
 
-        let failureReason = await delegate.authenticate(session: self)
+        let failureReason = await authenticate()
         if let err = failureReason {
-            log ("SSH Authentication result: \(err)")
+            logConnection ("SSH Authentication result: \(err)")
         }
         
         if await authenticated {
-            log ("SSH authenticated")
+            logConnection ("SSH authenticated")
             await delegate.loggedIn(session: self)
         } else {
-            log ("SSH loginFailed")
-            delegate.loginFailed (session: self, details: failureReason ?? "Internal error: authentication claims it worked, but libssh2 state indicates it is not authenticated")
+            logConnection ("SSH loginFailed")
+            DispatchQueue.main.async {
+                self.connectionError (error: failureReason ?? "Internal error: authentication claims it worked, but libssh2 state indicates it is not authenticated")
+            }
         }
     }
     
+    /// The connection has been closed, notify the user.
+    /// TODO: use the `displayError` instead, as we have no custom logic here
+    func connectionError (error: String) {
+        dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
+        logConnection("Connection: \(error)")
+        //TODO Connections.remove(self)
+        let parent = delegate.getParentViewController()
+        var window: UIHostingController<HostConnectionError>!
+        window = UIHostingController<HostConnectionError>(rootView: HostConnectionError(host: host, error: error, ok: {
+            window.dismiss(animated: true, completion: nil)
+        }))
+        
+        //if #available(iOS (15.0), *) {
+        
+            // Temporary workaround until beta2 https://developer.apple.com/forums/thread/682203
+            if let sheet = window.presentationController as? UISheetPresentationController {
+                sheet.detents = [.medium()]
+            }
+        
+        
+        parent.present(window, animated: true, completion: nil)
+    }
+    
+    /// Called if we failed to login on the network queue
+    /// - Parameter session: identifies the session that this callback is for
+
     /// Determines if the session has been authenticated
     public var authenticated: Bool {
         get async {
@@ -476,6 +661,12 @@ class Session: CustomDebugStringConvertible {
         await sessionActor.disconnect (reason: reason, description: description)
     }
 
+    var debugLog: [(Date,String)] = []
+    public func sshDebugMessage (alwaysDisplay: Bool, message: Data, language: Data) {        
+        let msg = String (bytes: message, encoding: .utf8) ?? "<invalid encoding>"
+        print ("debug: \(msg)")
+        debugLog.append ((Date (),msg))
+    }
 }
 
 /// A session powered by an NWConnection socket
@@ -519,12 +710,13 @@ class SocketSession: Session {
             let lang = Data (bytes: languagePtr, count: Int (languageLen))
             
             let session = SocketSession.getSocketSession(from: abstract)
-            session.delegate.debug(session: session, alwaysDisplay: alwaysDisplay != 0, message: msg, language: lang)
+            
+            session.sshDebugMessage(alwaysDisplay: alwaysDisplay != 0, message: msg, language: lang)
         }
-        delegate.logConnection("NWConnection to \(host.hostname):\(host.port)")
         connection = NWConnection(host: NWEndpoint.Host (host.hostname), port: NWEndpoint.Port (integerLiteral: UInt16 (host.port & 0xffff)), using: .tcp)
         super.init(host: host, delegate: delegate, send: send, recv: recv, disconnect: disconnect, debug: debug)
-        
+        logConnection("Starting NWConnection to \(host.hostname):\(host.port)")
+
         connection.stateUpdateHandler = connectionStateHandler
         connection.start (queue: SocketSession.networkQueue)
     }
@@ -635,24 +827,24 @@ class SocketSession: Session {
     func connectionStateHandler (state: NWConnection.State) {
         switch state {
         case .setup:
-            log ("NWConnection state .setup")
+            logConnection ("NWConnection state .setup")
         case .waiting(let detail):
-            log ("NWConnection state: .waiting (\(detail))")
+            logConnection ("NWConnection state: .waiting (\(detail))")
         case .preparing:
-            log ("NWConnection state .preparing")
+            logConnection ("NWConnection state .preparing")
         case .ready:
-            log ("NWConnection state .ready")
+            logConnection ("NWConnection state .ready")
             startIO()
             Task {
                 await setupSshConnection ()
             }
         case .failed(let details):
-            log ("NWConnection state .failed: \(details)n")
+            logConnection ("NWConnection state .failed: \(details)n")
             delegate.remoteEndDisconnected(session: self)
         case .cancelled:
-            log ("NWConnection state .canceled")
+            logConnection ("NWConnection state .canceled")
         @unknown default:
-            log ("NWConnection state is unknown")
+            logConnection ("NWConnection state is unknown")
         }
     }
     
