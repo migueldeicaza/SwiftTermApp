@@ -17,6 +17,7 @@ import SwiftUI
 /// - `user(vc:)`
 /// 
 public class Dialogs {
+    
     var vc: UIViewController
     init (parentVC: UIViewController) {
         dispatchPrecondition(condition: .notOnQueue(DispatchQueue.main))

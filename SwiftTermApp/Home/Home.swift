@@ -139,18 +139,6 @@ func promptMissingUser (_ parentController: UIViewController) async -> String? {
     return result
 }
 
-/// getCurrentKeyWindow: returns the current key window from the application
-@MainActor
-func getCurrentKeyWindow () -> UIWindow? {
-    return UIApplication.shared.connectedScenes
-          .filter { $0.activationState == .foregroundActive }
-          .map { $0 as? UIWindowScene }
-          .compactMap { $0 }
-          .first?.windows
-          .filter { $0.isKeyWindow }
-          .first
-}
-
 func getFirstRun () -> Bool {
     let key = "launchedBefore"
     let ran = UserDefaults.standard.bool(forKey: key)

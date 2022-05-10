@@ -19,45 +19,35 @@ import SwiftUI
 @_implementationOnly import CSSH
 
 protocol SessionDelegate: AnyObject {
-    /// MOVEDD Called to validate the integridy of the host, returns true if we should proceed, or false if there is a problem
-    //func checkHostIntegrity () async -> Bool
-    
-    //func authenticate (session: Session) async -> String?
-    
-    //func loginFailed (session: Session, details: String)
+    /// Called if we failed to login on the network queue
+    /// - Parameters:
+    ///  - session: identifies the session that this callback is for
+    ///  - details: information that can be displayed to the user about the problem
+    func loginFailed (session: Session, details: String)
     
     /// Called when we are authenticated on the network queue, and channels can be opened
     /// - Parameter session: identifies the session that this callback is for
     func loggedIn (session: Session) async
     
-    /// Called on the sshQueue, this message is invoked in response to receiving an `SSH_MSG_DEBUG` message
-    /// described in https://datatracker.ietf.org/doc/html/rfc4253
-    func debug (session: Session, alwaysDisplay: Bool, message: Data, language: Data)
-    
-    /// Invoked when the remote end has been disconnected - TODO need to wire this up
-    func remoteEndDisconnected (session: Session)
-    
-    /// Gets a UIViewController to host error messages
-    func getParentViewController () -> UIViewController
+    /// Gets a UIResponder starting point to locate the root view controller to use to present messages, can return nil if none is available
+    func getResponder () -> UIResponder?
 }
 
 /// We execute all calls to libssh2 on the ssh queue.
 var sshQueue: DispatchQueue = DispatchQueue.init(label: "ssh-queue", qos: .userInitiated)
 
 /// Session represents a libssh2 session, callbacks for assorted operations in the session
-/// are done via the SessionDelegate protocol that is passed as a parameter to the
+/// are done via the `SessionDelegate` protocol that is passed as a parameter to the
 /// constructor.   Each method in the delegate protocol describes in which queue the method
 /// will be invoked.
 ///
-/// Once the network connection has been established, the `sessionDelegate.authenticate` method
-/// will be invoked, and that method should attempt to authenticate based on the list of available
-/// authentication methods surfaced by `userAuthenticationList`, and then calling into one or more
-/// of the  `userAuth` methods in the session class.
+/// The first user of the session can be notified of a successful operation via one of the callbacks in the
+/// SessionDelegate, `loginFailed` or `loggedIn`.
 ///
-/// Depending on the authentication, the callbacks `loginFailed` or `loggedIn` will be invoked.
+/// Users of the session, can just open channels over the existing session.
 ///
-/// Upon success, a channel can be created, with `openChannel`, or `openSessionChannel`, or the
-/// convenience methods `run`.
+/// Once a session has successfully authenticated, channels can be created, by calling `openChannel`,
+/// or `openSessionChannel`, or you can use the convenience methods `run*`
 ///
 /// Because libssh2 does not have a way of notifying if a specific channel has data available once it
 /// is received by the session, this implenentation currently notifies all channels that they should poll
@@ -172,7 +162,7 @@ class Session: CustomDebugStringConvertible {
         @MainActor
         func confirmHostAuthUnknown (hostKeyType: String, key: [Int8], fingerprint: String, knownHosts: LibsshKnownHost, host: Host) async -> Bool {
             let ok: Bool = await withCheckedContinuation { c in
-                let parent = delegate.getParentViewController()
+                let parent = getParentViewController (hint: delegate.getResponder())
                 
                 var window: UIHostingController<HostAuthUnknown>!
                 window = UIHostingController<HostAuthUnknown>(rootView: HostAuthUnknown(alias: self.host.alias, hostString: getHostName(host: host), fingerprint: fingerprint, cancelCallback: {
@@ -203,7 +193,7 @@ class Session: CustomDebugStringConvertible {
         func showHostKeyMismatch (fingerprint: String) async {
             let _: Void = await withCheckedContinuation { c in
                 //TODO: Connections.remove (self)
-                let parent = delegate.getParentViewController()
+                let parent = getParentViewController (hint: delegate.getResponder())
                 var window: UIHostingController<HostAuthKeyMismatch>!
                 
                 window = UIHostingController<HostAuthKeyMismatch>(rootView: HostAuthKeyMismatch(alias: self.host.alias, hostString: self.getHostName(host: host), fingerprint: fingerprint, callback: {
@@ -273,10 +263,6 @@ class Session: CustomDebugStringConvertible {
         messageManager.log(msg)
     }
 
-    func passwordPrompt (challenge: String) -> String {
-        return Dialogs.password(vc: delegate.getParentViewController(), challenge: challenge)
-    }
-    
     /// Called to authenticate the user on the network queue, once the
     /// connection has been established.
     /// - Parameter session: identifies the session that this callback is for
@@ -288,7 +274,8 @@ class Session: CustomDebugStringConvertible {
                 var password: String
                 
                 if SshUtil.openSSHKeyRequiresPassword(key: sshKey.privateKey) && sshKey.passphrase == "" {
-                    password = passwordPrompt (challenge: "Key \(sshKey.name) requires a password to be unlocked")
+                    let vc = await getParentViewController (hint: delegate.getResponder())
+                    password = Dialogs.password(vc: vc, challenge: "Key \(sshKey.name) requires a password to be unlocked")
                 } else {
                     password = sshKey.passphrase
                 }
@@ -314,7 +301,7 @@ class Session: CustomDebugStringConvertible {
         
         var user = host.username
         if user == "" {
-            user = Dialogs.user(vc: delegate.getParentViewController())
+            user = Dialogs.user(vc: await getParentViewController (hint: delegate.getResponder()))
         }
         
         let authMethods = await userAuthenticationList(username: host.username)
@@ -355,7 +342,8 @@ class Session: CustomDebugStringConvertible {
             if host.password == "" {
                 logConnection("SSH: requesting keyboard input password")
                 password = await Task.detached {
-                    self.passwordPrompt(challenge: "Enter password")
+                    let vc = await getParentViewController (hint: self.delegate.getResponder())
+                    return Dialogs.password (vc: vc, challenge: "Enter password")
                 }.value
             } else {
                 password = host.password
@@ -401,8 +389,9 @@ class Session: CustomDebugStringConvertible {
 
         if authMethods.contains ("keyboard-interactive") {
             logConnection("SSH: attempting keyboard-interactive authentication")
-
-            if let error = await userAuthKeyboardInteractive(username: host.username, prompt: passwordPrompt) {
+            let dialog = Dialogs (parentVC: await getParentViewController (hint: delegate.getResponder()))
+            
+            if let error = await userAuthKeyboardInteractive(username: host.username, prompt: dialog.passwordPrompt(challenge:)) {
                 logConnection("SSH: authentication error \(error)")
                 
                 cumulativeErrors.append(error)
@@ -442,20 +431,23 @@ class Session: CustomDebugStringConvertible {
             logConnection ("SSH authenticated")
             await delegate.loggedIn(session: self)
         } else {
+            let msg = failureReason ?? "Internal error: authentication claims it worked, but libssh2 state indicates it is not authenticated"
+
             logConnection ("SSH loginFailed")
+            delegate.loginFailed (session: self, details: msg)
             DispatchQueue.main.async {
-                self.connectionError (error: failureReason ?? "Internal error: authentication claims it worked, but libssh2 state indicates it is not authenticated")
+                self.connectionError (error: msg)
             }
         }
     }
     
     /// The connection has been closed, notify the user.
     /// TODO: use the `displayError` instead, as we have no custom logic here
+    @MainActor
     func connectionError (error: String) {
-        dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
         logConnection("Connection: \(error)")
         //TODO Connections.remove(self)
-        let parent = delegate.getParentViewController()
+        let parent = getParentViewController (hint: delegate.getResponder())
         var window: UIHostingController<HostConnectionError>!
         window = UIHostingController<HostConnectionError>(rootView: HostConnectionError(host: host, error: error, ok: {
             window.dismiss(animated: true, completion: nil)
@@ -661,11 +653,25 @@ class Session: CustomDebugStringConvertible {
         await sessionActor.disconnect (reason: reason, description: description)
     }
 
-    var debugLog: [(Date,String)] = []
+    var debugLock = NSLock ()
+    var _debugLog: [(Date,String)] = []
     public func sshDebugMessage (alwaysDisplay: Bool, message: Data, language: Data) {        
         let msg = String (bytes: message, encoding: .utf8) ?? "<invalid encoding>"
         print ("debug: \(msg)")
-        debugLog.append ((Date (),msg))
+        debugLock.lock()
+        _debugLog.append ((Date (),msg))
+        debugLock.unlock()
+    }
+    
+    /// Gets the contents of the SSH debug log from the `SSH_MSG_DEBUG` message
+    /// described in https://datatracker.ietf.org/doc/html/rfc4253
+    public var debugLog : [(Date,String)]{
+        get {
+            debugLock.lock()
+            let copy = _debugLog
+            debugLock.unlock()
+            return copy
+        }
     }
 }
 
@@ -840,11 +846,38 @@ class SocketSession: Session {
             }
         case .failed(let details):
             logConnection ("NWConnection state .failed: \(details)n")
-            delegate.remoteEndDisconnected(session: self)
+            remoteEndDisconnected()
         case .cancelled:
             logConnection ("NWConnection state .canceled")
         @unknown default:
             logConnection ("NWConnection state is unknown")
+        }
+    }
+    
+    func reconnect () {
+        connection = NWConnection(host: NWEndpoint.Host (host.hostname), port: NWEndpoint.Port (integerLiteral: UInt16 (host.port & 0xffff)), using: .tcp)
+        logConnection("Restarting NWConnection to \(host.hostname):\(host.port)")
+
+        connection.stateUpdateHandler = connectionStateHandler
+        connection.start (queue: SocketSession.networkQueue)
+    }
+    
+    func attemptReconnect () -> Bool {
+        // TODO: should the session really be aware of this?
+        if self.host.reconnectType == "tmux" {
+            self.shutdown()
+            self.reconnect ()
+
+            return true
+        }
+        return false
+    }
+    
+    func remoteEndDisconnected () {
+        DispatchQueue.main.async {
+            if !self.attemptReconnect() {
+                self.connectionError(error: "Remote end disconnected")
+            }
         }
     }
     
