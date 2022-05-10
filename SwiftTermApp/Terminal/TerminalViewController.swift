@@ -121,7 +121,7 @@ class TerminalViewController: UIViewController {
         } else {
             let _ = terminalView.resignFirstResponder()
         }
-        Connections.track(connection: terminalView)
+        Connections.track(terminal: terminalView)
     }
     
     override func viewDidLayoutSubviews() {

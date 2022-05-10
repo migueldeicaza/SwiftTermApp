@@ -238,7 +238,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                 }
             } else {
                 DispatchQueue.main.async {
-                    Connections.remove (self)
+                    Connections.remove (terminal: self)
                     let _: GenericConnectionIssue? = self.displayError("The tmux session no longer exists on the server")
                 }
                 return false
@@ -323,6 +323,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         feed (text: "Welcome to SwiftTerm\r\n\n")
         startConnectionMonitor ()
         session = SocketSession(host: host, delegate: self)
+        Connections.track(session: session)
 
         if !useDefaultBackground {
             updateBackground(background: host.background)
@@ -338,7 +339,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     func displayError<T: View & ConnectionMessage> (_ msg: String) -> T? {
         dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
         
-        Connections.remove(self)
+        Connections.remove(terminal: self)
         let parent = getParentViewController()
         
         var window: UIHostingController<T>!
@@ -362,7 +363,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     func connectionClosed (receivedEOF: Bool) {
         dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
         
-        Connections.remove(self)
+        Connections.remove(terminal: self)
         let parent = getParentViewController()
         var window: UIHostingController<HostConnectionClosed>!
         window = UIHostingController<HostConnectionClosed>(rootView: HostConnectionClosed(host: host, receivedEOF: receivedEOF, ok: {
@@ -385,7 +386,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     func connectionError (error: String) {
         dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
         logConnection("Connection: \(error)")
-        Connections.remove(self)
+        Connections.remove(terminal: self)
         let parent = getParentViewController()
         var window: UIHostingController<HostConnectionError>!
         window = UIHostingController<HostConnectionError>(rootView: HostConnectionError(host: host, error: error, ok: {

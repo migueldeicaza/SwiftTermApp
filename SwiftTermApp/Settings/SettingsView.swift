@@ -14,7 +14,7 @@ class Settings: ObservableObject {
     var defaults = UserDefaults (suiteName: "SwiftTermApp")
     
     func updateKeepOn () {
-        UIApplication.shared.isIdleTimerDisabled = keepOn && Connections.shared.connections.count > 0
+        UIApplication.shared.isIdleTimerDisabled = keepOn && Connections.shared.sessions.count > 0
     }
     
     @Published var keepOn: Bool = true {

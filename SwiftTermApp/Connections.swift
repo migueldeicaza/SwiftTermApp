@@ -11,18 +11,27 @@ import Combine
 import UIKit
 import SwiftTerm
  
+///
+/// Tracks both the active sessions, as well as terminal views.
+///
+/// Note: terminal views are typically created first, and tracked before a session is created, which only takes place later
 class Connections: ObservableObject {
-    @Published public var connections: [SshTerminalView] = [
+    public static var shared: Connections = Connections()
+    
+    @Published public var sessions: [Session] = [
+    ]
+
+    @Published public var terminals: [SshTerminalView] = [
     ]
     
     public func active () -> Bool {
-        return connections.count > 0
+        return sessions.count > 0
     }
     
     public static func allocateConnectionId (avoidIds: [Int]) -> Int {
         var serials = Set<Int> ()
         
-        for conn in shared.connections {
+        for conn in shared.terminals {
             serials.update(with: conn.serial)
         }
         for usedId in avoidIds {
@@ -35,24 +44,32 @@ class Connections: ObservableObject {
         }
         return -1
     }
-    public static func remove (_ terminal: SshTerminalView)
+    
+    public static func remove (terminal: SshTerminalView)
     {
-        if let idx = shared.connections.firstIndex(of: terminal) {
-            shared.connections.remove (at: idx)
+        if let idx = shared.terminals.firstIndex(of: terminal) {
+            shared.terminals.remove (at: idx)
         }
         // This is used to track whether we should keep the display on, only when we have active terminals
         settings.updateKeepOn()
     }
-    
-    public static var shared: Connections = Connections()
-    
-    // Tracks the connection.
-    public static func track (connection: SshTerminalView)
+        
+    /// Tracks the terminal
+    public static func track (terminal: SshTerminalView)
     {
-        if shared.connections.contains(connection) {
+        if shared.terminals.contains(terminal) {
             return
         }
-        shared.connections.append(connection)
+        shared.terminals.append(terminal)
+    }
+    
+    /// Tracks the terminal
+    public static func track (session: Session)
+    {
+        if shared.sessions.contains(session) {
+            return
+        }
+        shared.sessions.append(session)
         
         // This is used to track whether we should keep the display on, only when we have active terminals
         settings.updateKeepOn()
@@ -60,7 +77,7 @@ class Connections: ObservableObject {
     
     public static func lookupActive (host: Host) -> SshTerminalView?
     {
-        return shared.connections.first { $0.host.id == host.id }
+        return shared.terminals.first { $0.host.id == host.id }
     }
     
 //    struct ConnectionState: Encodable, Decodable {
