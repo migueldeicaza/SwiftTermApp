@@ -52,9 +52,12 @@ var sshQueue: DispatchQueue = DispatchQueue.init(label: "ssh-queue", qos: .userI
 /// Because libssh2 does not have a way of notifying if a specific channel has data available once it
 /// is received by the session, this implenentation currently notifies all channels that they should poll
 /// for data.
-class Session: CustomDebugStringConvertible {
+class Session: CustomDebugStringConvertible, Equatable {
     // Our actor that serializes access to libssh in a per-session basis
     var sessionActor: SessionActor
+    
+    // This is here not to be used, but to use for the Equality implementation
+    var _dangerousSessionActorHandleForEquality: OpaquePointer!
     
     var channelsLock = NSLock ()
     
@@ -77,7 +80,11 @@ class Session: CustomDebugStringConvertible {
         // Init this first, we will wipe it out soon enough
         sessionActor = SessionActor (fakeSetup: true)
         let opaqueHandle = UnsafeMutableRawPointer(mutating: Unmanaged.passUnretained(self).toOpaque())
-        sessionActor = SessionActor (send: send, recv: recv, disconnect: disconnect, debug: debug, opaque: opaqueHandle)
+        sessionActor = SessionActor (send: send, recv: recv, disconnect: disconnect, debug: debug, opaque: opaqueHandle, retHandle: &_dangerousSessionActorHandleForEquality)
+    }
+    
+    static func == (lhs: Session, rhs: Session) -> Bool {
+        return lhs._dangerousSessionActorHandleForEquality == rhs._dangerousSessionActorHandleForEquality
     }
     
     var debugDescription: String {
@@ -429,6 +436,7 @@ class Session: CustomDebugStringConvertible {
         
         if await authenticated {
             logConnection ("SSH authenticated")
+            Connections.track(session: self)
             await delegate.loggedIn(session: self)
         } else {
             let msg = failureReason ?? "Internal error: authentication claims it worked, but libssh2 state indicates it is not authenticated"
@@ -446,7 +454,7 @@ class Session: CustomDebugStringConvertible {
     @MainActor
     func connectionError (error: String) {
         logConnection("Connection: \(error)")
-        //TODO Connections.remove(self)
+        // TODO: Connections.remove(self)q
         let parent = getParentViewController (hint: delegate.getResponder())
         var window: UIHostingController<HostConnectionError>!
         window = UIHostingController<HostConnectionError>(rootView: HostConnectionError(host: host, error: error, ok: {

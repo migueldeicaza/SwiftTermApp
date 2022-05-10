@@ -187,9 +187,9 @@ struct HomeView: View {
                 NavigationLink(
                     destination: SessionsView(),
                     label: {
-                        Label("Sessions", systemImage: "terminal")
+                        Label("Terminals", systemImage: "terminal")
                         Spacer ()
-                        Text ("\(connections.connections.count)")
+                        Text ("\(connections.terminals.count)")
                             .padding(4)
                             .background(Color (.systemGray5))
                             .cornerRadius(3)

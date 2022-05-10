@@ -48,7 +48,7 @@ struct SampleApp: App {
         WindowGroup {
             ContentView()
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
-                    if Connections.shared.connections.count > 0 {
+                    if Connections.shared.sessions.count > 0 {
                         locationTrackerResume()
                     }
                 }
