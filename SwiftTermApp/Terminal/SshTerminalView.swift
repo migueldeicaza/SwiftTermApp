@@ -48,26 +48,6 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     // we start to output diagnostics on the connection
     var started: Date
 
-
-    /// Attempts a reconnection and state restoration if the connection supports it, and returns true if it is being attempted, false otherwise
-    func attemptReconnect () -> Bool {
-        if self.host.reconnectType == "tmux" {
-            self.session.shutdown()
-            self.session = SocketSession(host: host, delegate: self)
-            return true
-        }
-        return false
-    }
-    
-    // Delegate SessionDelegate.remoteEndDisconnected
-    func remoteEndDisconnected(session: Session) {
-        DispatchQueue.main.async {
-            if !self.attemptReconnect() {
-                self.connectionError(error: "Remote end disconnected")
-            }
-        }
-    }
-    
     nonisolated func channelReader (channel: Channel, data: Data?, error: Data?) {
         if let d = data {
             let sliced = Array(d) [0...]
@@ -329,6 +309,12 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         historyRecordConnection (connectionDate)
     }
     
+    func loginFailed(session: Session, details: String) {
+        // TODO: worth doing anything else here?
+    }
+    
+
+    
     init (frame: CGRect, host: Host, serial: Int = -1) throws
     {
         self.serial = serial
@@ -343,20 +329,12 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
         terminalDelegate = self
     }
-  
-    func getParentViewController () -> UIViewController {
-        var parentResponder: UIResponder? = self
-        while parentResponder != nil {
-            parentResponder = parentResponder?.next
-            if let viewController = parentResponder as? UIViewController {
-                return viewController
-            }
-        }
-        // Playing with fire here, need a way to make sure this is always the case
-        return getCurrentKeyWindow()!.rootViewController!
-    }
     
-
+    // SessionDelegate.getResponder method
+    func getResponder() -> UIResponder? {
+        return self
+    }
+  
     func displayError<T: View & ConnectionMessage> (_ msg: String) -> T? {
         dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
         
@@ -425,13 +403,6 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         parent.present(window, animated: true, completion: nil)
     }
         
-    var debugLog: [(Date,String)] = []
-    func debug(session: Session, alwaysDisplay: Bool, message: Data, language: Data) {
-        let msg = String (bytes: message, encoding: .utf8) ?? "<invalid encoding>"
-        print ("debug: \(msg)")
-        debugLog.append ((Date (),msg))
-    }
-
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
