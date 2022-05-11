@@ -24,18 +24,30 @@ class Connections: ObservableObject {
     @Published public var sessions: [Session] = [
     ]
 
-    @Published public var terminals: [SshTerminalView] = [
-    ]
+    public var terminalsCount: Int {
+        var count = 0
+        for session in sessions {
+            count += session.terminals.count
+        }
+        return count
+    }
     
     public func active () -> Bool {
         return sessions.count > 0
     }
     
+    // Returns a newly allocated array with all active terminals
+    public func getTerminals () -> [SshTerminalView] {
+        return sessions.flatMap { $0.terminals }
+    }
+    
     public static func allocateConnectionId (avoidIds: [Int]) -> Int {
         var serials = Set<Int> ()
         
-        for conn in shared.terminals {
-            serials.update(with: conn.serial)
+        for session in shared.sessions {
+            for terminal in session.terminals {
+                serials.update(with: terminal.serial)
+            }
         }
         for usedId in avoidIds {
             serials.update(with: usedId)
@@ -48,24 +60,6 @@ class Connections: ObservableObject {
         return -1
     }
     
-    public static func remove (terminal: SshTerminalView)
-    {
-        if let idx = shared.terminals.firstIndex(of: terminal) {
-            shared.terminals.remove (at: idx)
-        }
-        // This is used to track whether we should keep the display on, only when we have active terminals
-        settings.updateKeepOn()
-    }
-        
-    /// Tracks the terminal
-    public static func track (terminal: SshTerminalView)
-    {
-        if shared.terminals.contains(terminal) {
-            return
-        }
-        shared.terminals.append(terminal)
-    }
-    
     /// Tracks the terminal
     public static func track (session: Session)
     {
@@ -74,13 +68,16 @@ class Connections: ObservableObject {
         }
         shared.sessions.append(session)
         
-        // This is used to track whether we should keep the display on, only when we have active terminals
+        // This is used to track whether we should keep the display on, only when we have active sessions
         settings.updateKeepOn()
     }
     
     public static func lookupActiveTerminal (host: Host) -> SshTerminalView?
     {
-        return shared.terminals.first { $0.host.id == host.id }
+        if let session = lookupActiveSession(host: host) {
+            return session.terminals.first
+        }
+        return nil
     }
 
     public static func lookupActiveSession (host: Host) -> Session?

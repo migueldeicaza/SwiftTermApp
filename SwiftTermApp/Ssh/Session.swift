@@ -47,7 +47,13 @@ var sshQueue: DispatchQueue = DispatchQueue.init(label: "ssh-queue", qos: .userI
 /// Users of the session, can just open channels over the existing session.
 ///
 /// Once a session has successfully authenticated, channels can be created, by calling `openChannel`,
-/// or `openSessionChannel`, or you can use the convenience methods `run*`
+/// or `openSessionChannel`, or you can use the convenience methods `run*`.  When a channel
+/// is created, it needs to be registered before it can receive data from the remote end point, for this, it
+/// is necessary to call `activate(channel:)` with the channel.   And when the channel is no longer in use,
+/// call `unregister(channel:)`.
+///
+/// To track other higher-level constructs, like terminals, call `track(terminal:)`, which is independent
+/// of the channel activation.
 ///
 /// Because libssh2 does not have a way of notifying if a specific channel has data available once it
 /// is received by the session, this implenentation currently notifies all channels that they should poll
@@ -58,12 +64,24 @@ class Session: CustomDebugStringConvertible, Equatable {
     
     // This is here not to be used, but to use for the Equality implementation
     var _dangerousSessionActorHandleForEquality: OpaquePointer!
-    
+
+    // Lock controlling access to the channels array
     var channelsLock = NSLock ()
     
+    // use channelsLock to access: Tracks all channels, used to notify them that data is available
+    var channels: [Channel] = []
+    
+    // Lock controlling access to the terminals array
+    var terminalsLock = NSLock ()
+    
+    // use terminalsLock to access: tracks all the created SshTerminalViews
+    var terminals: [SshTerminalView] = []
+    
+
     // Where we post interesting events about this session
     weak var delegate: SessionDelegate!
     
+    // The host configuration that we use for this session.
     var host: Host
     
     // Turns the libssh2 abstract pointer (which is a pointer to the value passed) into a strong type
@@ -519,8 +537,6 @@ class Session: CustomDebugStringConvertible, Equatable {
         return await sessionActor.userAuthWithCallback(username: username, publicKey: publicKey, signCallback: signCallback)
     }
     
-    var channels: [Channel] = []
-    
     /// Opens a new channel with a specified type (session, direct-tcpip, or tcpip-forward)
     /// - Parameters:
     ///  - type: session, direct-tcpip, or tcpip-forward
@@ -642,6 +658,20 @@ class Session: CustomDebugStringConvertible, Equatable {
         }
         
         channelsLock.unlock()
+    }
+    
+    func track (terminal: SshTerminalView) {
+        terminalsLock.lock ()
+        terminals.append (terminal)
+        terminalsLock.unlock ()
+    }
+    
+    func drop (terminal: SshTerminalView) {
+        terminalsLock.lock ()
+        if let index = terminals.firstIndex(of: terminal) {
+            terminals.remove (at: index)
+        }
+        terminalsLock.unlock ()
     }
     
     /// Creates an instance of the libssh2-level list of known hosts.
