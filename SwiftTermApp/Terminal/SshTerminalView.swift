@@ -322,13 +322,21 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         try super.init (frame: frame, host: host)
         feed (text: "Welcome to SwiftTerm\r\n\n")
         startConnectionMonitor ()
-        session = SocketSession(host: host, delegate: self)
-        Connections.track(session: session)
-
+        terminalDelegate = self
+        
+        if let existingSession = Connections.lookupActiveSession(host: host) as? SocketSession {
+            session = existingSession
+            Task.detached {
+                await self.loggedIn(session: self.session)
+            }
+        } else {
+            session = SocketSession(host: host, delegate: self)
+            Connections.track(session: session)
+        }
+        
         if !useDefaultBackground {
             updateBackground(background: host.background)
         }
-        terminalDelegate = self
     }
     
     // SessionDelegate.getResponder method
