@@ -15,6 +15,9 @@ import SwiftTerm
 /// Tracks both the active sessions, as well as terminal views.
 ///
 /// Note: terminal views are typically created first, and tracked before a session is created, which only takes place later
+///
+/// Perhaps I could remove `terminals` altogether, and avoid the tracking of the terminals, but rather
+/// attach the terminals to the Session.   The session could track terminals, and other kinds of channels
 class Connections: ObservableObject {
     public static var shared: Connections = Connections()
     
@@ -75,11 +78,16 @@ class Connections: ObservableObject {
         settings.updateKeepOn()
     }
     
-    public static func lookupActive (host: Host) -> SshTerminalView?
+    public static func lookupActiveTerminal (host: Host) -> SshTerminalView?
     {
         return shared.terminals.first { $0.host.id == host.id }
     }
-    
+
+    public static func lookupActiveSession (host: Host) -> Session?
+    {
+        return shared.sessions.first { $0.host.id == host.id }
+    }
+
 //    struct ConnectionState: Encodable, Decodable {
 //        var hostId: UUID
 //        var reconnectType: String

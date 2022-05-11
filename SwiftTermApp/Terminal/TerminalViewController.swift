@@ -207,7 +207,7 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
         switch kind {
         case .host(host: let host, createNew: let createNew):
             if !createNew {
-                if let v = Connections.lookupActive(host: host) {
+                if let v = Connections.lookupActiveTerminal(host: host) {
                     let ret = TerminalViewController(terminalView: v, interactive: interactive)
                     viewController = ret
                     return ret
