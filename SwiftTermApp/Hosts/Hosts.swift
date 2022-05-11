@@ -69,7 +69,7 @@ struct HostSummaryView: View {
                         createNewTerm = true
                         active = true
                     }) {
-                        Text("New Connection")
+                        Text("New Terminal")
                         Image(systemName: "plus.circle")
                     }
                 }
@@ -128,7 +128,7 @@ struct iPadHostSummaryView: View {
                         createNewTerm = true
                         active = true
                     }) {
-                        Text("New Connection")
+                        Text("New Terminal")
                         Image(systemName: "plus.circle")
                     }
                 }
