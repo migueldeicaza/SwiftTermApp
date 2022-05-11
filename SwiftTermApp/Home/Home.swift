@@ -189,7 +189,7 @@ struct HomeView: View {
                     label: {
                         Label("Terminals", systemImage: "terminal")
                         Spacer ()
-                        Text ("\(connections.terminals.count)")
+                        Text ("\(connections.terminalsCount)")
                             .padding(4)
                             .background(Color (.systemGray5))
                             .cornerRadius(3)

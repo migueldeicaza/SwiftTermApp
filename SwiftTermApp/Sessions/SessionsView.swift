@@ -35,8 +35,9 @@ struct SessionDetailsView: View {
                         .font(.footnote)
                 }
                 Button (action: {
-                    Connections.remove (terminal: self.terminalView)
-                    count = Connections.shared.terminals.count
+                    self.terminalView.closeTerminal()
+                    
+                    count = Connections.shared.terminalsCount
                 }) {
                     Image (systemName: "xmark.circle.fill")
                         .foregroundColor(Color.black)
@@ -102,7 +103,7 @@ struct SessionsView: View {
     
     init ()
     {
-        count = Connections.shared.terminals.count
+        count = Connections.shared.terminalsCount
     }
     
     var body: some View {
@@ -114,7 +115,7 @@ struct SessionsView: View {
                         //                    ScreenOf (terminalView: self.connections.connections [idx])
                         //                }
                         
-                        ForEach (connections.terminals, id: \.id) { terminalView in
+                        ForEach (connections.getTerminals (), id: \.id) { terminalView in
                             SessionView (terminalView: terminalView, count: $count)
                         }
                     }
@@ -130,7 +131,7 @@ struct SessionsView: View {
             // is recomputed causing the effect where it "pushes" the terminal, and
             // then pops back up to the session small preview
 
-            count = Connections.shared.terminals.count
+            count = Connections.shared.terminalsCount
         }
     }
 }
