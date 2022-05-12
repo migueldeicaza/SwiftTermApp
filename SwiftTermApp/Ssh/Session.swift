@@ -825,6 +825,9 @@ class SocketSession: Session {
                     restart = false
                 }
             }
+            if error != nil {
+                restart = false
+            }
             self.bufferLock.unlock()
             
             // TODO: maybe we do not need PingChannels, we can merge with pingtasks?
