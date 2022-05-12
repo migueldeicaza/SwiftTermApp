@@ -67,7 +67,9 @@ class Connections: ObservableObject {
         shared.sessions.append(session)
         
         // This is used to track whether we should keep the display on, only when we have active sessions
-        settings.updateKeepOn()
+        DispatchQueue.main.async {
+            settings.updateKeepOn()
+        }
     }
     
     public static func lookupActiveTerminal (host: Host) -> SshTerminalView?
@@ -82,8 +84,9 @@ class Connections: ObservableObject {
         if let idx = shared.sessions.firstIndex(of: session) {
             shared.sessions.remove(at: idx)
         }
-
-        settings.updateKeepOn()
+        DispatchQueue.main.async {
+            settings.updateKeepOn()
+        }
     }
 
 
