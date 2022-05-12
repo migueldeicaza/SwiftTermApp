@@ -12,12 +12,10 @@ import UIKit
 import SwiftTerm
  
 ///
-/// Tracks both the active sessions, as well as terminal views.
+/// Tracks the active SSH Sessions, which often contain one or more terminals.
 ///
 /// Note: terminal views are typically created first, and tracked before a session is created, which only takes place later
 ///
-/// Perhaps I could remove `terminals` altogether, and avoid the tracking of the terminals, but rather
-/// attach the terminals to the Session.   The session could track terminals, and other kinds of channels
 class Connections: ObservableObject {
     public static var shared: Connections = Connections()
     
