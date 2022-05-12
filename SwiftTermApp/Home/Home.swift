@@ -153,6 +153,7 @@ struct HomeView: View {
     @State var launchHost: Host? = nil
     @State var transientLaunch: Bool? = false
     @State var firstRun = getFirstRun ()
+    @State var terminalCount = 0
     
     func sortDate (first: Host, second: Host) throws -> Bool
     {
@@ -189,11 +190,14 @@ struct HomeView: View {
                     label: {
                         Label("Terminals", systemImage: "terminal")
                         Spacer ()
-                        Text ("\(connections.terminalsCount)")
+                        Text ("\(terminalCount)")
                             .padding(4)
                             .background(Color (.systemGray5))
                             .cornerRadius(3)
                             .foregroundColor(Color (.systemGray))
+                            .onAppear {
+                                terminalCount = connections.terminalsCount
+                            }
                     })
                 NavigationLink(
                     destination: KeyManagementView( ),

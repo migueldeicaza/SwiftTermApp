@@ -723,6 +723,23 @@ class Session: CustomDebugStringConvertible, Equatable {
             return copy
         }
     }
+    
+    public func allocateConnectionId (avoidIds: [Int]) -> Int {
+        var serials = Set<Int> ()
+        
+        for terminal in terminals {
+            serials.update(with: terminal.serial)
+        }
+        for usedId in avoidIds {
+            serials.update(with: usedId)
+        }
+        for x in 0..<Int.max {
+            if !serials.contains(x) {
+                return x
+            }
+        }
+        return -1
+    }
 }
 
 /// A session powered by an NWConnection socket

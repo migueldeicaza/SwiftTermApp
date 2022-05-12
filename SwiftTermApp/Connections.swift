@@ -23,6 +23,8 @@ class Connections: ObservableObject {
     ]
 
     public var terminalsCount: Int {
+        dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
+
         var count = 0
         for session in sessions {
             count += session.terminals.count
@@ -36,44 +38,28 @@ class Connections: ObservableObject {
     
     // Returns a newly allocated array with all active terminals
     public func getTerminals () -> [SshTerminalView] {
+        dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
+
         return sessions.flatMap { $0.terminals }
-    }
-    
-    public static func allocateConnectionId (avoidIds: [Int]) -> Int {
-        var serials = Set<Int> ()
-        
-        for session in shared.sessions {
-            for terminal in session.terminals {
-                serials.update(with: terminal.serial)
-            }
-        }
-        for usedId in avoidIds {
-            serials.update(with: usedId)
-        }
-        for x in 0..<Int.max {
-            if !serials.contains(x) {
-                return x
-            }
-        }
-        return -1
     }
     
     /// Tracks the terminal
     public static func track (session: Session)
     {
-        if shared.sessions.contains(session) {
-            return
-        }
-        shared.sessions.append(session)
-        
-        // This is used to track whether we should keep the display on, only when we have active sessions
         DispatchQueue.main.async {
+            if shared.sessions.contains(session) {
+                return
+            }
+            shared.sessions.append(session)
+            
+            // This is used to track whether we should keep the display on, only when we have active sessions
             settings.updateKeepOn()
         }
     }
     
     public static func lookupActiveTerminal (host: Host) -> SshTerminalView?
     {
+        dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
         if let session = lookupActiveSession(host: host) {
             return session.terminals.first
         }
@@ -81,10 +67,10 @@ class Connections: ObservableObject {
     }
     
     public static func unregister (session: Session) {
-        if let idx = shared.sessions.firstIndex(of: session) {
-            shared.sessions.remove(at: idx)
-        }
         DispatchQueue.main.async {
+            if let idx = shared.sessions.firstIndex(of: session) {
+                shared.sessions.remove(at: idx)
+            }
             settings.updateKeepOn()
         }
     }
@@ -92,6 +78,7 @@ class Connections: ObservableObject {
 
     public static func lookupActiveSession (host: Host) -> Session?
     {
+        dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
         return shared.sessions.first { $0.host.id == host.id }
     }
 

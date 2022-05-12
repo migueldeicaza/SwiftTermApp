@@ -136,7 +136,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     }
 
     func launchNewTmux (_ channel: Channel, usedIds: [Int]) async -> Bool {
-        serial = Connections.allocateConnectionId(avoidIds: usedIds)
+        serial = session.allocateConnectionId(avoidIds: usedIds)
         let status = await channel.processStartup(request: "exec", message: "tmux \(tmuxFeatureFlags) new-session -s 'SwiftTermApp-\(serial)'")
         if status != 0 {
             DispatchQueue.main.async {
