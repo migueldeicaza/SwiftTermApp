@@ -79,6 +79,15 @@ class Connections: ObservableObject {
         }
         return nil
     }
+    
+    public static func unregister (session: Session) {
+        if let idx = shared.sessions.firstIndex(of: session) {
+            shared.sessions.remove(at: idx)
+        }
+
+        settings.updateKeepOn()
+    }
+
 
     public static func lookupActiveSession (host: Host) -> Session?
     {

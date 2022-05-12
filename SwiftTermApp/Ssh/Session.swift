@@ -5,9 +5,6 @@
 //  Created by Miguel de Icaza on 12/8/21.
 //  Copyright © 2021 Miguel de Icaza. All rights reserved.
 //
-// TODO:
-//   Explore using libssh2_session blocking to avoid the manual timeout implementation in read
-//   Explore removing all the DispatchQueues that I used while debugging this
 
 import Foundation
 import Network
@@ -191,7 +188,7 @@ class Session: CustomDebugStringConvertible, Equatable {
                 
                 var window: UIHostingController<HostAuthUnknown>!
                 window = UIHostingController<HostAuthUnknown>(rootView: HostAuthUnknown(alias: self.host.alias, hostString: getHostName(host: host), fingerprint: fingerprint, cancelCallback: {
-                    // TODO: Connections.remove(self)
+                    self.closeSession()
                     window.dismiss (animated: true) { c.resume(returning: false) }
                 }, okCallback: {
                     window.dismiss (animated: true) {
@@ -217,7 +214,7 @@ class Session: CustomDebugStringConvertible, Equatable {
         @MainActor
         func showHostKeyMismatch (fingerprint: String) async {
             let _: Void = await withCheckedContinuation { c in
-                //TODO: Connections.remove (self)
+                self.closeSession()
                 let parent = getParentViewController (hint: delegate.getResponder())
                 var window: UIHostingController<HostAuthKeyMismatch>!
                 
@@ -438,7 +435,8 @@ class Session: CustomDebugStringConvertible, Equatable {
             
             logConnection ("SSH: handshake error, code: \(libSsh2ErrorToString(error: handshakeStatus)) \(handshakeStatus)")
             // There was an error
-            // TODO: handle this one
+            closeSession()
+            return
         }
         banner = await sessionActor.getBanner ()
         if await !checkHostIntegrity () {
@@ -472,7 +470,7 @@ class Session: CustomDebugStringConvertible, Equatable {
     @MainActor
     func connectionError (error: String) {
         logConnection("Connection: \(error)")
-        // TODO: Connections.remove(self)q
+        self.closeSession()
         let parent = getParentViewController (hint: delegate.getResponder())
         var window: UIHostingController<HostConnectionError>!
         window = UIHostingController<HostConnectionError>(rootView: HostConnectionError(host: host, error: error, ok: {
@@ -671,9 +669,23 @@ class Session: CustomDebugStringConvertible, Equatable {
         if let index = terminals.firstIndex(of: terminal) {
             terminals.remove (at: index)
         }
+        let terminalsCount = terminals.count
         terminalsLock.unlock ()
+        if terminalsCount == 0 {
+            closeEmptySession ()
+        }
     }
     
+    func closeEmptySession () {
+        self.shutdown()
+        Connections.unregister (session: self)
+    }
+    
+    func closeSession () {
+        terminals = []
+        closeEmptySession()
+    }
+
     /// Creates an instance of the libssh2-level list of known hosts.
     public func makeKnownHost () async -> LibsshKnownHost? {
         return await sessionActor.makeKnownHost()
