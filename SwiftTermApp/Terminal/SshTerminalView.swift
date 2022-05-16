@@ -42,7 +42,6 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     
     // TODO, this should be based on the user locale, not forced here
     var lang = "en_US.UTF-8"
-    var reconnect: Bool = true
     
     // This is used to track when the session started, and if it is taking too long,
     // we start to output diagnostics on the connection
@@ -292,8 +291,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
     }
     
-    // Delegate SocketSessionDelegate.loggedIn: invoked when the connection has been authenticated
-    func loggedIn (session: Session) async {
+    func setupTerminalChannel (session: Session) async {
         let _ = await setupChannel (session: session)
         
         canOutputToConsole = false
@@ -308,6 +306,11 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
         historyRecordConnection (connectionDate)
     }
+
+    // Delegate SocketSessionDelegate.loggedIn: invoked when the connection has been authenticated
+    func loggedIn (session: Session) async {
+        await setupTerminalChannel (session: session)
+    }
     
     func loginFailed(session: Session, details: String) {
         closeTerminal()
@@ -320,6 +323,10 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
         session.drop (terminal: self)
         session = nil
+    }
+    
+    func reconnect (session: Session) async {
+       await setupTerminalChannel(session: session)
     }
     
     init (frame: CGRect, host: Host, serial: Int = -1) throws
@@ -345,6 +352,11 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         if !useDefaultBackground {
             updateBackground(background: host.background)
         }
+    }
+    
+    /// This flag indicates that this terminal view would like to get a callback if the session drops and reconnects
+    var wantsSessionReconnect: Bool {
+        return host.reconnectType == "tmux"
     }
     
     // SessionDelegate.getResponder method
