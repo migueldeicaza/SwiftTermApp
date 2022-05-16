@@ -25,6 +25,7 @@ class TerminalViewController: UIViewController {
     var interactive: Bool
     var host: Host
     static var Serial: Int = 0
+    var serial: Int
 
     // Because we are sharing the TerminalView, we do not want to
     // mess with its size, unless we have it attached to this view
@@ -41,6 +42,7 @@ class TerminalViewController: UIViewController {
         TerminalViewController.Serial += 1
         self.host = host
         self.interactive = interactive
+        self.serial = serial
         DataStore.shared.used (host: host)
         super.init(nibName: nil, bundle: nil)
     }
@@ -52,6 +54,7 @@ class TerminalViewController: UIViewController {
         self.terminalView = terminalView
         self.host = terminalView.host
         self.interactive = interactive
+        self.serial = terminalView.serial
         DataStore.shared.used (host: host)
         super.init(nibName: nil, bundle: nil)
     }
@@ -63,6 +66,7 @@ class TerminalViewController: UIViewController {
     func startConnection() -> SshTerminalView? {
         do {
             let tv = try SshTerminalView(frame: view.frame, host: host)
+            tv.serial = self.serial
             if host.style == "" {
                 tv.applyTheme (theme: settings.getTheme())
             } else {
@@ -212,7 +216,7 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
                     return ret
                 }
             }
-            let ret = TerminalViewController (host: host, interactive: interactive, serial: -2)
+            let ret = TerminalViewController (host: host, interactive: interactive, serial: createNew ? -2 : -1)
             viewController = ret
             return ret
         case .rehost(rehost: let terminalView):

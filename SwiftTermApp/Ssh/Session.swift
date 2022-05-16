@@ -933,14 +933,28 @@ class SocketSession: Session {
     }
     
     func attemptReconnect () -> Bool {
-        // TODO: should the session really be aware of this?
-        if self.host.reconnectType == "tmux" {
-            self.shutdown()
-            self.reconnect ()
-
-            return true
+        var shouldReconnect = false
+        
+        for term in terminals {
+            if term.wantsSessionReconnect {
+                shouldReconnect = true
+                break
+            }
         }
-        return false
+        if shouldReconnect == false {
+            return false
+        }
+        self.shutdown()
+        self.reconnect ()
+
+        for term in terminals {
+            if term.wantsSessionReconnect {
+                Task {
+                    await term.reconnect (session: self)
+                }
+            }
+        }
+        return true
     }
     
     func remoteEndDisconnected () {
