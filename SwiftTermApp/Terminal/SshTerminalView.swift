@@ -26,7 +26,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     public var currentDirectory: String? = nil
     
     var completeConnectSetup: () -> () = { }
-    var session: SocketSession!
+    var session: SocketSession?
     var sessionChannel: Channel?
 
     // Session restoration:
@@ -114,7 +114,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             return false
         }
         if host.reconnectType == "tmux" {
-            if await tmuxConnection (channel) {
+            if await tmuxConnection (session, channel) {
                 return true
             }
         }
@@ -134,7 +134,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         return true
     }
 
-    func launchNewTmux (_ channel: Channel, usedIds: [Int]) async -> Bool {
+    func launchNewTmux (_ session: Session, _ channel: Channel, usedIds: [Int]) async -> Bool {
         serial = session.allocateConnectionId(avoidIds: usedIds)
         let status = await channel.processStartup(request: "exec", message: "tmux \(tmuxFeatureFlags) new-session -s 'SwiftTermApp-\(serial)'")
         if status != 0 {
@@ -145,7 +145,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         return status == 0
     }
     
-    func attachTmux (_ channel: Channel, serial: Int) async -> Bool {
+    func attachTmux (_ session: Session, _ channel: Channel, serial: Int) async -> Bool {
         let tmuxAttachCommand = "tmux \(self.tmuxFeatureFlags) attach-session -t SwiftTermApp-\(serial)"
         let status = await channel.processStartup(request: "exec", message: tmuxAttachCommand)
         if status == 0 {
@@ -159,7 +159,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
     }
 
-    func tmuxConnection (_ channel: Channel) async -> Bool {
+    func tmuxConnection (_ session: Session, _ channel: Channel) async -> Bool {
         logConnection ("tmux: determining version")
         let oldTmux = await session.runSimple(command: "tmux -V", lang: lang) { (out, err) -> Bool in
             guard let str = out else {
@@ -209,7 +209,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         // 3. If that fails, we create a new session
         if serial == -2 {
             logConnection ("tmux: launching tmux")
-            if await !launchNewTmux(channel, usedIds: activeSessions.map { $0.id }) {
+            if await !launchNewTmux(session, channel, usedIds: activeSessions.map { $0.id }) {
                 return false
             }
         } else if serial == -1 {
@@ -217,21 +217,21 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             var foundSession = false
             for pair in activeSessions.sorted(by: { $0.sessionCount < $1.sessionCount }) {
                 logConnection ("tmux: attaching to tmux serial \(pair.id)")
-                if await attachTmux(channel, serial: pair.id) {
+                if await attachTmux(session, channel, serial: pair.id) {
                     foundSession = true
                     break
                 }
             }
             if !foundSession {
                 logConnection ("tmux: launching new tmux instance")
-                if await !launchNewTmux(channel, usedIds: activeSessions.map { $0.id }) {
+                if await !launchNewTmux(session, channel, usedIds: activeSessions.map { $0.id }) {
                     return false
                 }
             }
         } else {
             if activeSessions.contains (where: { $0.id == serial }) {
                 logConnection ("tmux: attempting to attach to tmux session \(serial)")
-                if await !attachTmux (channel, serial: serial) {
+                if await !attachTmux (session, channel, serial: serial) {
                     logConnection ("tmux: failed to attach to tmux session")
                     return false
                 }
@@ -255,6 +255,9 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     }
     
     func directoryListing () async {
+        guard let session = session else {
+            return
+        }
         var dir = "/"
         await session.runSimple(command: "pwd", lang: lang) { out, err in
             dir = out ?? "/"
@@ -318,10 +321,10 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     
     func closeTerminal () {
         if let channel = sessionChannel {
-            session.unregister(channel: channel)
+            session?.unregister(channel: channel)
             sessionChannel = nil
         }
-        session.drop (terminal: self)
+        session?.drop (terminal: self)
         session = nil
     }
     
@@ -338,16 +341,18 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         startConnectionMonitor ()
         terminalDelegate = self
         
+        var activeSession: SocketSession
         if let existingSession = Connections.lookupActiveSession(host: host) as? SocketSession {
-            session = existingSession
+            activeSession = existingSession
             Task.detached {
-                await self.loggedIn(session: self.session)
+                await self.loggedIn(session: existingSession)
             }
         } else {
-            session = SocketSession(host: host, delegate: self)
-            Connections.track(session: session)
+            activeSession = SocketSession(host: host, delegate: self)
+            Connections.track(session: activeSession)
         }
-        session.track(terminal: self)
+        self.session = activeSession
+        activeSession.track(terminal: self)
 
         if !useDefaultBackground {
             updateBackground(background: host.background)
@@ -495,6 +500,9 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     
     // Attempts to guess the kind of OS to update the icon displayed for the host.hostKind
     func guessOsIcon () async {
+        guard let session = session else {
+            return
+        }
         let sftp = await session.openSftp()
 
         // If this is a Linux system
@@ -551,7 +559,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     // UI instead
     var canOutputToConsole = true
     func logConnection (_ msg: String) {
-        session.logConnection(msg)
+        session?.logConnection(msg)
     }
  
     // Number of seconds before we start logging diagnostics information if the connection does not succeed
@@ -571,7 +579,10 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             guard self.canOutputToConsole else {
                 return
             }
-            for x in self.session.messageManager.getMessages() {
+            guard let session = self.session else {
+                return
+            }
+            for x in session.messageManager.getMessages() {
                 self.feed(text: "\(timeStampFormatter.string(from: x.time)): \(x.msg)\r\n")
             }
             DispatchQueue.main.asyncAfter(deadline: .now()+0.5, execute: self.flushMessages)
