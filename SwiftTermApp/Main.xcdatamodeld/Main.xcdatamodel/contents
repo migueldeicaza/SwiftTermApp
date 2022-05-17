@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21E258" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="CEnvironmentVariable" representedClassName="CEnvironmentVariable" syncable="YES" codeGenerationType="class">
+        <attribute name="key" optional="YES" attributeType="String"/>
+        <attribute name="value" optional="YES" attributeType="String"/>
+        <relationship name="container" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CHost" inverseName="sEnvironmentVariables" inverseEntity="CHost"/>
+    </entity>
+    <entity name="CHost" representedClassName="CHost" syncable="YES" codeGenerationType="class">
+        <attribute name="sAlias" optional="YES" attributeType="String"/>
+        <attribute name="sBackground" optional="YES" attributeType="String"/>
+        <attribute name="sBackspaceAsControlH" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="sHostKind" optional="YES" attributeType="String"/>
+        <attribute name="sHostname" optional="YES" attributeType="String"/>
+        <attribute name="sLastUsed" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="sPort" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="sReconnectType" optional="YES" attributeType="String"/>
+        <attribute name="sSshKey" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="sStyle" optional="YES" attributeType="String"/>
+        <attribute name="sUsePassword" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="sUsername" optional="YES" attributeType="String"/>
+        <relationship name="sEnvironmentVariables" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CEnvironmentVariable" inverseName="container" inverseEntity="CEnvironmentVariable"/>
+        <relationship name="sStartupScripts" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CScripts" inverseName="container" inverseEntity="CScripts"/>
+    </entity>
+    <entity name="CKey" representedClassName="CKey" syncable="YES" codeGenerationType="class">
+        <attribute name="sKeyTag" optional="YES" attributeType="String"/>
+        <attribute name="sName" optional="YES" attributeType="String"/>
+        <attribute name="sPrivateKey" optional="YES" attributeType="String"/>
+        <attribute name="sPublicKey" optional="YES" attributeType="String"/>
+        <attribute name="sType" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="CScripts" representedClassName="CScripts" syncable="YES" codeGenerationType="class">
+        <attribute name="script" optional="YES" attributeType="String"/>
+        <relationship name="container" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CHost" inverseName="sStartupScripts" inverseEntity="CHost"/>
+    </entity>
+    <entity name="UserSnippet" representedClassName="UserSnippet" syncable="YES" codeGenerationType="class">
+        <attribute name="command" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="platforms" optional="YES" attributeType="String"/>
+        <attribute name="title" optional="YES" attributeType="String"/>
+    </entity>
+    <elements>
+        <element name="CHost" positionX="-63" positionY="-18" width="128" height="239"/>
+        <element name="CKey" positionX="-54" positionY="0" width="128" height="104"/>
+        <element name="UserSnippet" positionX="-36" positionY="9" width="128" height="89"/>
+        <element name="CEnvironmentVariable" positionX="-18" positionY="72" width="128" height="74"/>
+        <element name="CScripts" positionX="0" positionY="63" width="128" height="59"/>
+    </elements>
+</model>

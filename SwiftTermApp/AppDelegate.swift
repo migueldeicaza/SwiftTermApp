@@ -14,6 +14,7 @@ struct SampleApp: App {
     @State var dates = [Date]()
     @State var launchHost: Host?
     @StateObject private var historyController = globalHistoryController
+    @StateObject var dataController: DataController
     @Environment(\.scenePhase) var scenePhase
 
     func extendLifetime () {
@@ -42,6 +43,9 @@ struct SampleApp: App {
 //            print("Family: \(family) Font names: \(names)")
 //        }
 //        print ("here")
+        
+        let dataController = DataController()
+            _dataController = StateObject(wrappedValue: dataController)
     }
     
     var body: some Scene {
@@ -61,6 +65,9 @@ struct SampleApp: App {
                     }
                 }
                 .environment(\.managedObjectContext, historyController.container.viewContext)
+                .environment(\.managedObjectContext, dataController.container.viewContext)
+                .environmentObject(dataController)
+
         }
         .commands {
             TerminalCommands()
