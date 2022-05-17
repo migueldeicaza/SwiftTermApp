@@ -45,7 +45,7 @@ struct SampleApp: App {
 //        print ("here")
         
         let dataController = DataController()
-            _dataController = StateObject(wrappedValue: dataController)
+        _dataController = StateObject(wrappedValue: dataController)
     }
     
     var body: some Scene {
@@ -64,7 +64,7 @@ struct SampleApp: App {
                         extendLifetime ()
                     }
                 }
-                .environment(\.managedObjectContext, historyController.container.viewContext)
+                //.environment(\.managedObjectContext, historyController.container.viewContext)
                 .environment(\.managedObjectContext, dataController.container.viewContext)
                 .environmentObject(dataController)
 

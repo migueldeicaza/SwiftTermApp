@@ -93,6 +93,7 @@ struct iPadHostSummaryView: View {
     @State var createNewTerm = false
     //@Environment(\.editMode) var editMode
     @State var active = false
+    
     var body: some View {
         VStack {
             HStack (spacing: 12){
@@ -158,6 +159,7 @@ struct HostsView : View {
     @State var showHostEdit: Bool = false
     @ObservedObject var store: DataStore = DataStore.shared
     //@State private var editMode = EditMode.inactive
+    @Environment(\.managedObjectContext) var moc
 
     func delete (at offsets: IndexSet)
     {
@@ -206,7 +208,7 @@ struct HostsView : View {
         }
         .navigationTitle(Text("Hosts"))
         .sheet (isPresented: $showHostEdit) {
-            HostEditView(host: Host(), showingModal: self.$showHostEdit)
+            HostEditView(host: Host(context: moc), showingModal: self.$showHostEdit)
         }
     }
 }

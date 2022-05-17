@@ -149,6 +149,7 @@ class Key: Codable, Identifiable {
 /// - backspaceAsControlH
 ///
 /// Possibly should add; Font and FontSize
+#if false
 class Host: Codable, Identifiable {
     internal init(id: UUID = UUID(), alias: String = "", hostname: String = "", backspaceAsControlH: Bool = false, port: Int = 22, usePassword: Bool = true, username: String = "", password: String = "", hostKind: String = "", environmentVariables: [String:String] = [:], startupScripts: [String] = [], sshKey: UUID? = nil, style: String = "", background: String = "", lastUsed: Date = Date.distantPast) {
         self.id = id
@@ -238,7 +239,9 @@ class Host: Codable, Identifiable {
     
     /// Reconnection type, one of "" or "tmux"
     var reconnectType: String = ""
-    
+}
+#else
+extension Host {
     func summary() -> String {
         hostname + (style != "" ? ", \(style)" : "")
     }
@@ -271,6 +274,7 @@ class Host: Codable, Identifiable {
         }
     }
 }
+#endif
 
 class Snippet: Codable, Identifiable {
     var title: String
@@ -374,9 +378,9 @@ class DataStore: ObservableObject {
             }
             return try! decoder.decode ([T].self, from: data)
         }
-        hosts = decode ("/tmp/swiftterm-debug.hosts")
-        keys = decode ("/tmp/swiftterm-debug.keys")
-        snippets = decode ("/tmp/swiftterm-debug.snippets")
+//        hosts = decode ("/tmp/swiftterm-debug.hosts")
+//        keys = decode ("/tmp/swiftterm-debug.keys")
+//        snippets = decode ("/tmp/swiftterm-debug.snippets")
     }
     
     func dumpData () {
@@ -386,9 +390,9 @@ class DataStore: ObservableObject {
             let data = try! coder.encode(values)
             try! data.write(to: URL (fileURLWithPath: file))
         }
-        encode ("/tmp/swiftterm-debug.hosts", hosts)
-        encode ("/tmp/swiftterm-debug.keys", keys)
-        encode ("/tmp/swiftterm-debug.snippets", snippets)
+//        encode ("/tmp/swiftterm-debug.hosts", hosts)
+//        encode ("/tmp/swiftterm-debug.keys", keys)
+//        encode ("/tmp/swiftterm-debug.snippets", snippets)
     }
 #endif
 
@@ -396,14 +400,14 @@ class DataStore: ObservableObject {
         defaults = UserDefaults (suiteName: "SwiftTermApp")
         let decoder = JSONDecoder ()
         if let d = defaults {
-            if let data = d.data(forKey: hostsArrayKey) {
-                if let h = try? decoder.decode ([Host].self, from: data) {
-                    hosts = h
-                }
-            }
-            for host in hosts {
-                host.loadKeychainElements()
-            }
+//            if let data = d.data(forKey: hostsArrayKey) {
+//                if let h = try? decoder.decode ([Host].self, from: data) {
+//                    hosts = h
+//                }
+//            }
+//            for host in hosts {
+//                host.loadKeychainElements()
+//            }
             if let data = d.data(forKey: keysArrayKey) {
                 if let k = try? decoder.decode ([Key].self, from: data) {
                     keys = k
@@ -438,9 +442,9 @@ class DataStore: ObservableObject {
         }
         
         let coder = JSONEncoder ()
-        if let hostData = try? coder.encode(hosts) {
-            d.set (hostData, forKey: hostsArrayKey)
-        }
+//        if let hostData = try? coder.encode(hosts) {
+//            d.set (hostData, forKey: hostsArrayKey)
+//        }
         
         // First save the keys in the keychain, this assigns the keyTag if not set before
         for key in keys {

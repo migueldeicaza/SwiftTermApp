@@ -8,74 +8,102 @@
 
 import Foundation
 
-extension CHost {
+extension Host {
     public var id: UUID {
         UUID ()
     }
 
     public var alias: String {
-        sAlias ?? ""
+        get { sAlias ?? "" }
+        set { sAlias = newValue }
     }
     
     public var hostname: String {
-        sHostname ?? ""
+        get { sHostname ?? "" }
+        set { sHostname = newValue }
     }
     
     public var background: String {
-        sBackground ?? ""
+        get { sBackground ?? "" }
+        set { sBackground = newValue }
     }
     
     public var backspaceAsControlH: Bool {
-        sBackspaceAsControlH
+        get { sBackspaceAsControlH }
+        set { sBackspaceAsControlH = newValue }
     }
     
     public var port: Int {
-        Int (sPort)
+        get { Int (sPort) }
+        set { sPort = Int64 (newValue) }
     }
     
     public var usePassword: Bool {
-        sUsePassword
+        get { sUsePassword }
+        set { sUsePassword = newValue }
     }
     
     public var username: String {
-        sUsername ?? ""
+        get { sUsername ?? "" }
+        set { sUsername = newValue }
     }
     
-//    public var password: String {
-//        sPassword ?? ""
-//    }
+    public var password: String {
+        get { "" }
+        set { }
+    }
     
     public var hostKind: String {
-        sHostKind ?? ""
+        get { sHostKind ?? "" }
+        set { sHostKind = newValue }
+    }
+    
+    public var reconnectType: String {
+        get { sReconnectType ?? "" }
+        set { sReconnectType = newValue }
     }
     
     public var environmentVariables: [String:String] {
-        guard let arr = sEnvironmentVariables?.allObjects as? [CEnvironmentVariable] else {
-            return [:]
-        }
-        var ret: [String:String] = [:]
-        for x in arr {
-            if let key = x.key, let value = x.value {
-                ret [key] = value
+        get {
+            guard let arr = sEnvironmentVariables?.allObjects as? [CEnvironmentVariable] else {
+                return [:]
             }
+            var ret: [String:String] = [:]
+            for x in arr {
+                if let key = x.key, let value = x.value {
+                    ret [key] = value
+                }
+            }
+            return ret
         }
-        return ret
+        set {
+            // TODO
+            abort ()
+        }
     }
     
     public var startupScripts: [String] {
-        let scripts = sStartupScripts?.allObjects as? [CScripts] ?? []
-        return scripts.compactMap { $0.script ?? nil }
+        get {
+            let scripts = sStartupScripts?.allObjects as? [CScripts] ?? []
+            return scripts.compactMap { $0.script ?? nil }
+        }
+        set {
+            abort ()
+        }
     }
     
     public var sshKey: UUID? {
-        sSshKey
+        get { sSshKey }
+        set { sSshKey = newValue }
     }
  
     public var style: String {
-        sStyle ?? ""
+        get { sStyle ?? "" }
+        set { sStyle = newValue }
     }
     
     public var lastUsed: Date {
-        sLastUsed ?? Date.distantPast
+        get { sLastUsed ?? Date.distantPast }
+        set { sLastUsed = newValue }
     }
 }

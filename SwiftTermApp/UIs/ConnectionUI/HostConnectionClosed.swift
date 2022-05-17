@@ -52,8 +52,15 @@ struct HostConnectionClosed_Previews: PreviewProvider {
     }
     
     struct WrapperView: View {
-        var host = Host (alias: "dbserver", hostname: "dbserver-1.prod.com")
         
+        var host: Host
+        init () {
+            host = Host (context: DataController.preview.container.viewContext)
+            host.alias = "dbserver"
+            host.hostname = "dbserver.domain.com"
+        }
+        
+
         var body: some View {
             HostConnectionClosed(host: host, receivedEOF: false)
         }

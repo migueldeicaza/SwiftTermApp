@@ -40,7 +40,6 @@
 		4943DA5F27F385D500E4E2F5 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA5E27F385D500E4E2F5 /* Secrets.swift */; };
 		4943DA6427F3BA5000E4E2F5 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA6327F3BA5000E4E2F5 /* HistoryView.swift */; };
 		4943DA6627F4B11A00E4E2F5 /* HistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA6527F4B11A00E4E2F5 /* HistoryController.swift */; };
-		4943DA6927F4B5BB00E4E2F5 /* History.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA6727F4B5BB00E4E2F5 /* History.xcdatamodeld */; };
 		4943DA6C27F5F90B00E4E2F5 /* DateFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA6B27F5F90B00E4E2F5 /* DateFormatting.swift */; };
 		4943DA8E27FB712F00E4E2F5 /* Onboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA8D27FB712F00E4E2F5 /* Onboard.swift */; };
 		4943DA9027FB754500E4E2F5 /* OnboardWelcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4943DA8F27FB754500E4E2F5 /* OnboardWelcome.swift */; };
@@ -160,7 +159,6 @@
 		4943DA6127F388F600E4E2F5 /* ci_pre_xcodebuild.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_pre_xcodebuild.sh; sourceTree = "<group>"; };
 		4943DA6327F3BA5000E4E2F5 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		4943DA6527F4B11A00E4E2F5 /* HistoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryController.swift; sourceTree = "<group>"; };
-		4943DA6827F4B5BB00E4E2F5 /* History.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = History.xcdatamodel; sourceTree = "<group>"; };
 		4943DA6B27F5F90B00E4E2F5 /* DateFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatting.swift; sourceTree = "<group>"; };
 		4943DA8D27FB712F00E4E2F5 /* Onboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Onboard.swift; sourceTree = "<group>"; };
 		4943DA8F27FB754500E4E2F5 /* OnboardWelcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardWelcome.swift; sourceTree = "<group>"; };
@@ -384,7 +382,6 @@
 			children = (
 				4943DA6327F3BA5000E4E2F5 /* HistoryView.swift */,
 				4943DA6527F4B11A00E4E2F5 /* HistoryController.swift */,
-				4943DA6727F4B5BB00E4E2F5 /* History.xcdatamodeld */,
 			);
 			path = History;
 			sourceTree = "<group>";
@@ -809,7 +806,6 @@
 				4973B42C24650B440087D978 /* UIViewController+SwiftUI.swift in Sources */,
 				49BA359C2676F15D00B63510 /* KeySummaryView.swift in Sources */,
 				493F4F34276511CE00838AC7 /* Channel.swift in Sources */,
-				4943DA6927F4B5BB00E4E2F5 /* History.xcdatamodeld in Sources */,
 				4901168E2456058B002C1F85 /* KeyManagementView.swift in Sources */,
 				49148F99268AB0B0000AB718 /* InputKeyboard.swift in Sources */,
 				49BA35982676EEB600B63510 /* KeyTools.swift in Sources */,
@@ -1253,16 +1249,6 @@
 /* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
-		4943DA6727F4B5BB00E4E2F5 /* History.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				4943DA6827F4B5BB00E4E2F5 /* History.xcdatamodel */,
-			);
-			currentVersion = 4943DA6827F4B5BB00E4E2F5 /* History.xcdatamodel */;
-			path = History.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
 		49C650932832D8B2005DFC17 /* Main.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (

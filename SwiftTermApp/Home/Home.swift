@@ -88,21 +88,23 @@ func getHostFromUrl (_ url: URL, visiblePrefix: String = "Dynamic") -> Host? {
             return match
         }
         
-        return Host (id: UUID(),
-                     alias: "\(visiblePrefix) \(requestedHost)",
-                     hostname: requestedHost,
-                     backspaceAsControlH: false,
-                     port: requestedPort,
-                     usePassword: false,
-                     username: requestedUser ?? "",
-                     password: "",
-                     hostKind: "",
-                     environmentVariables: [:],
-                     startupScripts: [],
-                     sshKey: nil,
-                     style: "",
-                     background: "",
-                     lastUsed: Date ())
+        // TODO
+        return nil
+//        return Host (id: UUID(),
+//                     alias: "\(visiblePrefix) \(requestedHost)",
+//                     hostname: requestedHost,
+//                     backspaceAsControlH: false,
+//                     port: requestedPort,
+//                     usePassword: false,
+//                     username: requestedUser ?? "",
+//                     password: "",
+//                     hostKind: "",
+//                     environmentVariables: [:],
+//                     startupScripts: [],
+//                     sshKey: nil,
+//                     style: "",
+//                     background: "",
+//                     lastUsed: Date ())
     }
     return nil
 }
@@ -220,10 +222,12 @@ struct HomeView: View {
                         Label("Settings", systemImage: "gear")
                     })
                 NavigationLink(
+                    
                     destination: HistoryView(),
                     label: {
                         Label("History", systemImage: "clock")
                     })
+
             }
             
             Section {
