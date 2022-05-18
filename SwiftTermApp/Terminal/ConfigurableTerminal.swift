@@ -139,7 +139,7 @@ struct ConfigurableUITerminal_Previews: PreviewProvider {
     }
     
     struct WrapperView: View {
-        @State var host = Host ()
+        @State var host = DataController.preview.createSampleHost(0)
         @State var showingModal = false
         
         var body: some View {

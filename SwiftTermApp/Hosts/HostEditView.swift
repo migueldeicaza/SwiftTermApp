@@ -121,10 +121,10 @@ struct HostIconSelector: View {
 
 struct HostEditView: View {
     @ObservedObject var store: DataStore = DataStore.shared
+    @EnvironmentObject var dataController: DataController
     @State var alertClash: Bool = false
     var _host: Host
-    @Binding var showingModal: Bool
-    @State var selectedKey = 0
+//    @State var selectedKey = 0
     @State var keySelectorIsActive: Bool = false
     @State var showingPassword: Bool = false
 
@@ -142,16 +142,17 @@ struct HostEditView: View {
     @State var sshKey: UUID? = nil
     @State var reconnectType = 0
     @State var environmentVariables: [String:String] = [:]
+    @Environment(\.dismiss) private var dismiss
     
-    init (host: Host, showingModal: Binding<Bool>){
-        self._host = host
-        self._showingModal = showingModal
+    init (host: Host/*, activatedItem: Binding<Host?>*/){
+        _host = host
+        //self._activatedItem = activatedItem
         
         _originalAlias = State (initialValue: host.alias)
         _alias = State (initialValue: host.alias)
         _hostname = State (initialValue: host.hostname)
         _backspaceAsControlH = State (initialValue: host.backspaceAsControlH)
-        _port = State (initialValue: host.port == 22 ? "" : "\(host.port)")
+        _port = State (initialValue: host.port == 22 || host.port == 0 ? "" : "\(host.port)")
         _usePassword = State (initialValue: host.usePassword)
         _username = State (initialValue: host.username)
         _password = State (initialValue: host.password)
@@ -191,18 +192,23 @@ struct HostEditView: View {
         _host.sshKey = sshKey
         _host.reconnectType = reconnectType == 1 ? "tmux" : ""
         _host.environmentVariables = environmentVariables
-        
+        dataController.save()
         store.save (host: _host)
-        
+
+        dismiss()
         // Delaying the dismiss operation seems to prevent the SwiftUI crash:
         // https://stackoverflow.com/questions/58404725/why-does-my-swiftui-app-crash-when-navigating-backwards-after-placing-a-navigat
         //
         // Note that it still seems to sometimes go back to the toplevel (???) and
         // sometimes stay where we weref
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.showingModal = false
-        }
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+//           //self.activatedItem = nil
+//        }
         
+    }
+    
+    func happy () {
+        print ("happy")
     }
     
     func assignKey (chosenKey: Key)
@@ -325,7 +331,8 @@ struct HostEditView: View {
             .toolbar {
                 ToolbarItem (placement: .navigationBarLeading) {
                     Button ("Cancel") {
-                        self.showingModal.toggle()
+                        dismiss ()
+                        //self.activatedItem = nil
                     }
                 }
                 ToolbarItem (placement: .navigationBarTrailing) {
@@ -334,6 +341,7 @@ struct HostEditView: View {
                             self.alertClash = true
                         } else {
                             self.saveAndLeave ()
+
                         }
                     }
                     .disabled (disableSave)
@@ -360,10 +368,14 @@ struct HostEditView_Previews: PreviewProvider {
     }
     
     struct WrapperView: View {
-        @State var host = Host ()
+        @State var host = DataController.preview.createSampleHost(0)
+        @State var activatedHost: Host?
         
+        init () {
+            activatedHost = host
+        }
         var body: some View {
-            HostEditView(host: host, showingModal: .constant(true))
+            HostEditView(host: host /*, activatedItem: $activatedHost*/)
         }
     }
 }

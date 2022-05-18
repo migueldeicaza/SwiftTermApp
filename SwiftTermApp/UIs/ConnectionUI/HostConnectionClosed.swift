@@ -59,7 +59,6 @@ struct HostConnectionClosed_Previews: PreviewProvider {
             host.alias = "dbserver"
             host.hostname = "dbserver.domain.com"
         }
-        
 
         var body: some View {
             HostConnectionClosed(host: host, receivedEOF: false)

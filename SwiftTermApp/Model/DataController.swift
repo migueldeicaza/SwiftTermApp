@@ -9,13 +9,13 @@
 import Foundation
 import CoreData
 import SwiftUI
+import CloudKit
 
 class DataController: ObservableObject {
     let container: NSPersistentCloudKitContainer
     
     init(inMemory: Bool = false) {
         container = NSPersistentCloudKitContainer(name: "Main")
-
         if inMemory {
             container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
         }
@@ -24,18 +24,22 @@ class DataController: ObservableObject {
         // https://developer.apple.com/documentation/coredata/mirroring_a_core_data_store_with_cloudkit/setting_up_core_data_with_cloudkit
         let storeDirectory = NSPersistentContainer.defaultDirectoryURL()
 
-        let localStoreLocation = storeDirectory.appendingPathComponent ("local.store")
+        let localStoreLocation = storeDirectory.appendingPathComponent ("local.sqlite")
         let localStoreDescription = NSPersistentStoreDescription(url: localStoreLocation)
         localStoreDescription.configuration = "Local"
+        for x in container.persistentStoreDescriptions {
+            print (x)
+        }
+        let cloudStoreLocation = storeDirectory.appendingPathComponent("cloud.sqlite")
+        let cloudStoreDescription = NSPersistentStoreDescription(url: cloudStoreLocation)
         
-        let cloudStoreLocation = storeDirectory.appendingPathComponent("cloud.store")
-        let cloudStoreDescription =
-        NSPersistentStoreDescription(url: cloudStoreLocation)
+        let cloudOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.org.tirania.SwiftTermKeys")
+        cloudOptions.databaseScope = .private
         cloudStoreDescription.configuration = "Cloud"
-        cloudStoreDescription.cloudKitContainerOptions =
-                NSPersistentCloudKitContainerOptions(
-                    containerIdentifier: "org.tirania.SwiftTermAppX")
-        
+        cloudStoreDescription.cloudKitContainerOptions = cloudOptions
+        cloudStoreDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+        cloudStoreDescription.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+
         // Update the container's list of store descriptions
         container.persistentStoreDescriptions = [
             cloudStoreDescription,
@@ -47,16 +51,24 @@ class DataController: ObservableObject {
                 fatalError("Fatal error loading store: \(error.localizedDescription)")
             }
         }
+        container.viewContext.automaticallyMergesChangesFromParent = true
+
+    }
+
+    func createSampleHost (_ i: Int) -> Host {
+        let host = Host(context: container.viewContext)
+        host.sAlias = "Host \(i)"
+        host.sHostname = "foo-\(i).example.com"
+        host.sUsername = "root"
+
+        return host
     }
     
     func createSampleData() throws {
         let viewContext = container.viewContext
 
         for i in 1...5 {
-            let host = Host(context: viewContext)
-            host.sAlias = "Host \(i)"
-            host.sHostname = "foo-\(i).example.com"
-            host.sUsername = "root"
+            let host = createSampleHost (i)
         }
         
         for k in 1...5 {

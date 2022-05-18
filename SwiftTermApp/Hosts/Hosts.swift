@@ -23,8 +23,8 @@ func getHostImage (forKind hostKind: String) -> some View
 }
 
 struct HostSummaryView: View {
-    @Binding var host: Host
-    @State var showingModal = false
+    @ObservedObject var host: Host
+    @State var activatedItem: Host?
     @State var createNewTerm = false
     //@Environment(\.editMode) var editMode
     @State var active = false
@@ -54,14 +54,14 @@ struct HostSummaryView: View {
                     .font(.system(size: 24))
                     .foregroundColor(Color.accentColor)
                 .onTapGesture {
-                    self.showingModal = true
+                    self.activatedItem = host
                 }
                 .accessibilityAction {
-                    self.showingModal = true
+                    self.activatedItem = host
                 }
                 .accessibilityLabel("Edit settings")
-            }.sheet(isPresented: $showingModal) {
-                HostEditView(host: self.host, showingModal: self.$showingModal)
+            }.sheet(item: $activatedItem) { item in
+                HostEditView(host: self.host)
             }
             .contextMenu {
                 HStack {
@@ -88,8 +88,8 @@ struct HostSummaryView: View {
 }
 
 struct iPadHostSummaryView: View {
-    @Binding var host: Host
-    @State var showingModal = false
+    @ObservedObject var host: Host
+    @State var activatedItem: Host? = nil
     @State var createNewTerm = false
     //@Environment(\.editMode) var editMode
     @State var active = false
@@ -120,10 +120,10 @@ struct iPadHostSummaryView: View {
                         .font(.system(size: 24))
                 }
                 .onTapGesture {
-                    self.showingModal = true
+                    self.activatedItem = host
                 }
-            }.sheet(isPresented: $showingModal) {
-                HostEditView(host: self.host, showingModal: self.$showingModal)
+            }.sheet(item: $activatedItem) { item in
+                HostEditView(host: item)
             }
             .contextMenu {
                 HStack {
@@ -158,30 +158,44 @@ struct iPadHostSummaryView: View {
 }
 
 struct HostsView : View {
+    @EnvironmentObject var dataController: DataController
     @State var showHostEdit: Bool = false
     @ObservedObject var store: DataStore = DataStore.shared
+    private var hosts: FetchRequest<Host>
     //@State private var editMode = EditMode.inactive
     @Environment(\.managedObjectContext) var moc
-
-    func delete (at offsets: IndexSet)
+    @State var activatedItem: Host? = nil
+    
+    init () {
+        hosts = FetchRequest<Host>(entity: Host.entity(), sortDescriptors: [
+            NSSortDescriptor(keyPath: \Host.sAlias, ascending: true)
+        ])
+    }
+    private func delete (at offsets: IndexSet)
     {
         store.removeHosts (atOffsets: offsets)
+        dataController.save()
         store.saveState()
     }
     
     private func move(source: IndexSet, destination: Int)
     {
         store.hosts.move (fromOffsets: source, toOffset: destination)
+        dataController.save()
         store.saveState()
     }
     
+    func make (_ h: Host) -> Host {
+        print ("Making a new one")
+        return h
+    }
     var body: some View {
         VStack {
             STButton (text: "Add Host", icon: "plus.circle") {
-                self.showHostEdit = true
+                self.activatedItem = Host (context: moc)
             }
 
-            if store.hosts.count == 0 {
+            if hosts.wrappedValue.count == 0 {
                 HStack (alignment: .top){
                     Image (systemName: "desktopcomputer")
                         .font (.title)
@@ -192,8 +206,8 @@ struct HostsView : View {
             } else {
                 List {
                     Section {
-                        ForEach(self.store.hosts.indices, id: \.self) { idx in
-                            iPadHostSummaryView (host: self.$store.hosts [idx])
+                        ForEach(hosts.wrappedValue, id: \.self) { host in
+                            iPadHostSummaryView (host: host)
                         }
                         .onDelete(perform: delete)
                         .onMove(perform: move)
@@ -209,8 +223,8 @@ struct HostsView : View {
             }
         }
         .navigationTitle(Text("Hosts"))
-        .sheet (isPresented: $showHostEdit) {
-            HostEditView(host: Host(context: moc), showingModal: self.$showHostEdit)
+        .sheet (item: $activatedItem) { item in
+            HostEditView(host: item)//, activatedItem: self.$activatedItem)
         }
     }
 }
@@ -223,9 +237,13 @@ struct PrimaryLabel: ViewModifier {
 }
 
 struct Hosts_Previews: PreviewProvider {
+    static var dataController = DataController.preview
+
     static var previews: some View {
         NavigationView {
             HostsView()
+                .environment(\.managedObjectContext, dataController.container.viewContext)
+                .environmentObject(dataController)
         }
     }
 }
