@@ -68,7 +68,7 @@ class DataController: ObservableObject {
         let viewContext = container.viewContext
 
         for i in 1...5 {
-            let host = createSampleHost (i)
+            let _ = createSampleHost (i)
         }
         
         for k in 1...5 {

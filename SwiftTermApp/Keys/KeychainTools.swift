@@ -37,6 +37,7 @@ func _getPassphraseQuery (kind: String, value: String, password: String?, fetch:
             query [kSecValueData as String] = data
         }
     }
+    query[kSecAttrSynchronizable as String] = kCFBooleanTrue
     if fetch {
         query [kSecMatchLimit as String] = kSecMatchLimitOne
         query [kSecReturnData as String] = kCFBooleanTrue
@@ -44,9 +45,9 @@ func _getPassphraseQuery (kind: String, value: String, password: String?, fetch:
         // Additional configuration
         //  - Key is backed up and moved to other devices
         query [kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlocked
-
+        
         // - iCloud sync: TODO, need to sync the other data as well
-        // query[kSecAttrSynchronizable as String] = kCFBooleanTrue
+        
     }
 
     return (query as CFDictionary, attrs as CFDictionary)

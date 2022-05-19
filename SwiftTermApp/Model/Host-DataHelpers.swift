@@ -10,7 +10,13 @@ import Foundation
 
 extension Host {
     public var id: UUID {
-        UUID ()
+        get {
+            if sId == nil {
+                sId = UUID ()
+            }
+            return sId!
+        }
+        set { sId = newValue }
     }
 
     public var alias: String {
@@ -38,6 +44,35 @@ extension Host {
         set { sPort = Int64 (newValue) }
     }
     
+
+    /// Saves the private components into the keychain
+    public func savePasswordOnKeychain (password: String) -> OSStatus {
+        let (query, _) = getHostPasswordQuery(id: id.uuidString, password: password)
+        
+        let status = SecItemAdd(query, nil)
+        if status == errSecDuplicateItem {
+            let (query2, update) = getHostPasswordQuery(id: id.uuidString, password: password, split: true)
+            let status2 = SecItemUpdate(query2, update)
+            
+            return status2
+        }
+        return status
+    }
+    
+    func loadKeychainPassword () -> String {
+        let (query, _) = getHostPasswordQuery(id: id.uuidString, password: nil, fetch: true)
+
+        var itemCopy: AnyObject?
+        let status = SecItemCopyMatching(query, &itemCopy)
+        if status != 0 {
+            return ""
+        }
+        if let d = itemCopy as? Data {
+            return String (bytes: d, encoding: .utf8) ?? ""
+        } else {
+            return ""
+        }
+    }
     public var usePassword: Bool {
         get { sUsePassword }
         set { sUsePassword = newValue }
@@ -49,8 +84,8 @@ extension Host {
     }
     
     public var password: String {
-        get { "" }
-        set { }
+        get { loadKeychainPassword() }
+        set { savePasswordOnKeychain(password: newValue) }
     }
     
     public var hostKind: String {

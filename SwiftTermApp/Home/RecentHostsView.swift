@@ -13,7 +13,7 @@ struct RecentHostsView: View {
     @State var limit = 3
     var body: some View {
         ForEach(self.store.recentIndices (limit: limit), id: \.self) { idx in
-            HostSummaryView (host: self.$store.hosts [idx])
+            HostSummaryView (host: self.store.hosts [idx])
         }
     }
 }

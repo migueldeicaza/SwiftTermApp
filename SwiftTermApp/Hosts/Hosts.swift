@@ -61,7 +61,7 @@ struct HostSummaryView: View {
                 }
                 .accessibilityLabel("Edit settings")
             }.sheet(item: $activatedItem) { item in
-                HostEditView(host: self.host)
+                HostEditView(host: item)
             }
             .contextMenu {
                 HStack {
@@ -162,20 +162,27 @@ struct HostsView : View {
     @State var showHostEdit: Bool = false
     @ObservedObject var store: DataStore = DataStore.shared
     private var hosts: FetchRequest<Host>
-    //@State private var editMode = EditMode.inactive
     @Environment(\.managedObjectContext) var moc
-    @State var activatedItem: Host? = nil
+    @State var newHost: Bool = false
     
     init () {
         hosts = FetchRequest<Host>(entity: Host.entity(), sortDescriptors: [
             NSSortDescriptor(keyPath: \Host.sAlias, ascending: true)
         ])
     }
+    
     private func delete (at offsets: IndexSet)
     {
-        store.removeHosts (atOffsets: offsets)
+        let hostItems = hosts.wrappedValue
+        for offset in offsets {
+            let host = hostItems [offset]
+            let (query, _) = getHostPasswordQuery(id: host.id.uuidString, password: nil)
+            SecItemDelete(query)
+
+            dataController.delete(host)
+        }
+
         dataController.save()
-        store.saveState()
     }
     
     private func move(source: IndexSet, destination: Int)
@@ -192,7 +199,7 @@ struct HostsView : View {
     var body: some View {
         VStack {
             STButton (text: "Add Host", icon: "plus.circle") {
-                self.activatedItem = Host (context: moc)
+                newHost = true
             }
 
             if hosts.wrappedValue.count == 0 {
@@ -210,8 +217,6 @@ struct HostsView : View {
                             iPadHostSummaryView (host: host)
                         }
                         .onDelete(perform: delete)
-                        .onMove(perform: move)
-                        //.environment(\.editMode, $editMode)
                     }
                 }
                 .listStyle(DefaultListStyle())
@@ -223,8 +228,8 @@ struct HostsView : View {
             }
         }
         .navigationTitle(Text("Hosts"))
-        .sheet (item: $activatedItem) { item in
-            HostEditView(host: item)//, activatedItem: self.$activatedItem)
+        .sheet (isPresented: $newHost) {
+            HostEditView (host: nil)
         }
     }
 }
