@@ -7,13 +7,14 @@
 
 import SwiftUI
 import Shake
-var globalHistoryController = HistoryController()
+
+/// Databases (both configurations, local and cloudKit are here)
+var globalDataController = DataController ()
 
 @main
 struct SampleApp: App {
     @State var dates = [Date]()
     @State var launchHost: Host?
-    @StateObject private var historyController = globalHistoryController
     @StateObject var dataController: DataController
     @Environment(\.scenePhase) var scenePhase
 
@@ -44,8 +45,7 @@ struct SampleApp: App {
 //        }
 //        print ("here")
         
-        let dataController = DataController()
-        _dataController = StateObject(wrappedValue: dataController)
+        _dataController = StateObject(wrappedValue: globalDataController)
     }
     
     var body: some Scene {
@@ -64,7 +64,6 @@ struct SampleApp: App {
                         extendLifetime ()
                     }
                 }
-                //.environment(\.managedObjectContext, historyController.container.viewContext)
                 .environment(\.managedObjectContext, dataController.container.viewContext)
                 .environmentObject(dataController)
 

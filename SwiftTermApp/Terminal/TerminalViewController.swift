@@ -43,7 +43,7 @@ class TerminalViewController: UIViewController {
         self.host = host
         self.interactive = interactive
         self.serial = serial
-        DataStore.shared.used (host: host)
+        globalDataController.used(host: host)
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -55,7 +55,7 @@ class TerminalViewController: UIViewController {
         self.host = terminalView.host
         self.interactive = interactive
         self.serial = terminalView.serial
-        DataStore.shared.used (host: host)
+        globalDataController.used(host: host)
         super.init(nibName: nil, bundle: nil)
     }
 

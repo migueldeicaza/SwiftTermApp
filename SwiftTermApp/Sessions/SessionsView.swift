@@ -9,6 +9,7 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct SessionDetailsView: View {
     var terminalView: SshTerminalView
@@ -139,7 +140,21 @@ struct SessionsView: View {
 struct NoSessionsView: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @FetchRequest (sortDescriptors: [SortDescriptor (\CHost.sLastUsed, order: .reverse)], predicate: NSPredicate (format: "sLastUsed != nil"))
+    var hosts: FetchedResults<CHost>
 
+
+    init () {
+        let request: NSFetchRequest<CHost> = CHost.fetchRequest()
+
+        request.sortDescriptors = [
+            NSSortDescriptor(keyPath: \CHost.sLastUsed, ascending: false)
+        ]
+        request.predicate = NSPredicate (format: "sLastUsed != nil")
+        request.fetchLimit = 1
+        _hosts = FetchRequest(fetchRequest: request)
+    }
+    
     var body: some View {
         VStack {
             Spacer ()
@@ -154,12 +169,12 @@ struct NoSessionsView: View {
                 }
                 Spacer ()
             }
-            if self.store.recentIndices().count > 0 {
+            if hosts.count > 0 {
                 VStack (alignment: .leading){
                     Text ("Recent Connections")
                         .font (.title3)
                     if horizontalSizeClass == .compact {
-                        RecentHostsView()
+                        RecentHostsView(limit: 10)
                     } else {
                         ScrollView {
                             VStack {
@@ -172,7 +187,7 @@ struct NoSessionsView: View {
             Spacer ()
             Spacer ()
             Spacer ()
-        }.padding (horizontalSizeClass == .compact ? 0 : 80)
+        }.padding (horizontalSizeClass == .compact ? 20 : 80)
     }
 }
 

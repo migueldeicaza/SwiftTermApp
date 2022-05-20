@@ -9,6 +9,7 @@
 import SwiftUI
 import Shake
 import Introspect
+import CoreData
 
 struct ContentView: View {
 #if os(iOS)
@@ -88,8 +89,6 @@ func getHostFromUrl (_ url: URL, visiblePrefix: String = "Dynamic") -> Host? {
             return match
         }
         
-        // TODO
-        return nil
         return MemoryHost (
             id: UUID(),
             alias: "\(visiblePrefix) \(requestedHost)",
@@ -157,10 +156,19 @@ struct HomeView: View {
     @State var transientLaunch: Bool? = false
     @State var firstRun = getFirstRun ()
     @State var terminalCount = 0
-    
-    func sortDate (first: Host, second: Host) throws -> Bool
-    {
-        first.lastUsed > second.lastUsed
+
+    @FetchRequest (sortDescriptors: [SortDescriptor (\CHost.sLastUsed, order: .reverse)], predicate: NSPredicate (format: "sLastUsed != nil"))
+    var hosts: FetchedResults<CHost>
+
+    init () {
+        let request: NSFetchRequest<CHost> = CHost.fetchRequest()
+
+        request.sortDescriptors = [
+            NSSortDescriptor(keyPath: \CHost.sLastUsed, ascending: false)
+        ]
+        request.predicate = NSPredicate (format: "sLastUsed != nil")
+        request.fetchLimit = 3
+        _hosts = FetchRequest(fetchRequest: request)
     }
     
     // Launches the specified host as a terminal, used in response to openUrl requests
@@ -173,7 +181,7 @@ struct HomeView: View {
     var body: some View {
         List {
             //QuickLaunch()
-            if self.store.recentIndices().count > 0 {
+            if hosts.count > 0 {
                 Section (header: Text ("Recent")) {
                     
                     RecentHostsView()

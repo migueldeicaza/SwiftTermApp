@@ -116,4 +116,17 @@ class DataController: ObservableObject {
         let batchDeleteRequest2 = NSBatchDeleteRequest(fetchRequest: fetchRequest2)
         _ = try? container.viewContext.execute(batchDeleteRequest2)
     }
+    
+    /// Flags the given host as used recently.
+    func used (host: Host) {
+        let request: NSFetchRequest<CHost> = CHost.fetchRequest()
+        request.predicate = NSPredicate(format: "sId = \"\(host.id)\"")
+        request.fetchLimit = 1
+        if let result = try? container.viewContext.fetch(request) {
+            if result.count > 0 {
+                result [0].lastUsed = Date ()
+                save ()
+            }
+        }
+    }
 }

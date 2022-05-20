@@ -275,7 +275,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
 
     // Logs a connection to the history
     func historyRecordConnection (_ date: Date) {
-        let moc = globalHistoryController.container.viewContext
+        let moc = globalDataController.container.viewContext
         
         let history = HistoryRecord(context: moc)
         history.id = UUID()
