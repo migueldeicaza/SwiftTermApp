@@ -105,6 +105,7 @@
 		49F1D14127DAB782004A9CB1 /* UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F1D14027DAB782004A9CB1 /* UITests.swift */; };
 		49F1D14327DAB782004A9CB1 /* UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F1D14227DAB782004A9CB1 /* UITestsLaunchTests.swift */; };
 		49F1D14A27DD0FFF004A9CB1 /* SideHostStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F1D14927DD0FFF004A9CB1 /* SideHostStatus.swift */; };
+		49F5BEE628372F5300BAF3EF /* DataModelTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F5BEE528372F5300BAF3EF /* DataModelTypes.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -228,6 +229,7 @@
 		49F1D14027DAB782004A9CB1 /* UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITests.swift; sourceTree = "<group>"; };
 		49F1D14227DAB782004A9CB1 /* UITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestsLaunchTests.swift; sourceTree = "<group>"; };
 		49F1D14927DD0FFF004A9CB1 /* SideHostStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideHostStatus.swift; sourceTree = "<group>"; };
+		49F5BEE528372F5300BAF3EF /* DataModelTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataModelTypes.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -564,6 +566,7 @@
 			children = (
 				49C650B62832F393005DFC17 /* Host-DataHelpers.swift */,
 				49C650B828333823005DFC17 /* DataController.swift */,
+				49F5BEE528372F5300BAF3EF /* DataModelTypes.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -763,6 +766,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				49584D85248C3C500081D015 /* ShadersBase.metal in Sources */,
+				49F5BEE628372F5300BAF3EF /* DataModelTypes.swift in Sources */,
 				49BA35E2267993E800B63510 /* DefaultHomeView.swift in Sources */,
 				4901168A245540F2002C1F85 /* HostEditView.swift in Sources */,
 				49584D83248C3BEA0081D015 /* MetalHost.swift in Sources */,

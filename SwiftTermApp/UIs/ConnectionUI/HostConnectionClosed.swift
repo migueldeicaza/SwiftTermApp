@@ -55,7 +55,7 @@ struct HostConnectionClosed_Previews: PreviewProvider {
         
         var host: Host
         init () {
-            host = Host (context: DataController.preview.container.viewContext)
+            host = CHost (context: DataController.preview.container.viewContext)
             host.alias = "dbserver"
             host.hostname = "dbserver.domain.com"
         }

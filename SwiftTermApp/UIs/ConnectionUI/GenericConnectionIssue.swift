@@ -10,9 +10,9 @@ import SwiftUI
 
 struct GenericConnectionIssue: View, ConnectionMessage {
     init(host: Host, message: String, ok: @escaping () -> ()) {
-        self.host = host
-        self.error = message
-        self.ok = ok
+        self._host = State (initialValue: host)
+        self._error = State (initialValue: message)
+        self._ok = State (initialValue: ok)
     }
     
     @State var host: Host
@@ -55,7 +55,7 @@ struct TmuxSessionGone_Previews: PreviewProvider {
         var host: Host
         
         init () {
-            host = Host (context: DataController.preview.container.viewContext)
+            host = CHost (context: DataController.preview.container.viewContext)
             host.alias = "dbserver"
             host.hostname = "dbserver.domain.com"
         }

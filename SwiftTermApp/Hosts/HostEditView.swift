@@ -123,7 +123,7 @@ struct HostEditView: View {
     @ObservedObject var store: DataStore = DataStore.shared
     @EnvironmentObject var dataController: DataController
     @State var alertClash: Bool = false
-    @State var host: Host?
+    @State var host: CHost?
     @State var keySelectorIsActive: Bool = false
     @State var showingPassword: Bool = false
 
@@ -143,7 +143,7 @@ struct HostEditView: View {
     @State var environmentVariables: [String:String] = [:]
     @Environment(\.dismiss) private var dismiss
     
-    init (host: Host?){
+    init (host: CHost?){
         self._host = State (initialValue: host)
         var reconnectType = 0
         
@@ -178,11 +178,11 @@ struct HostEditView: View {
     
     func saveAndLeave ()
     {
-        let host: Host
+        let host: CHost
         if let existingHost = self.host {
             host = existingHost
         } else {
-            host = Host (context: dataController.container.viewContext)
+            host = CHost (context: dataController.container.viewContext)
         }
         dismiss()
         host.objectWillChange.send ()

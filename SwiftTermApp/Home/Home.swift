@@ -90,21 +90,22 @@ func getHostFromUrl (_ url: URL, visiblePrefix: String = "Dynamic") -> Host? {
         
         // TODO
         return nil
-//        return Host (id: UUID(),
-//                     alias: "\(visiblePrefix) \(requestedHost)",
-//                     hostname: requestedHost,
-//                     backspaceAsControlH: false,
-//                     port: requestedPort,
-//                     usePassword: false,
-//                     username: requestedUser ?? "",
-//                     password: "",
-//                     hostKind: "",
-//                     environmentVariables: [:],
-//                     startupScripts: [],
-//                     sshKey: nil,
-//                     style: "",
-//                     background: "",
-//                     lastUsed: Date ())
+        return MemoryHost (
+            id: UUID(),
+            alias: "\(visiblePrefix) \(requestedHost)",
+            hostname: requestedHost,
+            backspaceAsControlH: false,
+            port: requestedPort,
+            usePassword: false,
+            username: requestedUser ?? "",
+            password: "",
+            hostKind: "",
+            environmentVariables: [:],
+            startupScripts: [],
+            sshKey: nil,
+            style: "",
+            background: "",
+            lastUsed: Date ())
     }
     return nil
 }
@@ -269,19 +270,20 @@ struct HomeView: View {
         }
         //.listStyle(.sidebar)
         .onOpenURL { url in
-            if let host = getHostFromUrl (url) {
-                if host.username == "" {
-                    if let window = getCurrentKeyWindow(), let vc = window.rootViewController {
-                        Task {
-                            if let user = await promptMissingUser (vc) {
-                                host.username = user
-                                launch (host)
-                            }
+            var host = getHostFromUrl (url)
+            if host == nil { return }
+            
+            if host!.username == "" {
+                if let window = getCurrentKeyWindow(), let vc = window.rootViewController {
+                    Task {
+                        if let user = await promptMissingUser (vc) {
+                            host!.username = user
+                            launch (host!)
                         }
                     }
-                } else {
-                    launch (host)
                 }
+            } else {
+                launch (host!)
             }
         }
         .sheet (isPresented: $firstRun) {

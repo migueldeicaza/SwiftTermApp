@@ -23,8 +23,8 @@ func getHostImage (forKind hostKind: String) -> some View
 }
 
 struct HostSummaryView: View {
-    @ObservedObject var host: Host
-    @State var activatedItem: Host?
+    @ObservedObject var host: CHost
+    @State var activatedItem: CHost?
     @State var createNewTerm = false
     //@Environment(\.editMode) var editMode
     @State var active = false
@@ -88,8 +88,8 @@ struct HostSummaryView: View {
 }
 
 struct iPadHostSummaryView: View {
-    @ObservedObject var host: Host
-    @State var activatedItem: Host? = nil
+    @ObservedObject var host: CHost
+    @State var activatedItem: CHost? = nil
     @State var createNewTerm = false
     //@Environment(\.editMode) var editMode
     @State var active = false
@@ -161,13 +161,13 @@ struct HostsView : View {
     @EnvironmentObject var dataController: DataController
     @State var showHostEdit: Bool = false
     @ObservedObject var store: DataStore = DataStore.shared
-    private var hosts: FetchRequest<Host>
+    private var hosts: FetchRequest<CHost>
     @Environment(\.managedObjectContext) var moc
     @State var newHost: Bool = false
     
     init () {
-        hosts = FetchRequest<Host>(entity: Host.entity(), sortDescriptors: [
-            NSSortDescriptor(keyPath: \Host.sAlias, ascending: true)
+        hosts = FetchRequest<CHost>(entity: CHost.entity(), sortDescriptors: [
+            NSSortDescriptor(keyPath: \CHost.sAlias, ascending: true)
         ])
     }
     

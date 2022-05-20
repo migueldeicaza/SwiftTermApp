@@ -242,37 +242,33 @@ class Host: Codable, Identifiable {
 }
 #else
 extension Host {
-    func summary() -> String {
-        hostname + (style != "" ? ", \(style)" : "")
-    }
-    
     /// Saves the private components into the keychain
-    public func saveKeychainElements () -> OSStatus {
-        let (query, _) = getHostPasswordQuery(id: id.uuidString, password: password)
-        
-        let status = SecItemAdd(query, nil)
-        if status == errSecDuplicateItem {
-            let (query2, update) = getHostPasswordQuery(id: id.uuidString, password: password, split: true)
-            let status2 = SecItemUpdate(query2, update)
-            return status2
-        }
-        return status
-    }
-    
-    func loadKeychainElements () {
-        let (query, _) = getHostPasswordQuery(id: id.uuidString, password: nil, fetch: true)
-
-        var itemCopy: AnyObject?
-        let status = SecItemCopyMatching(query, &itemCopy)
-        if status != errSecSuccess {
-            print ("oops")
-        }
-        if let d = itemCopy as? Data {
-            password = String (bytes: d, encoding: .utf8) ?? ""
-        } else {
-            password = ""
-        }
-    }
+//    public func saveKeychainElements () -> OSStatus {
+//        let (query, _) = getHostPasswordQuery(id: id.uuidString, password: password)
+//        
+//        let status = SecItemAdd(query, nil)
+//        if status == errSecDuplicateItem {
+//            let (query2, update) = getHostPasswordQuery(id: id.uuidString, password: password, split: true)
+//            let status2 = SecItemUpdate(query2, update)
+//            return status2
+//        }
+//        return status
+//    }
+//    
+//    func loadKeychainElements () {
+//        let (query, _) = getHostPasswordQuery(id: id.uuidString, password: nil, fetch: true)
+//
+//        var itemCopy: AnyObject?
+//        let status = SecItemCopyMatching(query, &itemCopy)
+//        if status != errSecSuccess {
+//            print ("oops")
+//        }
+//        if let d = itemCopy as? Data {
+//            password = String (bytes: d, encoding: .utf8) ?? ""
+//        } else {
+//            password = ""
+//        }
+//    }
 }
 #endif
 
@@ -307,7 +303,7 @@ class DataStore: ObservableObject {
     
     var defaults: UserDefaults?
     
-    @Published var hosts: [Host] = [
+    @Published var hosts: [CHost] = [
        //Host(alias: "Dummy MacPro",         hostname: "192.168.86.220", lastUsed: Date ()),
        //Host(alias: "Dummy Raspberri Pi",   hostname: "raspberry.tirania.org", lastUsed: Date ()),
        //Host(alias: "Dummy MacBook",        hostname: "road.tirania.org", usePassword: false, sshKey: DataStore.testKey1.id),
@@ -432,14 +428,6 @@ class DataStore: ObservableObject {
         guard let d = defaults else {
             return
         }
-        // First save the host passwords in the keychain
-        for host in hosts {
-            let status = host.saveKeychainElements()
-            if status != errSecSuccess {
-                let result = SecCopyErrorMessageString(status, nil).debugDescription
-                print ("error saving data for host \(host.alias) \(host.id) -> \(result)")
-            }
-        }
         
         let coder = JSONEncoder ()
 //        if let hostData = try? coder.encode(hosts) {
@@ -478,7 +466,7 @@ class DataStore: ObservableObject {
     var idToHost: [UUID:Host] = [:]
     
     // Records the new host in the data store
-    func save (host: Host)
+    func save (host: CHost)
     {
         if let idx = hosts.firstIndex (where: { $0.alias == host.alias }) {
             hosts.remove(at: idx)

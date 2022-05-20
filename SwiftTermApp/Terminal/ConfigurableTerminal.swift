@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct RunningTerminalConfig: View {
-    var host: Host
+    @State var host: Host
     @Binding var showingModal: Bool
     @State var style: String = ""
     @State var background: String = ""

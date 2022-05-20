@@ -58,8 +58,8 @@ class DataController: ObservableObject {
 
     }
 
-    func createSampleHost (_ i: Int) -> Host {
-        let host = Host(context: container.viewContext)
+    func createSampleHost (_ i: Int) -> CHost {
+        let host = CHost(context: container.viewContext)
         host.sAlias = "Host \(i)"
         host.sHostname = "foo-\(i).example.com"
         host.sUsername = "root"
@@ -108,7 +108,7 @@ class DataController: ObservableObject {
     }
     
     func deleteAll() {
-        let fetchRequest1: NSFetchRequest<NSFetchRequestResult> = Host.fetchRequest()
+        let fetchRequest1: NSFetchRequest<NSFetchRequestResult> = CHost.fetchRequest()
         let batchDeleteRequest1 = NSBatchDeleteRequest(fetchRequest: fetchRequest1)
         _ = try? container.viewContext.execute(batchDeleteRequest1)
 

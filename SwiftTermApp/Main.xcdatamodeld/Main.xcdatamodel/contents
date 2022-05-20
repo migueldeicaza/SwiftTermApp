@@ -3,31 +3,9 @@
     <entity name="CEnvironmentVariable" representedClassName="CEnvironmentVariable" syncable="YES" codeGenerationType="class">
         <attribute name="key" optional="YES" attributeType="String"/>
         <attribute name="value" optional="YES" attributeType="String"/>
-        <relationship name="container" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Host" inverseName="sEnvironmentVariables" inverseEntity="Host"/>
+        <relationship name="container" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CHost" inverseName="sEnvironmentVariables" inverseEntity="CHost"/>
     </entity>
-    <entity name="CKey" representedClassName="CKey" syncable="YES" codeGenerationType="class">
-        <attribute name="sId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="sKeyTag" optional="YES" attributeType="String"/>
-        <attribute name="sName" optional="YES" attributeType="String"/>
-        <attribute name="sPrivateKey" optional="YES" attributeType="String"/>
-        <attribute name="sPublicKey" optional="YES" attributeType="String"/>
-        <attribute name="sType" optional="YES" attributeType="String"/>
-    </entity>
-    <entity name="CScripts" representedClassName="CScripts" syncable="YES" codeGenerationType="class">
-        <attribute name="script" optional="YES" attributeType="String"/>
-        <relationship name="container" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Host" inverseName="sStartupScripts" inverseEntity="Host"/>
-    </entity>
-    <entity name="HistoryRecord" representedClassName="HistoryRecord" syncable="YES" codeGenerationType="class">
-        <attribute name="date" attributeType="Date" defaultDateTimeInterval="674489160" usesScalarValueType="NO"/>
-        <attribute name="event" attributeType="Binary"/>
-        <attribute name="hostId" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="hostkind" optional="YES" attributeType="String"/>
-        <attribute name="hostname" optional="YES" attributeType="String"/>
-        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="port" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="username" optional="YES" attributeType="String"/>
-    </entity>
-    <entity name="Host" representedClassName="Host" syncable="YES" codeGenerationType="class">
+    <entity name="CHost" representedClassName="CHost" syncable="YES" codeGenerationType="class">
         <attribute name="sAlias" optional="YES" attributeType="String"/>
         <attribute name="sBackground" optional="YES" attributeType="String"/>
         <attribute name="sBackspaceAsControlH" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
@@ -44,6 +22,28 @@
         <relationship name="sEnvironmentVariables" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CEnvironmentVariable" inverseName="container" inverseEntity="CEnvironmentVariable"/>
         <relationship name="sStartupScripts" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CScripts" inverseName="container" inverseEntity="CScripts"/>
     </entity>
+    <entity name="CKey" representedClassName="CKey" syncable="YES" codeGenerationType="class">
+        <attribute name="sId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="sKeyTag" optional="YES" attributeType="String"/>
+        <attribute name="sName" optional="YES" attributeType="String"/>
+        <attribute name="sPrivateKey" optional="YES" attributeType="String"/>
+        <attribute name="sPublicKey" optional="YES" attributeType="String"/>
+        <attribute name="sType" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="CScripts" representedClassName="CScripts" syncable="YES" codeGenerationType="class">
+        <attribute name="script" optional="YES" attributeType="String"/>
+        <relationship name="container" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CHost" inverseName="sStartupScripts" inverseEntity="CHost"/>
+    </entity>
+    <entity name="HistoryRecord" representedClassName="HistoryRecord" syncable="YES" codeGenerationType="class">
+        <attribute name="date" attributeType="Date" defaultDateTimeInterval="674489160" usesScalarValueType="NO"/>
+        <attribute name="event" attributeType="Binary"/>
+        <attribute name="hostId" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="hostkind" optional="YES" attributeType="String"/>
+        <attribute name="hostname" optional="YES" attributeType="String"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="port" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="username" optional="YES" attributeType="String"/>
+    </entity>
     <entity name="UserSnippet" representedClassName="UserSnippet" syncable="YES" codeGenerationType="class">
         <attribute name="sCommand" optional="YES" attributeType="String"/>
         <attribute name="sId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
@@ -54,7 +54,7 @@
         <memberEntity name="CEnvironmentVariable"/>
         <memberEntity name="CKey"/>
         <memberEntity name="CScripts"/>
-        <memberEntity name="Host"/>
+        <memberEntity name="CHost"/>
         <memberEntity name="UserSnippet"/>
     </configuration>
     <configuration name="Local">
@@ -65,7 +65,7 @@
         <element name="CKey" positionX="-54" positionY="0" width="128" height="119"/>
         <element name="CScripts" positionX="0" positionY="63" width="128" height="59"/>
         <element name="HistoryRecord" positionX="-27" positionY="99" width="128" height="149"/>
-        <element name="Host" positionX="-63" positionY="-18" width="128" height="254"/>
+        <element name="CHost" positionX="-63" positionY="-18" width="128" height="254"/>
         <element name="UserSnippet" positionX="-36" positionY="9" width="128" height="89"/>
     </elements>
 </model>

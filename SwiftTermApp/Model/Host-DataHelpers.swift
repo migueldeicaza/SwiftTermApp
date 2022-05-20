@@ -8,7 +8,7 @@
 
 import Foundation
 
-extension Host {
+extension CHost: Host {
     public var id: UUID {
         get {
             if sId == nil {
