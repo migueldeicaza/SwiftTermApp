@@ -85,7 +85,7 @@ extension Host {
     
     public var password: String {
         get { loadKeychainPassword() }
-        set { savePasswordOnKeychain(password: newValue) }
+        set { _ = savePasswordOnKeychain(password: newValue) }
     }
     
     public var hostKind: String {
@@ -112,8 +112,20 @@ extension Host {
             return ret
         }
         set {
-            // TODO
-            //abort ()
+            guard let moc = self.managedObjectContext else {
+                return
+            }
+            for x in (sEnvironmentVariables?.allObjects as? [CEnvironmentVariable] ?? []) {
+                moc.delete(x)
+            }
+            var newSet = Set<CEnvironmentVariable>()
+            for kp in newValue {
+                let nested = CEnvironmentVariable (context: moc)
+                nested.key = kp.key
+                nested.value = kp.value
+                newSet.update(with: nested)
+            }
+            sEnvironmentVariables = NSSet (set: newSet)
         }
     }
     
@@ -123,7 +135,19 @@ extension Host {
             return scripts.compactMap { $0.script ?? nil }
         }
         set {
-            abort ()
+            guard let moc = self.managedObjectContext else {
+                return
+            }
+            for x in (sStartupScripts?.allObjects as? [CScripts] ?? []) {
+                moc.delete(x)
+            }
+            var newSet = Set<CScripts>()
+            for script in newValue {
+                let nested = CScripts (context: moc)
+                nested.script = script
+                newSet.update(with: nested)
+            }
+            sStartupScripts = NSSet (set: newSet)
         }
     }
     

@@ -15,23 +15,26 @@ class DataController: ObservableObject {
     let container: NSPersistentCloudKitContainer
     
     init(inMemory: Bool = false) {
+        // Since we have a local database, and a cloud-synced database, the following set these up.
+        // https://developer.apple.com/documentation/coredata/mirroring_a_core_data_store_with_cloudkit/setting_up_core_data_with_cloudkit
+        let storeDirectory = NSPersistentContainer.defaultDirectoryURL()
+
+        func getLocation (_ file: String) -> URL {
+            if inMemory {
+                return URL (fileURLWithPath: "/dev/null")
+            }
+            return storeDirectory.appendingPathComponent(file)
+        }
+        
         container = NSPersistentCloudKitContainer(name: "Main")
         if inMemory {
             container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
         }
 
-        // Since we have a local database, and a cloud-synced database, the following set these up.
-        // https://developer.apple.com/documentation/coredata/mirroring_a_core_data_store_with_cloudkit/setting_up_core_data_with_cloudkit
-        let storeDirectory = NSPersistentContainer.defaultDirectoryURL()
-
-        let localStoreLocation = storeDirectory.appendingPathComponent ("local.sqlite")
-        let localStoreDescription = NSPersistentStoreDescription(url: localStoreLocation)
+        let localStoreDescription = NSPersistentStoreDescription(url: getLocation ("local.sqlite"))
         localStoreDescription.configuration = "Local"
-        for x in container.persistentStoreDescriptions {
-            print (x)
-        }
-        let cloudStoreLocation = storeDirectory.appendingPathComponent("cloud.sqlite")
-        let cloudStoreDescription = NSPersistentStoreDescription(url: cloudStoreLocation)
+
+        let cloudStoreDescription = NSPersistentStoreDescription(url: getLocation ("cloud.sqlite"))
         
         let cloudOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.org.tirania.SwiftTermKeys")
         cloudOptions.databaseScope = .private

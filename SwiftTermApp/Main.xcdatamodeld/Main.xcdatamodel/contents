@@ -6,6 +6,7 @@
         <relationship name="container" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Host" inverseName="sEnvironmentVariables" inverseEntity="Host"/>
     </entity>
     <entity name="CKey" representedClassName="CKey" syncable="YES" codeGenerationType="class">
+        <attribute name="sId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="sKeyTag" optional="YES" attributeType="String"/>
         <attribute name="sName" optional="YES" attributeType="String"/>
         <attribute name="sPrivateKey" optional="YES" attributeType="String"/>
@@ -44,10 +45,10 @@
         <relationship name="sStartupScripts" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CScripts" inverseName="container" inverseEntity="CScripts"/>
     </entity>
     <entity name="UserSnippet" representedClassName="UserSnippet" syncable="YES" codeGenerationType="class">
-        <attribute name="command" optional="YES" attributeType="String"/>
-        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="platforms" optional="YES" attributeType="String"/>
-        <attribute name="title" optional="YES" attributeType="String"/>
+        <attribute name="sCommand" optional="YES" attributeType="String"/>
+        <attribute name="sId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="sPlatforms" optional="YES" attributeType="String"/>
+        <attribute name="sTitle" optional="YES" attributeType="String"/>
     </entity>
     <configuration name="Cloud" usedWithCloudKit="YES">
         <memberEntity name="CEnvironmentVariable"/>
@@ -61,7 +62,7 @@
     </configuration>
     <elements>
         <element name="CEnvironmentVariable" positionX="-18" positionY="72" width="128" height="74"/>
-        <element name="CKey" positionX="-54" positionY="0" width="128" height="104"/>
+        <element name="CKey" positionX="-54" positionY="0" width="128" height="119"/>
         <element name="CScripts" positionX="0" positionY="63" width="128" height="59"/>
         <element name="HistoryRecord" positionX="-27" positionY="99" width="128" height="149"/>
         <element name="Host" positionX="-63" positionY="-18" width="128" height="254"/>
