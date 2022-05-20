@@ -94,14 +94,13 @@ struct HistoryDetail: View {
 }
 
 struct HistoryView: View {
-    
     @SectionedFetchRequest(
       sectionIdentifier: \.renderedDate,
       sortDescriptors: [SortDescriptor (\HistoryRecord.date, order: .reverse)],
       animation: .default)
     var history: SectionedFetchResults<String, HistoryRecord>
     @Environment(\.managedObjectContext) var moc
-
+    
     var body: some View {
         List {
             ForEach (history){ section in
@@ -111,7 +110,7 @@ struct HistoryView: View {
                             HStack {
                                 getHostImage(forKind: historyRecord.hostkind ?? "")
                                     .font (.system(size: 28))
-                                
+
                                 VStack (alignment: .leading, spacing: 4) {
                                     HStack (alignment: .firstTextBaseline){
                                         Text (historyRecord.alias)
@@ -128,26 +127,28 @@ struct HistoryView: View {
                 }
             }
         }
-        // This is not reloading the view
-//        .toolbar {
-//            ToolbarItem (placement: .navigationBarTrailing) {
-//                Button ("Clear") {
-//                    let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "HistoryRecord")
-//                    let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-//
-//                    do {
-//                        try moc.execute(batchDeleteRequest)
-//                    } catch {
-//                        print("Detele all data in HistoryRecord error :", error)
-//                    }
-//                    try? moc.save ()
-//                }
-//            }
-//        }
+        .toolbar {
+            ToolbarItem (placement: .navigationBarTrailing) {
+                Button ("Clear") {
+                    let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "HistoryRecord")
+                    let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
 
+                    do {
+                        try moc.execute(batchDeleteRequest)
+                    } catch {
+                        print("Error deleting all data for HistoryRecord:", error)
+                    }
+                    try? moc.save ()
+                    
+                    /// Poor man's refresh: change the predicate to force a refresh, this is the only hack I could find that works
+                    let old = history.nsPredicate
+                    history.nsPredicate = NSPredicate (value: true)
+                    history .nsPredicate = old
+                }
+            }
+        }
         .listStyle(DefaultListStyle())
         .navigationTitle(Text("History"))
-
     }
 }
 
