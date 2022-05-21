@@ -78,17 +78,9 @@ class DataStore: ObservableObject {
         } else {
             loadDataStoreFromDefaults ()
         }
-        updateHostMap ()
         loadKnownHosts()
     }
 
-    func updateHostMap () {
-        idToHost = [:]
-//        for host in hosts {
-//            idToHost [host.id] = host
-//        }
-    }
-    
     #if DEBUG
     func loadDataStoreFromDebug () {
         let decoder = JSONDecoder ()
@@ -168,9 +160,7 @@ class DataStore: ObservableObject {
         }
         d.synchronize()
     }
-    
-    var idToHost: [UUID:Host] = [:]
-    
+        
     func loadKnownHosts ()
     {
         guard let content = try? String (contentsOfFile: knownHostsPath) else {

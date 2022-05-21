@@ -46,8 +46,10 @@ extension HistoryRecord {
     
     var alias: String {
         guard let hid = hostId else { return "" }
-        guard let host = DataStore.shared.idToHost [hid] else { return "" }
-        return host.alias
+        if let host = globalDataController.lookupHost(id: hid) {
+            return host.alias
+        }
+        return ""
     }
     
     var typedEvent: HistoryOperation {
