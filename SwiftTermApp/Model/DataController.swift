@@ -55,7 +55,6 @@ class DataController: ObservableObject {
             }
         }
         container.viewContext.automaticallyMergesChangesFromParent = true
-
     }
 
     func createSampleHost (_ i: Int) -> CHost {
@@ -125,6 +124,17 @@ class DataController: ObservableObject {
         container.viewContext.delete(key)
     }
     
+    func updateKind (hostId: UUID, newKind: String) {
+        DispatchQueue.main.async {
+            let h = CHost.fetchRequest()
+            h.predicate = NSPredicate (format: "sId == %@", hostId.uuidString)
+            let hosts = try? self.container.viewContext.fetch(h)
+            if let host = hosts?.first {
+                host.hostKind = newKind
+            }
+        }
+    }
+    
     func hasHost (withAlias: String) -> Bool {
         let h = CHost.fetchRequest()
         h.predicate = NSPredicate (format: "sAlias == %@", withAlias)
@@ -149,7 +159,6 @@ class DataController: ObservableObject {
         }
         return "none"
     }
-
 
     func deleteAll() {
         let fetchRequest1: NSFetchRequest<NSFetchRequestResult> = CHost.fetchRequest()

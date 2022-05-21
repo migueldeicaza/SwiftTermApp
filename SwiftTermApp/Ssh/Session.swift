@@ -89,7 +89,7 @@ class Session: CustomDebugStringConvertible, Equatable {
     
     public init (host: Host, delegate: SessionDelegate, send: @escaping socketCbType, recv: @escaping socketCbType, disconnect: @escaping disconnectCbType, debug: @escaping debugCbType) {
         self.delegate = delegate
-        self.host = host
+        self.host = host.asMemory ()
         channelsLock = NSLock ()
         
         // Init this first, we will wipe it out soon enough
@@ -333,12 +333,17 @@ class Session: CustomDebugStringConvertible, Equatable {
         }
         
         var cumulativeErrors: [String] = []
+        let viewContext = globalDataController.container.viewContext
         
         // First, try to use what the user configured
         if authMethods.contains("publickey") && host.sshKey != nil {
+            
             let keyRequest = CKey.fetchRequest()
             keyRequest.predicate = NSPredicate (format: "sId == \"\(host.sshKey!)\"")
-            let keys = try? globalDataController.container.viewContext.fetch(keyRequest)
+        
+            let keys = try? await viewContext.perform {
+                return try viewContext.fetch(keyRequest).map { $0.toMemoryKey () }
+            }
 
             if let sshKey = keys?.first {
                 let passTask = Task.detached { () -> String? in
@@ -392,7 +397,9 @@ class Session: CustomDebugStringConvertible, Equatable {
             if let explicitKey = host.sshKey {
                 keyRequest.predicate = NSPredicate (format: "sId != \"\(explicitKey)\"")
             }
-            let keys = try? globalDataController.container.viewContext.fetch(keyRequest)
+            let keys = try? await viewContext.perform {
+                return try viewContext.fetch(keyRequest).map { $0.toMemoryKey () }
+            }
 
             for sshKey in keys ?? [] {
                 let passTask = Task.detached { () -> String? in

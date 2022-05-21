@@ -165,4 +165,8 @@ extension CHost: Host {
         get { sLastUsed ?? Date.distantPast }
         set { sLastUsed = newValue }
     }
+    
+    public func asMemory () -> MemoryHost {
+        return MemoryHost (id: id, alias: alias, hostname: hostname, backspaceAsControlH: backspaceAsControlH, port: port, usePassword: usePassword, username: username, password: password, hostKind: hostKind, environmentVariables: environmentVariables, startupScripts: startupScripts, sshKey: sshKey, style: style, background: background, lastUsed: lastUsed)
+    }
 }

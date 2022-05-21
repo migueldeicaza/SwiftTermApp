@@ -57,6 +57,9 @@ protocol Host {
 
     /// Reconnection type, one of "" or "tmux"
     var reconnectType: String { get set }
+    
+    /// Converts this host into a memory representation, not a database representation, so we can safely access CoreData structures from the background
+    func asMemory () -> MemoryHost
 }
 
 extension Host {
@@ -82,7 +85,9 @@ protocol Key {
     var publicKey: String { get set }
     
     /// This stores a passphrase to decode the private key, if provided
-    var passphrase: String { get set }    
+    var passphrase: String { get set }
+    
+    func toMemoryKey () -> MemoryKey
 }
 
 extension Key {

@@ -9,7 +9,7 @@
 import Foundation
 
 /// An pure in-memory implementation of the Host protocol
-class MemoryHost: Host {
+public class MemoryHost: Host {
     internal init(id: UUID = UUID(), alias: String = "", hostname: String = "", backspaceAsControlH: Bool = false, port: Int = 22, usePassword: Bool = true, username: String = "", password: String = "", hostKind: String = "", environmentVariables: [String:String] = [:], startupScripts: [String] = [], sshKey: UUID? = nil, style: String = "", background: String = "", lastUsed: Date = Date.distantPast) {
         self.id = id
         self.alias = alias
@@ -44,6 +44,10 @@ class MemoryHost: Host {
     var background: String = ""
     var lastUsed: Date = Date.distantPast
     var reconnectType: String = ""
+    
+    func asMemory() -> MemoryHost {
+        return self
+    }
 }
 
 class MemoryKey: Key, Codable, Identifiable {
@@ -80,4 +84,7 @@ class MemoryKey: Key, Codable, Identifiable {
         self.passphrase = passphrase
     }
     
+    func toMemoryKey() -> MemoryKey {
+        return self
+    }
 }

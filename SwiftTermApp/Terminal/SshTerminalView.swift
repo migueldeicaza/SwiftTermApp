@@ -543,14 +543,10 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                 }
                 // Make a copy to make swift happy
                 let nos = os
-                DispatchQueue.main.async {
-                    DataStore.shared.updateKind(for: self.host, to: nos)
-                }
+                globalDataController.updateKind (hostId: self.host.id, newKind: nos)
             }
         } else {
-            DispatchQueue.main.async {
-                DataStore.shared.updateKind(for: self.host, to: "windows")
-            }
+            globalDataController.updateKind (hostId: self.host.id, newKind: "windows")
         }
     }
     

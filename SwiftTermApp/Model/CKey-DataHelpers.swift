@@ -165,4 +165,8 @@ extension CKey: Key {
         let (queryKey, _) = getPrivateKeyQuery(id: idKey, key: nil, fetch: true, forDelete: true)
         keyChainDelete(queryKey, "Key's private key")
     }
+    
+    func toMemoryKey () -> MemoryKey {
+        return MemoryKey (id: id, type: type, name: name, privateKey: privateKey, publicKey: publicKey, passphrase: passphrase)
+    }
 }
