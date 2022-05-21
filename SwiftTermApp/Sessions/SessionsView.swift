@@ -192,7 +192,7 @@ struct NoSessionsView: View {
 
 struct SessionsView_Previews: PreviewProvider {
     // TODO, next line:
-    static var v = SwiftUITerminal(host: DataStore.shared.hosts [0], existing: nil, createNew: true, interactive: true)
+    static var v = SwiftUITerminal(host: DataController.preview.createSampleHost(1), existing: nil, createNew: true, interactive: true)
     static var previews: some View {
         Group {
             NoSessionsView ()

@@ -27,7 +27,7 @@ public class MemoryHost: Host {
         self.background = background
         self.lastUsed = lastUsed
     }
-    
+        
     var id = UUID()
     var alias: String = ""
     var hostname: String = ""
@@ -45,6 +45,29 @@ public class MemoryHost: Host {
     var lastUsed: Date = Date.distantPast
     var reconnectType: String = ""
     
+    // The list of keys that are serialized to Json, this is used to prevent both
+    // password from being stored in plaintext.
+    enum CodingKeys: CodingKey {
+        case id
+        case alias
+        case hostname
+        case backspaceAsControlH
+        case port
+        case usePassword
+        case username
+        case hostKind
+        case environmentVariables
+        case startupScripts
+        case sshKey
+        case style
+        case background
+        case lastUsed
+        case reconnectType
+        #if DEBUG
+        case password
+        #endif
+    }
+
     func asMemory() -> MemoryHost {
         return self
     }

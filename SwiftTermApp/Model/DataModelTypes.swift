@@ -8,7 +8,15 @@
 
 import Foundation
 
-/// Host protocol describes a host, and is implemented by both the CoreData-backed instance (CHost) and (MemoryHost)
+/// Represents a host we connect to, the data structure we save, and keep at runtime
+/// Most properties are used at connection time, and a handful can be changed at runtime:
+///
+/// Properties that can be changed at runtime:
+/// - style:
+/// - background
+/// - backspaceAsControlH
+///
+/// Possibly should add; Font and FontSize
 protocol Host {
     /// Unique ID, used both inside Swift to differentiate structures and for tracking our records and keys
     var id: UUID { get set }
