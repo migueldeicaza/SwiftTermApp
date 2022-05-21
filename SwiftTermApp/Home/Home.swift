@@ -84,9 +84,9 @@ func getHostFromUrl (_ url: URL, visiblePrefix: String = "Dynamic") -> Host? {
     if let requestedHost = url.host {
         let hr = CHost.fetchRequest()
         if let withUser = requestedUser {
-            hr.predicate = NSPredicate (format: "sHostname == %@ && sPort == %@ && sUsername == %@", requestedHost, requestedPort, withUser)
+            hr.predicate = NSPredicate (format: "sHostname == %@ && sPort == %d && sUsername == %@", requestedHost, requestedPort, withUser)
         } else {
-            hr.predicate = NSPredicate (format: "sHostname == %@ && sPort == %@", requestedHost, requestedPort)
+            hr.predicate = NSPredicate (format: "sHostname == %@ && sPort == %d", requestedHost, requestedPort)
         }
         hr.fetchLimit = 1
         if let match = try? globalDataController.container.viewContext.fetch(hr).first {
