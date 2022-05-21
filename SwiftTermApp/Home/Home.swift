@@ -158,7 +158,6 @@ struct HomeView: View {
     @State var launchHost: Host? = nil
     @State var transientLaunch: Bool? = false
     @State var firstRun = getFirstRun ()
-    @State var terminalCount = 0
 
     @FetchRequest (sortDescriptors: [SortDescriptor (\CHost.sLastUsed, order: .reverse)], predicate: NSPredicate (format: "sLastUsed != nil"))
     var hosts: FetchedResults<CHost>
@@ -204,14 +203,11 @@ struct HomeView: View {
                     label: {
                         Label("Terminals", systemImage: "terminal")
                         Spacer ()
-                        Text ("\(terminalCount)")
+                        Text ("\(connections.terminalsCount)")
                             .padding(4)
                             .background(Color (.systemGray5))
                             .cornerRadius(3)
                             .foregroundColor(Color (.systemGray))
-                            .onAppear {
-                                terminalCount = connections.terminalsCount
-                            }
                     })
                 NavigationLink(
                     destination: KeyManagementView(),
