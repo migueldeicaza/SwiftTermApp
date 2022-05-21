@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Host protocol describes a host, and is implemented by both the CoreData-backed instance (CHost) and (MemoryHost)
 protocol Host {
     /// Unique ID, used both inside Swift to differentiate structures and for tracking our records and keys
     var id: UUID { get set }
@@ -64,39 +65,52 @@ extension Host {
     }
 }
 
-class MemoryHost: Host {
-    internal init(id: UUID = UUID(), alias: String = "", hostname: String = "", backspaceAsControlH: Bool = false, port: Int = 22, usePassword: Bool = true, username: String = "", password: String = "", hostKind: String = "", environmentVariables: [String:String] = [:], startupScripts: [String] = [], sshKey: UUID? = nil, style: String = "", background: String = "", lastUsed: Date = Date.distantPast) {
-        self.id = id
-        self.alias = alias
-        self.hostname = hostname
-        self.backspaceAsControlH = backspaceAsControlH
-        self.port = port
-        self.usePassword = usePassword
-        self.username = username
-        self.password = password
-        self.hostKind = hostKind
-        self.environmentVariables = environmentVariables
-        self.startupScripts = startupScripts
-        self.sshKey = sshKey
-        self.style = style
-        self.background = background
-        self.lastUsed = lastUsed
+protocol Key {
+    /// Unique ID, used both inside Swift to differentiate structures and for tracking our records and keys
+    var id: UUID { get set }
+    
+    /// The type of this key
+    var type: KeyType { get set }
+    
+    /// The user visible name for the key
+    var name: String { get set }
+    
+    /// This stores the private key as pasted by the user, or if it is a type = .ecdsa(inSecureEnclave:true) the tag for the key in the KeyChain
+    var privateKey: String { get set }
+    
+    /// This stores the public key as pasted by the user
+    var publicKey: String { get set }
+    
+    /// This stores a passphrase to decode the private key, if provided
+    var passphrase: String { get set }    
+}
+
+extension Key {
+    /// Turns the `publicKey` that contains base64 data into a `Data` object
+    public func getPublicKeyAsData () -> Data {
+        let values = publicKey.split (separator: " ")
+        if values.count > 2 {
+            if let decoded =  Data (base64Encoded: String (values [1])) {
+                return decoded
+            }
+        }
+        return Data()
     }
     
-    var id = UUID()
-    var alias: String = ""
-    var hostname: String = ""
-    var backspaceAsControlH: Bool = false
-    var port: Int = 22
-    var usePassword: Bool = true
-    var username: String = ""
-    var password: String = ""
-    var hostKind: String = ""
-    var environmentVariables: [String:String] = [:]
-    var startupScripts: [String] = []
-    var sshKey: UUID?
-    var style: String = ""
-    var background: String = ""
-    var lastUsed: Date = Date.distantPast
-    var reconnectType: String = ""
+    /// If the key is stored in the KeyChain, returns the handle
+    public func getKeyHandle () -> SecKey? {
+        switch type  {
+        case .ecdsa(inEnclave: true):
+            let query = getKeyQuery(forId: id)
+            var result: CFTypeRef!
+            
+            if SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess && result != nil {
+                return (result as! SecKey)
+            }
+            return nil
+        default:
+            return nil
+        }
+    }
+
 }

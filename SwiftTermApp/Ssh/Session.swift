@@ -336,7 +336,11 @@ class Session: CustomDebugStringConvertible, Equatable {
         
         // First, try to use what the user configured
         if authMethods.contains("publickey") && host.sshKey != nil {
-            if let sshKey = DataStore.shared.keys.first(where: { $0.id == host.sshKey! }) {
+            let keyRequest = CKey.fetchRequest()
+            keyRequest.predicate = NSPredicate (format: "sId == \"\(host.sshKey!)\"")
+            let keys = try? globalDataController.container.viewContext.fetch(keyRequest)
+
+            if let sshKey = keys?.first {
                 let passTask = Task.detached { () -> String? in
                     self.logConnection("SSH: attempting authentication with \(sshKey.name)")
                     if let error = await loginWithKey (sshKey) {
@@ -383,13 +387,14 @@ class Session: CustomDebugStringConvertible, Equatable {
         
         // Ok, none of the presets work, try all the public keys that have a passphrase
         if authMethods.contains ("publickey") {
-            let skip = host.sshKey == nil ? nil : DataStore.shared.keys.first(where: { $0.id == host.sshKey! })
-            
-            for sshKey in DataStore.shared.keys {
-                // Skip the key that was original bound to it
-                if skip != nil && skip!.id == sshKey.id {
-                    continue
-                }
+            // Fetch the keys, but we do not need the one that we tried early on (host.sshKey, so we are going to skip that one)
+            let keyRequest = CKey.fetchRequest()
+            if let explicitKey = host.sshKey {
+                keyRequest.predicate = NSPredicate (format: "sId != \"\(explicitKey)\"")
+            }
+            let keys = try? globalDataController.container.viewContext.fetch(keyRequest)
+
+            for sshKey in keys ?? [] {
                 let passTask = Task.detached { () -> String? in
                     self.logConnection("SSH: attempting authentication with public key \(sshKey.name)")
                     if let error = await loginWithKey (sshKey) {

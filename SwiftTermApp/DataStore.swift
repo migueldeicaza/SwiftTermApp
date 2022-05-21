@@ -9,136 +9,6 @@
 import Foundation
 import Combine
 
-// TODO: maybe the `type` could be an enum with Swift 5.5?
-class Key: Codable, Identifiable {
-    var id: UUID
-    var type: KeyType = .rsa(4096)
-    var name: String = ""
-    
-    // This stores the private key as pasted by the user, or if it is a type = .ecdsa(inSecureEnclave:true) the tag for the key in the KeyChain
-    var privateKey: String = ""
-    // This stores the public key as pasted by the user
-    var publicKey: String = ""
-    var passphrase: String = ""
-    
-    // If this is set to the empty string, it means that it has not been stored yet on the keychain
-    var keyTag: String = ""
-    
-    // The list of keys that are serialized to Json, this is used to prevent both
-    // passphrase and privateKey from being stored in plaintext.
-    enum CodingKeys: CodingKey {
-        case id
-        case type
-        case name
-        case publicKey
-        case keyTag
-        #if DEBUG
-        case passphrase
-        case privateKey
-        #endif
-    }
-    
-    public init (id: UUID = UUID(), type: KeyType = .rsa(4096), name: String = "", privateKey: String = "", publicKey: String = "", passphrase: String = "")
-    {
-        self.id = id
-        self.type = type
-        self.name = name
-        self.privateKey = privateKey
-        self.publicKey = publicKey
-        self.passphrase = passphrase
-    }
-    
-    /// If the key is stored in the KeyChain, returns the handle
-    public func getKeyHandle () -> SecKey? {
-        switch type  {
-            case .ecdsa(inEnclave: true):
-                let query = Key.getKeyQuery(forId: id)
-                var result: CFTypeRef!
-                
-                if SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess && result != nil {
-                    return (result as! SecKey)
-                }
-            return nil
-        default:
-            return nil
-        }
-    }
-    
-    /// Saves the private components into the keychain
-    public func saveKeychainElements () -> OSStatus {
-        
-        if keyTag == "" {
-            keyTag = id.uuidString
-            let (query, _) = getPassphraseQuery(id: keyTag, password: passphrase)
-            let status = SecItemAdd(query, nil)
-            guard status == errSecSuccess else {
-                return status
-            }
-            let (queryKey, _) = getPrivateKeyQuery(id: keyTag, key: privateKey)
-            let status2 = SecItemAdd(queryKey, nil)
-            return status2
-        } else {
-            let (query, attrsToUpdate) = getPassphraseQuery(id: keyTag, password: passphrase, split: true)
-            let status = SecItemUpdate(query, attrsToUpdate)
-            guard status == errSecSuccess else {
-                return status
-            }
-            let (queryKey, attrsToUpdateKey) = getPrivateKeyQuery(id: keyTag, key: privateKey, split: true)
-            let status2 = SecItemUpdate(queryKey, attrsToUpdateKey as CFDictionary)
-            return status2
-        }
-    }
-    
-    /// Load the private components from the keychain
-    public func loadKeychainElements () {
-        let (query, _) = getPassphraseQuery(id: keyTag, password: nil, fetch: true)
-        
-        var itemCopy: AnyObject?
-        let status = SecItemCopyMatching(query, &itemCopy)
-        if status != errSecSuccess {
-            print ("oops")
-        }
-        if let d = itemCopy as? Data {
-            passphrase = String (bytes: d, encoding: .utf8) ?? ""
-        } else {
-            passphrase = ""
-        }
-        let (queryKey, _) = getPrivateKeyQuery(id: keyTag, key: nil, fetch: true)
-        let status2 = SecItemCopyMatching(queryKey, &itemCopy)
-        if status2 != errSecSuccess {
-            print ("oops")
-        }
-        if let ic = itemCopy as? Data {
-            privateKey = String (bytes: ic, encoding: .utf8) ?? ""
-        }
-    }
-    
-    ///
-    public func getPublicKeyAsData () -> Data {
-        let values = publicKey.split (separator: " ")
-        if values.count > 2 {
-            if let decoded =  Data (base64Encoded: String (values [1])) {
-                return decoded
-            }
-        }
-        return Data()
-    }
-    
-    /// Returns a CFData suitable to store on the keychain for the given UUID (which we use to identify the key).
-    public static func getIdForKeychain (forId: UUID) -> CFData {
-        return "SwiftTermApp-\(forId.uuidString)".data(using: .utf8)! as CFData
-    }
-    
-    /// Returns a dictionary array suitable to be used as a `query` parameter for the various SecKey operations on the keychain
-    public static func getKeyQuery (forId: UUID) -> CFDictionary {
-        let query: [String:Any] = [
-          kSecClass as String: kSecClassKey,
-          kSecAttrApplicationTag as String: getIdForKeychain(forId: forId),
-          kSecReturnRef as String: true
-        ]
-        return query as CFDictionary
-    }
-}
 
 /// Represents a host we connect to, the data structure we save, and keep at runtime
 /// Most properties are used at connection time, and a handful can be changed at runtime:
@@ -296,8 +166,8 @@ struct KnownHost: Identifiable {
 }
 
 class DataStore: ObservableObject {
-    static let testKey1 = Key (id: UUID(), type: .rsa (1024), name: "Fake Legacy Key", privateKey: "", publicKey: "", passphrase: "")
-    static let testKey2 = Key (id: UUID(), type: .rsa (4096), name: "Fake 2020 iPhone Key", privateKey: "", publicKey: "", passphrase: "")
+    static let testKey1 = MemoryKey (id: UUID(), type: .rsa (1024), name: "Fake Legacy Key", privateKey: "", publicKey: "", passphrase: "")
+    static let testKey2 = MemoryKey (id: UUID(), type: .rsa (4096), name: "Fake 2020 iPhone Key", privateKey: "", publicKey: "", passphrase: "")
     
     static let testUuid2 = UUID ()
     
@@ -394,8 +264,8 @@ class DataStore: ObservableObject {
 
     func loadDataStoreFromDefaults () {
         defaults = UserDefaults (suiteName: "SwiftTermApp")
-        let decoder = JSONDecoder ()
-        if let d = defaults {
+//        let decoder = JSONDecoder ()
+//        if let d = defaults {
 //            if let data = d.data(forKey: hostsArrayKey) {
 //                if let h = try? decoder.decode ([Host].self, from: data) {
 //                    hosts = h
@@ -404,21 +274,21 @@ class DataStore: ObservableObject {
 //            for host in hosts {
 //                host.loadKeychainElements()
 //            }
-            if let data = d.data(forKey: keysArrayKey) {
-                if let k = try? decoder.decode ([Key].self, from: data) {
-                    keys = k
-                }
-            }
-            for key in keys {
-                key.loadKeychainElements ()
-            }
-            
-            if let data = d.data(forKey: snippetArrayKey) {
-                if let s = try? decoder.decode ([Snippet].self, from: data) {
-                    snippets = s
-                }
-            }
-        }
+//            if let data = d.data(forKey: keysArrayKey) {
+//                if let k = try? decoder.decode ([Key].self, from: data) {
+//                    keys = k
+//                }
+//            }
+//            for key in keys {
+//                key.loadKeychainElements ()
+//            }
+//
+//            if let data = d.data(forKey: snippetArrayKey) {
+//                if let s = try? decoder.decode ([Snippet].self, from: data) {
+//                    snippets = s
+//                }
+//            }
+//        }
         loadKnownHosts()
     }
     
@@ -428,26 +298,7 @@ class DataStore: ObservableObject {
         guard let d = defaults else {
             return
         }
-        
-        let coder = JSONEncoder ()
-//        if let hostData = try? coder.encode(hosts) {
-//            d.set (hostData, forKey: hostsArrayKey)
-//        }
-        
-        // First save the keys in the keychain, this assigns the keyTag if not set before
-        for key in keys {
-            let status = key.saveKeychainElements ()
-            if status != errSecSuccess {
-                let result = SecCopyErrorMessageString(status, nil).debugDescription
-                print ("error saving data for key \(key.name) \(key.id) -> \(result)")
-            }
-        }
-
-        // Now save the regular data
-        if let keyData = try? coder.encode (keys) {
-            d.set (keyData, forKey: keysArrayKey)
-        }
-        
+        // If we ever get something again, it goes here
         d.synchronize()
         saveKnownHosts ()
     }
@@ -477,30 +328,6 @@ class DataStore: ObservableObject {
         updateHostMap()
         saveState ()
     }
-
-    func removeKeys (atOffsets offsets: IndexSet) {
-        for x in offsets {
-            let key = keys [x]
-            switch key.type {
-            case .ecdsa(inEnclave: true):
-                let query = Key.getKeyQuery(forId: key.id)
-                SecItemDelete(query)
-            default:
-                break
-            }
-        }
-        keys.remove(atOffsets: offsets)
-    }
-    
-    func removeHosts (atOffsets offsets: IndexSet) {
-        for x in offsets {
-            let host = hosts [x]
-            let (query, _) = getHostPasswordQuery(id: host.id.uuidString, password: nil)
-            SecItemDelete(query)
-        }
-        hosts.remove(atOffsets: offsets)
-        updateHostMap()
-    }
     
     func used (host: Host)
     {
@@ -508,17 +335,6 @@ class DataStore: ObservableObject {
             hosts [f].lastUsed = Date()
             saveState()
         }
-    }
-    // Records the new host in the data store
-    func save (key: Key)
-    {
-        if let idx = keys.firstIndex(where: { $0.id == key.id }) {
-            keys.remove(at: idx)
-            keys.insert(key, at: idx)
-        } else {
-            keys.append(key)
-        }
-        saveState ()
     }
 
     func hasHost (withAlias: String) -> Bool

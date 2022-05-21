@@ -120,7 +120,6 @@ struct HostIconSelector: View {
 }
 
 struct HostEditView: View {
-    @ObservedObject var store: DataStore = DataStore.shared
     @EnvironmentObject var dataController: DataController
     @State var alertClash: Bool = false
     @State var host: CHost?
@@ -268,9 +267,9 @@ struct HostEditView: View {
                         HStack {
                             Text ("SSH Key")
                             
-                            if sshKey != nil && self.store.keyExistsInStore(key: self.sshKey!) {
+                            if sshKey != nil && dataController.keyExistsInStore(key: self.sshKey!) {
                                 Spacer ()
-                                Text (self.store.getKeyDisplayName (forKey: sshKey!))
+                                Text (dataController.getKeyDisplayName (forKey: sshKey!))
                                 Image (systemName: "multiply.circle.fill")
                                     .onTapGesture {
                                         self.sshKey = nil
@@ -330,7 +329,7 @@ struct HostEditView: View {
                 }
                 ToolbarItem (placement: .navigationBarTrailing) {
                     Button("Save") {
-                        if self.alias != self.originalAlias && self.store.hasHost(withAlias: self.alias) {
+                        if self.alias != self.originalAlias && dataController.hasHost(withAlias: self.alias) {
                             self.alertClash = true
                         } else {
                             self.saveAndLeave ()
@@ -340,7 +339,7 @@ struct HostEditView: View {
                     .disabled (disableSave)
                     .alert(isPresented: self.$alertClash) {
                         Alert (title: Text ("Duplicate Host"),
-                               message: Text ("There is already a host with the alias \(alias) declared, do you want to replace that host definition with this one?"), primaryButton: .cancel(), secondaryButton: .destructive(Text ("Proceed")) {
+                               message: Text ("There is already a host with the alias \(alias) declared, do you want to keep this name?"), primaryButton: .cancel(), secondaryButton: .destructive(Text ("Proceed")) {
                             self.saveAndLeave ()
                         })
                     }

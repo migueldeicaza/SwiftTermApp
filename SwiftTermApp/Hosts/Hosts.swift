@@ -160,7 +160,6 @@ struct iPadHostSummaryView: View {
 struct HostsView : View {
     @EnvironmentObject var dataController: DataController
     @State var showHostEdit: Bool = false
-    @ObservedObject var store: DataStore = DataStore.shared
     private var hosts: FetchRequest<CHost>
     @Environment(\.managedObjectContext) var moc
     @State var newHost: Bool = false
@@ -175,21 +174,10 @@ struct HostsView : View {
     {
         let hostItems = hosts.wrappedValue
         for offset in offsets {
-            let host = hostItems [offset]
-            let (query, _) = getHostPasswordQuery(id: host.id.uuidString, password: nil)
-            SecItemDelete(query)
-
-            dataController.delete(host)
+            dataController.delete(host: hostItems [offset])
         }
 
         dataController.save()
-    }
-    
-    private func move(source: IndexSet, destination: Int)
-    {
-        store.hosts.move (fromOffsets: source, toOffset: destination)
-        dataController.save()
-        store.saveState()
     }
     
     func make (_ h: Host) -> Host {

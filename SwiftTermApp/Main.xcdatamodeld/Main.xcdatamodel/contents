@@ -25,10 +25,10 @@
     <entity name="CKey" representedClassName="CKey" syncable="YES" codeGenerationType="class">
         <attribute name="sId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="sKeyTag" optional="YES" attributeType="String"/>
+        <attribute name="sKeyType" optional="YES" attributeType="String"/>
         <attribute name="sName" optional="YES" attributeType="String"/>
         <attribute name="sPrivateKey" optional="YES" attributeType="String"/>
         <attribute name="sPublicKey" optional="YES" attributeType="String"/>
-        <attribute name="sType" optional="YES" attributeType="String"/>
     </entity>
     <entity name="CScripts" representedClassName="CScripts" syncable="YES" codeGenerationType="class">
         <attribute name="script" optional="YES" attributeType="String"/>
@@ -62,10 +62,10 @@
     </configuration>
     <elements>
         <element name="CEnvironmentVariable" positionX="-18" positionY="72" width="128" height="74"/>
+        <element name="CHost" positionX="-63" positionY="-18" width="128" height="254"/>
         <element name="CKey" positionX="-54" positionY="0" width="128" height="119"/>
         <element name="CScripts" positionX="0" positionY="63" width="128" height="59"/>
         <element name="HistoryRecord" positionX="-27" positionY="99" width="128" height="149"/>
-        <element name="CHost" positionX="-63" positionY="-18" width="128" height="254"/>
         <element name="UserSnippet" positionX="-36" positionY="9" width="128" height="89"/>
     </elements>
 </model>

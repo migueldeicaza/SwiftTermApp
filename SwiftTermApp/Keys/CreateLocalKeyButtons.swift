@@ -45,7 +45,7 @@ struct CreateLocalKeyButtons: View {
             GenerateSecureEnclave (showGenerator: self.$showEnclaveGenerator)
         }
         .sheet (isPresented: self.$addKeyManuallyShown) {
-            AddKeyManually (key: Key(), addKeyManuallyShown: self.$addKeyManuallyShown)
+            AddKeyManually (key: nil)
         }
     }
 }

@@ -67,6 +67,16 @@ class DataController: ObservableObject {
         return host
     }
     
+    func createSampleKey () -> CKey {
+        let key = CKey (context: container.viewContext)
+        key.id = UUID ()
+        key.name = "My First Key"
+        key.type = .rsa(1024)
+        key.publicKey = "FAKE_PUBLIC_KEY"
+        key.privateKey = "FAKE_PRIVATE_KEY"
+        return key
+    }
+    
     func createSampleData() throws {
         let viewContext = container.viewContext
 
@@ -103,10 +113,44 @@ class DataController: ObservableObject {
         }
     }
     
-    func delete(_ object: NSManagedObject) {
-        container.viewContext.delete(object)
+    func delete(host: CHost) {
+        let (query, _) = getHostPasswordQuery(id: host.id.uuidString, password: nil)
+        SecItemDelete(query)
+
+        container.viewContext.delete(host)
+    }
+
+    func delete(key: CKey) {
+        key.deleteKeychainCompanionData ()
+        container.viewContext.delete(key)
     }
     
+    func hasHost (withAlias: String) -> Bool {
+        let h = CHost.fetchRequest()
+        h.predicate = NSPredicate (format: "sAlias == %@", withAlias)
+        let hosts = try? container.viewContext.fetch(h)
+        return hosts?.count ?? 0 > 0
+    }
+    
+    func keyExistsInStore(key: UUID) -> Bool {
+        let kr = CKey.fetchRequest()
+        kr.predicate = NSPredicate (format: "sId == %@", key.uuidString)
+        let keys = try? container.viewContext.fetch(kr)
+        return keys?.count ?? 0 > 0
+    }
+    
+    // This for now returns the name, but if it is ambiguous, it could return a hash or something else
+    func getKeyDisplayName (forKey: UUID) -> String {
+        let kr = CKey.fetchRequest()
+        kr.predicate = NSPredicate (format: "sId == %@", forKey.uuidString)
+        let keys = try? container.viewContext.fetch(kr)
+        if let key = keys?.first {
+            return key.name
+        }
+        return "none"
+    }
+
+
     func deleteAll() {
         let fetchRequest1: NSFetchRequest<NSFetchRequestResult> = CHost.fetchRequest()
         let batchDeleteRequest1 = NSBatchDeleteRequest(fetchRequest: fetchRequest1)

@@ -24,7 +24,7 @@ struct ShareKeyView: UIViewControllerRepresentable {
 }
 
 struct KeySummaryView: View {
-    @Binding var key: Key
+    @ObservedObject var key: CKey
     @State var showEdit = false
     @State var showSharing = false
     var action: ((Key)-> ())?
@@ -54,7 +54,7 @@ struct KeySummaryView: View {
                     self.showEdit = true
                 }
             }.sheet(isPresented: $showEdit) {
-                EditKey(addKeyManuallyShown: self.$showEdit, key: self.key, disableChangePassword: true)
+                EditKey(key: self.key, disableChangePassword: true)
             }.sheet(isPresented: $showSharing) {
                 ShareKeyView(publicKey: $key.publicKey)
             }
@@ -70,8 +70,8 @@ struct KeySummaryView: View {
 
 
 struct KeyView_Previews: PreviewProvider {
-    @State static var key = sampleKey
+    @State static var key: CKey = DataController.preview.createSampleKey()
     static var previews: some View {
-        KeySummaryView(key: $key)
+        KeySummaryView(key: key)
     }
 }

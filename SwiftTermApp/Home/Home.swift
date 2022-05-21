@@ -82,10 +82,14 @@ func getHostFromUrl (_ url: URL, visiblePrefix: String = "Dynamic") -> Host? {
     let requestedUser = url.user
     
     if let requestedHost = url.host {
-        let matches = DataStore.shared.hosts.filter ({ h in
-            h.hostname == requestedHost && h.port == h.port && (requestedUser != nil ? requestedUser == h.username : true)
-        })
-        if let match = matches.first {
+        let hr = CHost.fetchRequest()
+        if let withUser = requestedUser {
+            hr.predicate = NSPredicate (format: "sHostname == %@ && sPort == %@ && sUsername == %@", requestedHost, requestedPort, withUser)
+        } else {
+            hr.predicate = NSPredicate (format: "sHostname == %@ && sPort == %@", requestedHost, requestedPort)
+        }
+        hr.fetchLimit = 1
+        if let match = try? globalDataController.container.viewContext.fetch(hr).first {
             return match
         }
         
@@ -149,7 +153,6 @@ func getFirstRun () -> Bool {
 }
 
 struct HomeView: View {
-    @ObservedObject var store: DataStore = DataStore.shared
     @ObservedObject var connections = Connections.shared
     @Environment(\.scenePhase) var scenePhase
     @State var launchHost: Host? = nil
@@ -211,7 +214,7 @@ struct HomeView: View {
                             }
                     })
                 NavigationLink(
-                    destination: KeyManagementView( ),
+                    destination: KeyManagementView(),
                     label: {
                         Label("Keys", systemImage: "key")
                     })
@@ -257,6 +260,9 @@ struct HomeView: View {
                 Section {
                     Button ("Diagnostics - Dump State (DANGEROUS, EXPOSES CONFIDENTIAL DATA in /TMP DUMP) ") {
                         DataStore.shared.dumpData ()
+                    }
+                    Button ("Clear all KeyChain Elements") {
+                        KeyTools.reset ()
                     }
                 }
             }

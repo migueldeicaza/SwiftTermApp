@@ -89,7 +89,7 @@
 		49C1B6B72462611F00D54F6F /* SshTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6B62462611F00D54F6F /* SshTerminalView.swift */; };
 		49C1B6BE24637DD500D54F6F /* ButtonColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C1B6BD24637DD500D54F6F /* ButtonColors.swift */; };
 		49C650952832D8B2005DFC17 /* Main.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 49C650932832D8B2005DFC17 /* Main.xcdatamodeld */; };
-		49C650B72832F393005DFC17 /* Host-DataHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C650B62832F393005DFC17 /* Host-DataHelpers.swift */; };
+		49C650B72832F393005DFC17 /* CHost-DataHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C650B62832F393005DFC17 /* CHost-DataHelpers.swift */; };
 		49C650B928333823005DFC17 /* DataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C650B828333823005DFC17 /* DataController.swift */; };
 		49C650BC28333AD8005DFC17 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49C650BB28333AD8005DFC17 /* CloudKit.framework */; };
 		49CA50E627EA6C0F00CA444E /* KeychainTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CA50E527EA6C0F00CA444E /* KeychainTools.swift */; };
@@ -106,6 +106,8 @@
 		49F1D14327DAB782004A9CB1 /* UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F1D14227DAB782004A9CB1 /* UITestsLaunchTests.swift */; };
 		49F1D14A27DD0FFF004A9CB1 /* SideHostStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F1D14927DD0FFF004A9CB1 /* SideHostStatus.swift */; };
 		49F5BEE628372F5300BAF3EF /* DataModelTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F5BEE528372F5300BAF3EF /* DataModelTypes.swift */; };
+		49F5BEE82837ED5A00BAF3EF /* MemoryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F5BEE72837ED5A00BAF3EF /* MemoryModels.swift */; };
+		49F5BEEA2837F0C800BAF3EF /* CKey-DataHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F5BEE92837F0C800BAF3EF /* CKey-DataHelpers.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -211,7 +213,7 @@
 		49C1B6B62462611F00D54F6F /* SshTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SshTerminalView.swift; sourceTree = "<group>"; };
 		49C1B6BD24637DD500D54F6F /* ButtonColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonColors.swift; sourceTree = "<group>"; };
 		49C650942832D8B2005DFC17 /* Main.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Main.xcdatamodel; sourceTree = "<group>"; };
-		49C650B62832F393005DFC17 /* Host-DataHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Host-DataHelpers.swift"; sourceTree = "<group>"; };
+		49C650B62832F393005DFC17 /* CHost-DataHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CHost-DataHelpers.swift"; sourceTree = "<group>"; };
 		49C650B828333823005DFC17 /* DataController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataController.swift; sourceTree = "<group>"; };
 		49C650BA28333AC4005DFC17 /* SwiftTermApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftTermApp.entitlements; sourceTree = "<group>"; };
 		49C650BB28333AD8005DFC17 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
@@ -230,6 +232,8 @@
 		49F1D14227DAB782004A9CB1 /* UITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestsLaunchTests.swift; sourceTree = "<group>"; };
 		49F1D14927DD0FFF004A9CB1 /* SideHostStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideHostStatus.swift; sourceTree = "<group>"; };
 		49F5BEE528372F5300BAF3EF /* DataModelTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataModelTypes.swift; sourceTree = "<group>"; };
+		49F5BEE72837ED5A00BAF3EF /* MemoryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryModels.swift; sourceTree = "<group>"; };
+		49F5BEE92837F0C800BAF3EF /* CKey-DataHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CKey-DataHelpers.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -564,9 +568,11 @@
 		49C650B52832F384005DFC17 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				49C650B62832F393005DFC17 /* Host-DataHelpers.swift */,
+				49C650B62832F393005DFC17 /* CHost-DataHelpers.swift */,
+				49F5BEE92837F0C800BAF3EF /* CKey-DataHelpers.swift */,
 				49C650B828333823005DFC17 /* DataController.swift */,
 				49F5BEE528372F5300BAF3EF /* DataModelTypes.swift */,
+				49F5BEE72837ED5A00BAF3EF /* MemoryModels.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -780,6 +786,7 @@
 				49A4466126A3D76200A636DC /* Commands.swift in Sources */,
 				49EED560245D0A0B00A8794E /* STButton.swift in Sources */,
 				49BA359626751B2700B63510 /* GenerateSecureEnclave.swift in Sources */,
+				49F5BEEA2837F0C800BAF3EF /* CKey-DataHelpers.swift in Sources */,
 				493F4F3027613F1B00838AC7 /* Session.swift in Sources */,
 				49C650B928333823005DFC17 /* DataController.swift in Sources */,
 				49BA35A4267847E100B63510 /* PEMtoSSH.swift in Sources */,
@@ -823,6 +830,7 @@
 				49F02ADF24610D7A00CFEB50 /* STFilePicker.swift in Sources */,
 				49A0A2C02491CDC4002593F7 /* InteractiveLogin.swift in Sources */,
 				4943DA6427F3BA5000E4E2F5 /* HistoryView.swift in Sources */,
+				49F5BEE82837ED5A00BAF3EF /* MemoryModels.swift in Sources */,
 				49B84C5526813F9400B36066 /* HostAuthKeyMismatch.swift in Sources */,
 				4943DA9027FB754500E4E2F5 /* OnboardWelcome.swift in Sources */,
 				49B49D9C27A9B7F00031A9AE /* SFTP.swift in Sources */,
@@ -836,7 +844,7 @@
 				49F0741024834B9D00A83CDC /* AppTerminalView.swift in Sources */,
 				4943DA5827EE471F00E4E2F5 /* SnippetEditor.swift in Sources */,
 				49F0740C2481B3ED00A83CDC /* ColorLoader.swift in Sources */,
-				49C650B72832F393005DFC17 /* Host-DataHelpers.swift in Sources */,
+				49C650B72832F393005DFC17 /* CHost-DataHelpers.swift in Sources */,
 				4943DA5B27EE5C2000E4E2F5 /* CommandPicker.swift in Sources */,
 				4901167A24553789002C1F85 /* Home.swift in Sources */,
 				499D8EBA268A690600CCEF9D /* ColumnSelector.swift in Sources */,

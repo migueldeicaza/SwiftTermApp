@@ -138,7 +138,6 @@ struct SessionsView: View {
 }
 
 struct NoSessionsView: View {
-    @ObservedObject var store: DataStore = DataStore.shared
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @FetchRequest (sortDescriptors: [SortDescriptor (\CHost.sLastUsed, order: .reverse)], predicate: NSPredicate (format: "sLastUsed != nil"))
     var hosts: FetchedResults<CHost>
@@ -192,6 +191,7 @@ struct NoSessionsView: View {
 }
 
 struct SessionsView_Previews: PreviewProvider {
+    // TODO, next line:
     static var v = SwiftUITerminal(host: DataStore.shared.hosts [0], existing: nil, createNew: true, interactive: true)
     static var previews: some View {
         Group {
