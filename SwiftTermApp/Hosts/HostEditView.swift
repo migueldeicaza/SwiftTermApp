@@ -333,7 +333,6 @@ struct HostEditView: View {
                             self.alertClash = true
                         } else {
                             self.saveAndLeave ()
-
                         }
                     }
                     .disabled (disableSave)

@@ -111,3 +111,22 @@ class MemoryKey: Key, Codable, Identifiable {
         return self
     }
 }
+
+class MemoryUserSnippet: UserSnippet, Codable, Identifiable {
+    var title: String
+    var command: String
+    var platforms: [String]
+    var id: UUID
+    
+    public init (id: UUID = UUID (), title: String, command: String, platforms: [String]) {
+        self.id = id
+        self.title = title
+        self.command = command
+        self.platforms = platforms
+    }
+    
+    func toMemoryUserSnippet() -> MemoryUserSnippet {
+        return self
+    }
+}
+

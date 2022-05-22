@@ -180,10 +180,6 @@ struct HostsView : View {
         dataController.save()
     }
     
-    func make (_ h: Host) -> Host {
-        print ("Making a new one")
-        return h
-    }
     var body: some View {
         VStack {
             STButton (text: "Add Host", icon: "plus.circle") {

@@ -9,21 +9,50 @@
 import SwiftUI
 
 struct SnippetEditor: View {
-    @State var snippet: Snippet
+    @EnvironmentObject var dataController: DataController
+    @State var snippet: CUserSnippet?
+    @State var title: String = ""
+    @State var command: String = ""
+    @State var platforms: [String] = []
     @Environment(\.dismiss) private var dismiss
 
+    init (snippet: CUserSnippet?) {
+        self._snippet = State (initialValue: snippet)
+
+        if let snippet = snippet {
+            _title = State (initialValue: snippet.title)
+            _command = State (initialValue: snippet.command)
+            _platforms = State (initialValue: snippet.platforms)
+        }
+    }
+
+    func saveAndLeave () {
+        let snippet: CUserSnippet
+        if let existingSnippet = self.snippet {
+            snippet = existingSnippet
+        } else {
+            snippet = CUserSnippet (context: dataController.container.viewContext)
+        }
+        dismiss()
+        snippet.objectWillChange.send ()
+        snippet.platforms = platforms
+        snippet.command = command
+        snippet.title = title
+        dataController.save()
+    }
+    
     var body: some View {
         NavigationView {
             Form {
                 Section {
                     VStack (alignment: .leading) {
                         Text ("Title:")
-                        TextField ("name", text: $snippet.title)
+                        TextField ("name", text: $title)
                     }
                 }
                 Section {
                     Text ("Command")
-                    TextEditor (text: $snippet.command)
+                    TextEditor (text: $command)
                         .keyboardType(.asciiCapable)
                         .autocapitalization(.none)
                         .font (.system (.body, design: .monospaced))
@@ -39,14 +68,7 @@ struct SnippetEditor: View {
                 }
                 ToolbarItem (placement: .navigationBarTrailing) {
                     Button("Save") {
-                        if let existing = DataStore.shared.snippets.firstIndex(where: { $0.id == snippet.id}) {
-                            DataStore.shared.snippets.remove(at: existing)
-                            DataStore.shared.snippets.insert(contentsOf: [snippet], at: existing)
-                        } else {
-                            DataStore.shared.snippets.append (snippet)
-                        }
-                        DataStore.shared.saveSnippets()
-                        dismiss ()
+                        self.saveAndLeave ()
                     }
                 }
             }
@@ -57,6 +79,6 @@ struct SnippetEditor: View {
 
 struct SnippetEditor_Previews: PreviewProvider {
     static var previews: some View {
-        SnippetEditor(snippet: Snippet (title: "List processes", command: "ps auxww\nasdfa\nasdfasdfa\nasdfasdfasdf\nasdfasdfasdf\nasdf\nanother\nand one more", platforms: ["linux", "apple"]))
+        SnippetEditor(snippet: DataController.preview.createSampleSnippet ())
     }
 }

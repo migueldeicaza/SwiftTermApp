@@ -94,6 +94,7 @@
 		49C650BC28333AD8005DFC17 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49C650BB28333AD8005DFC17 /* CloudKit.framework */; };
 		49CA50E627EA6C0F00CA444E /* KeychainTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CA50E527EA6C0F00CA444E /* KeychainTools.swift */; };
 		49CA50E827EBBD0D00CA444E /* EnvironmentVariables.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CA50E727EBBD0D00CA444E /* EnvironmentVariables.swift */; };
+		49DA38152839D2AF00FC4945 /* CUserSnippet-DataHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DA38142839D2AF00FC4945 /* CUserSnippet-DataHelper.swift */; };
 		49EED560245D0A0B00A8794E /* STButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EED55F245D0A0B00A8794E /* STButton.swift */; };
 		49F02ADF24610D7A00CFEB50 /* STFilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */; };
 		49F0740C2481B3ED00A83CDC /* ColorLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0740B2481B3ED00A83CDC /* ColorLoader.swift */; };
@@ -219,6 +220,7 @@
 		49C650BB28333AD8005DFC17 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		49CA50E527EA6C0F00CA444E /* KeychainTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTools.swift; sourceTree = "<group>"; };
 		49CA50E727EBBD0D00CA444E /* EnvironmentVariables.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentVariables.swift; sourceTree = "<group>"; };
+		49DA38142839D2AF00FC4945 /* CUserSnippet-DataHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CUserSnippet-DataHelper.swift"; sourceTree = "<group>"; };
 		49EED55F245D0A0B00A8794E /* STButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STButton.swift; sourceTree = "<group>"; };
 		49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STFilePicker.swift; sourceTree = "<group>"; };
 		49F0740B2481B3ED00A83CDC /* ColorLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorLoader.swift; sourceTree = "<group>"; };
@@ -573,6 +575,7 @@
 				49C650B828333823005DFC17 /* DataController.swift */,
 				49F5BEE528372F5300BAF3EF /* DataModelTypes.swift */,
 				49F5BEE72837ED5A00BAF3EF /* MemoryModels.swift */,
+				49DA38142839D2AF00FC4945 /* CUserSnippet-DataHelper.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -789,6 +792,7 @@
 				49F5BEEA2837F0C800BAF3EF /* CKey-DataHelpers.swift in Sources */,
 				493F4F3027613F1B00838AC7 /* Session.swift in Sources */,
 				49C650B928333823005DFC17 /* DataController.swift in Sources */,
+				49DA38152839D2AF00FC4945 /* CUserSnippet-DataHelper.swift in Sources */,
 				49BA35A4267847E100B63510 /* PEMtoSSH.swift in Sources */,
 				4967BA04245A7AF300A9D2A6 /* SshUtil.swift in Sources */,
 				4943DA8E27FB712F00E4E2F5 /* Onboard.swift in Sources */,

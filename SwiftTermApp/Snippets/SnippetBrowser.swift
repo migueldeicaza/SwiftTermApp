@@ -9,35 +9,42 @@
 import SwiftUI
 
 struct SnippetBrowser: View {
-    @ObservedObject var store: DataStore = DataStore.shared
-    @State var activatedItem: Snippet? = nil
+    @EnvironmentObject var dataController: DataController
+    private var snippets: FetchRequest<CUserSnippet>
+    @Environment(\.managedObjectContext) var moc
+    @State var activatedItem: CUserSnippet? = nil
+    @State var newSnippet: Bool = false
     
     func delete (at offsets: IndexSet) {
-        store.snippets.remove(atOffsets: offsets)
-        store.saveSnippets ()
+        let snippetItems = snippets.wrappedValue
+        for offset in offsets {
+            dataController.delete(snippet: snippetItems [offset])
+        }
+
+        dataController.save()
     }
     
-    private func move(source: IndexSet, destination: Int) {
-        store.snippets.move(fromOffsets: source, toOffset: destination)
-        store.saveSnippets ()
+    init () {
+        snippets = FetchRequest<CUserSnippet>(entity: CUserSnippet.entity(), sortDescriptors: [
+            NSSortDescriptor(keyPath: \CUserSnippet.sTitle, ascending: true)
+        ])
     }
 
     var body: some View {
         VStack {
             STButton (text: "Add Snippet", icon: "plus.circle") {
-                self.activatedItem = Snippet(title: "", command: "", platforms: [])
+                self.newSnippet = true
             }
-            if self.store.snippets.count > 0 {
+            if snippets.wrappedValue.count > 0 {
                 List {
                     Section {
-                        ForEach(self.store.snippets.indices, id: \.self) { idx in
-                            SnippetSummary (snippet: store.snippets [idx])
+                        ForEach(snippets.wrappedValue, id: \.self) { snippet in
+                            SnippetSummary (snippet: snippet)
                             .onTapGesture {
-                                activatedItem = store.snippets [idx]
+                                activatedItem = snippet
                             }
                         }
                         .onDelete(perform: delete)
-                        .onMove(perform: move)
                     }
                 }
                 .listStyle(.grouped)
@@ -57,13 +64,14 @@ struct SnippetBrowser: View {
                 Spacer ()
             }
         }
-        .sheet (item: $activatedItem) { item in
+        .sheet(isPresented: $newSnippet) {
+            SnippetEditor (snippet: nil)
+        }
+        .sheet(item: $activatedItem) { item in
             SnippetEditor (snippet: item)
         }
-
     }
 }
-
 
 struct SnippetBrowser_Previews: PreviewProvider {
     static var previews: some View {

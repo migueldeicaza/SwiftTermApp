@@ -76,6 +76,15 @@ class DataController: ObservableObject {
         return key
     }
     
+    func createSampleSnippet () -> CUserSnippet {
+        let snippet = CUserSnippet (context: container.viewContext)
+        snippet.id = UUID ()
+        snippet.title = "List files"
+        snippet.command = "ls -l"
+        snippet.platforms = ["unix"]
+        return snippet
+    }
+    
     func createSampleData() throws {
         let viewContext = container.viewContext
 
@@ -122,6 +131,10 @@ class DataController: ObservableObject {
     func delete(key: CKey) {
         key.deleteKeychainCompanionData ()
         container.viewContext.delete(key)
+    }
+    
+    func delete(snippet: CUserSnippet) {
+        container.viewContext.delete(snippet)
     }
     
     func updateKind (hostId: UUID, newKind: String) {

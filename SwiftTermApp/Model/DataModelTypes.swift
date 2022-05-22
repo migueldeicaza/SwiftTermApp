@@ -127,3 +127,14 @@ extension Key {
     }
 
 }
+
+protocol UserSnippet {
+    var title: String { get set }
+    var command: String { get set }
+    var platforms: [String] { get set }
+    var id: UUID { get set }
+
+    func toMemoryUserSnippet () -> MemoryUserSnippet
+}
+
+

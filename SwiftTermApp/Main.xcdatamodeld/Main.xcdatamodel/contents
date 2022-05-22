@@ -34,6 +34,12 @@
         <attribute name="script" optional="YES" attributeType="String"/>
         <relationship name="container" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CHost" inverseName="sStartupScripts" inverseEntity="CHost"/>
     </entity>
+    <entity name="CUserSnippet" representedClassName="CUserSnippet" syncable="YES" codeGenerationType="class">
+        <attribute name="sCommand" optional="YES" attributeType="String"/>
+        <attribute name="sId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="sPlatforms" optional="YES" attributeType="String"/>
+        <attribute name="sTitle" optional="YES" attributeType="String"/>
+    </entity>
     <entity name="HistoryRecord" representedClassName="HistoryRecord" syncable="YES" codeGenerationType="class">
         <attribute name="date" attributeType="Date" defaultDateTimeInterval="674489160" usesScalarValueType="NO"/>
         <attribute name="event" attributeType="Binary"/>
@@ -44,18 +50,12 @@
         <attribute name="port" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="username" optional="YES" attributeType="String"/>
     </entity>
-    <entity name="UserSnippet" representedClassName="UserSnippet" syncable="YES" codeGenerationType="class">
-        <attribute name="sCommand" optional="YES" attributeType="String"/>
-        <attribute name="sId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="sPlatforms" optional="YES" attributeType="String"/>
-        <attribute name="sTitle" optional="YES" attributeType="String"/>
-    </entity>
     <configuration name="Cloud" usedWithCloudKit="YES">
         <memberEntity name="CEnvironmentVariable"/>
         <memberEntity name="CKey"/>
         <memberEntity name="CScripts"/>
         <memberEntity name="CHost"/>
-        <memberEntity name="UserSnippet"/>
+        <memberEntity name="CUserSnippet"/>
     </configuration>
     <configuration name="Local">
         <memberEntity name="HistoryRecord"/>
@@ -66,6 +66,6 @@
         <element name="CKey" positionX="-54" positionY="0" width="128" height="119"/>
         <element name="CScripts" positionX="0" positionY="63" width="128" height="59"/>
         <element name="HistoryRecord" positionX="-27" positionY="99" width="128" height="149"/>
-        <element name="UserSnippet" positionX="-36" positionY="9" width="128" height="89"/>
+        <element name="CUserSnippet" positionX="-36" positionY="9" width="128" height="89"/>
     </elements>
 </model>
