@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct RunningTerminalConfig: View {
-    var host: Host
+    @State var host: Host
     @Binding var showingModal: Bool
     @State var style: String = ""
     @State var background: String = ""
@@ -139,7 +139,7 @@ struct ConfigurableUITerminal_Previews: PreviewProvider {
     }
     
     struct WrapperView: View {
-        @State var host = Host ()
+        @State var host = DataController.preview.createSampleHost(0)
         @State var showingModal = false
         
         var body: some View {

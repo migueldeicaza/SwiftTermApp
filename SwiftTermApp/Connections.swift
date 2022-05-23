@@ -11,58 +11,77 @@ import Combine
 import UIKit
 import SwiftTerm
  
+///
+/// Tracks the active SSH Sessions, which often contain one or more terminals.
+///
+/// Note: terminal views are typically created first, and tracked before a session is created, which only takes place later
+///
 class Connections: ObservableObject {
-    @Published public var connections: [SshTerminalView] = [
-    ]
-    
-    public func active () -> Bool {
-        return connections.count > 0
-    }
-    
-    public static func allocateConnectionId (avoidIds: [Int]) -> Int {
-        var serials = Set<Int> ()
-        
-        for conn in shared.connections {
-            serials.update(with: conn.serial)
-        }
-        for usedId in avoidIds {
-            serials.update(with: usedId)
-        }
-        for x in 0..<Int.max {
-            if !serials.contains(x) {
-                return x
-            }
-        }
-        return -1
-    }
-    public static func remove (_ terminal: SshTerminalView)
-    {
-        if let idx = shared.connections.firstIndex(of: terminal) {
-            shared.connections.remove (at: idx)
-        }
-        // This is used to track whether we should keep the display on, only when we have active terminals
-        settings.updateKeepOn()
-    }
-    
     public static var shared: Connections = Connections()
     
-    // Tracks the connection.
-    public static func track (connection: SshTerminalView)
-    {
-        if shared.connections.contains(connection) {
-            return
+    @Published public var sessions: [Session] = [
+    ]
+
+    public var terminalsCount: Int {
+        dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
+
+        var count = 0
+        for session in sessions {
+            count += session.terminals.count
         }
-        shared.connections.append(connection)
-        
-        // This is used to track whether we should keep the display on, only when we have active terminals
-        settings.updateKeepOn()
+        return count
     }
     
-    public static func lookupActive (host: Host) -> SshTerminalView?
+    public func active () -> Bool {
+        return sessions.count > 0
+    }
+    
+    // Returns a newly allocated array with all active terminals
+    public func getTerminals () -> [SshTerminalView] {
+        dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
+
+        return sessions.flatMap { $0.terminals }
+    }
+    
+    /// Tracks the terminal
+    public static func track (session: Session)
     {
-        return shared.connections.first { $0.host.id == host.id }
+        DispatchQueue.main.async {
+            if shared.sessions.contains(session) {
+                return
+            }
+            shared.sessions.append(session)
+            
+            // This is used to track whether we should keep the display on, only when we have active sessions
+            settings.updateKeepOn()
+        }
     }
     
+    public static func lookupActiveTerminal (host: Host) -> SshTerminalView?
+    {
+        dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
+        if let session = lookupActiveSession(host: host) {
+            return session.terminals.first
+        }
+        return nil
+    }
+    
+    public static func unregister (session: Session) {
+        DispatchQueue.main.async {
+            if let idx = shared.sessions.firstIndex(of: session) {
+                shared.sessions.remove(at: idx)
+            }
+            settings.updateKeepOn()
+        }
+    }
+
+
+    public static func lookupActiveSession (host: Host) -> Session?
+    {
+        dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
+        return shared.sessions.first { $0.host.id == host.id }
+    }
+
 //    struct ConnectionState: Encodable, Decodable {
 //        var hostId: UUID
 //        var reconnectType: String

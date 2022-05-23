@@ -9,6 +9,7 @@
 import SwiftUI
 import Shake
 import Introspect
+import CoreData
 
 struct ContentView: View {
 #if os(iOS)
@@ -81,28 +82,33 @@ func getHostFromUrl (_ url: URL, visiblePrefix: String = "Dynamic") -> Host? {
     let requestedUser = url.user
     
     if let requestedHost = url.host {
-        let matches = DataStore.shared.hosts.filter ({ h in
-            h.hostname == requestedHost && h.port == h.port && (requestedUser != nil ? requestedUser == h.username : true)
-        })
-        if let match = matches.first {
+        let hr = CHost.fetchRequest()
+        if let withUser = requestedUser {
+            hr.predicate = NSPredicate (format: "sHostname == %@ && sPort == %d && sUsername == %@", requestedHost, requestedPort, withUser)
+        } else {
+            hr.predicate = NSPredicate (format: "sHostname == %@ && sPort == %d", requestedHost, requestedPort)
+        }
+        hr.fetchLimit = 1
+        if let match = try? globalDataController.container.viewContext.fetch(hr).first {
             return match
         }
         
-        return Host (id: UUID(),
-                     alias: "\(visiblePrefix) \(requestedHost)",
-                     hostname: requestedHost,
-                     backspaceAsControlH: false,
-                     port: requestedPort,
-                     usePassword: false,
-                     username: requestedUser ?? "",
-                     password: "",
-                     hostKind: "",
-                     environmentVariables: [:],
-                     startupScripts: [],
-                     sshKey: nil,
-                     style: "",
-                     background: "",
-                     lastUsed: Date ())
+        return MemoryHost (
+            id: UUID(),
+            alias: "\(visiblePrefix) \(requestedHost)",
+            hostname: requestedHost,
+            backspaceAsControlH: false,
+            port: requestedPort,
+            usePassword: false,
+            username: requestedUser ?? "",
+            password: "",
+            hostKind: "",
+            environmentVariables: [:],
+            startupScripts: [],
+            sshKey: nil,
+            style: "",
+            background: "",
+            lastUsed: Date ())
     }
     return nil
 }
@@ -139,18 +145,6 @@ func promptMissingUser (_ parentController: UIViewController) async -> String? {
     return result
 }
 
-/// getCurrentKeyWindow: returns the current key window from the application
-@MainActor
-func getCurrentKeyWindow () -> UIWindow? {
-    return UIApplication.shared.connectedScenes
-          .filter { $0.activationState == .foregroundActive }
-          .map { $0 as? UIWindowScene }
-          .compactMap { $0 }
-          .first?.windows
-          .filter { $0.isKeyWindow }
-          .first
-}
-
 func getFirstRun () -> Bool {
     let key = "launchedBefore"
     let ran = UserDefaults.standard.bool(forKey: key)
@@ -159,16 +153,24 @@ func getFirstRun () -> Bool {
 }
 
 struct HomeView: View {
-    @ObservedObject var store: DataStore = DataStore.shared
     @ObservedObject var connections = Connections.shared
     @Environment(\.scenePhase) var scenePhase
     @State var launchHost: Host? = nil
     @State var transientLaunch: Bool? = false
     @State var firstRun = getFirstRun ()
-    
-    func sortDate (first: Host, second: Host) throws -> Bool
-    {
-        first.lastUsed > second.lastUsed
+
+    @FetchRequest (sortDescriptors: [SortDescriptor (\CHost.sLastUsed, order: .reverse)], predicate: NSPredicate (format: "sLastUsed != nil"))
+    var hosts: FetchedResults<CHost>
+
+    init () {
+        let request: NSFetchRequest<CHost> = CHost.fetchRequest()
+
+        request.sortDescriptors = [
+            NSSortDescriptor(keyPath: \CHost.sLastUsed, ascending: false)
+        ]
+        request.predicate = NSPredicate (format: "sLastUsed != nil")
+        request.fetchLimit = 3
+        _hosts = FetchRequest(fetchRequest: request)
     }
     
     // Launches the specified host as a terminal, used in response to openUrl requests
@@ -181,7 +183,7 @@ struct HomeView: View {
     var body: some View {
         List {
             //QuickLaunch()
-            if self.store.recentIndices().count > 0 {
+            if hosts.count > 0 {
                 Section (header: Text ("Recent")) {
                     
                     RecentHostsView()
@@ -199,16 +201,16 @@ struct HomeView: View {
                 NavigationLink(
                     destination: SessionsView(),
                     label: {
-                        Label("Sessions", systemImage: "terminal")
+                        Label("Terminals", systemImage: "terminal")
                         Spacer ()
-                        Text ("\(connections.connections.count)")
+                        Text ("\(connections.terminalsCount)")
                             .padding(4)
                             .background(Color (.systemGray5))
                             .cornerRadius(3)
                             .foregroundColor(Color (.systemGray))
                     })
                 NavigationLink(
-                    destination: KeyManagementView( ),
+                    destination: KeyManagementView(),
                     label: {
                         Label("Keys", systemImage: "key")
                     })
@@ -228,10 +230,12 @@ struct HomeView: View {
                         Label("Settings", systemImage: "gear")
                     })
                 NavigationLink(
+                    
                     destination: HistoryView(),
                     label: {
                         Label("History", systemImage: "clock")
                     })
+
             }
             
             Section {
@@ -241,7 +245,7 @@ struct HomeView: View {
                         Label("Credits", systemImage: "info.circle")
                     })
                 Button (
-                    action: Shake.show,
+                    action: { Shake.show(.home) },
                     label: {
                         Label("Support", systemImage: "questionmark.circle")
                     })
@@ -252,6 +256,9 @@ struct HomeView: View {
                 Section {
                     Button ("Diagnostics - Dump State (DANGEROUS, EXPOSES CONFIDENTIAL DATA in /TMP DUMP) ") {
                         DataStore.shared.dumpData ()
+                    }
+                    Button ("Clear all KeyChain Elements") {
+                        KeyTools.reset ()
                     }
                 }
             }
@@ -273,19 +280,20 @@ struct HomeView: View {
         }
         //.listStyle(.sidebar)
         .onOpenURL { url in
-            if let host = getHostFromUrl (url) {
-                if host.username == "" {
-                    if let window = getCurrentKeyWindow(), let vc = window.rootViewController {
-                        Task {
-                            if let user = await promptMissingUser (vc) {
-                                host.username = user
-                                launch (host)
-                            }
+            var host = getHostFromUrl (url)
+            if host == nil { return }
+            
+            if host!.username == "" {
+                if let window = getCurrentKeyWindow(), let vc = window.rootViewController {
+                    Task {
+                        if let user = await promptMissingUser (vc) {
+                            host!.username = user
+                            launch (host!)
                         }
                     }
-                } else {
-                    launch (host)
                 }
+            } else {
+                launch (host!)
             }
         }
         .sheet (isPresented: $firstRun) {

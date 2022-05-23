@@ -46,8 +46,10 @@ extension HistoryRecord {
     
     var alias: String {
         guard let hid = hostId else { return "" }
-        guard let host = DataStore.shared.idToHost [hid] else { return "" }
-        return host.alias
+        if let host = globalDataController.lookupHost(id: hid) {
+            return host.alias
+        }
+        return ""
     }
     
     var typedEvent: HistoryOperation {
@@ -56,18 +58,5 @@ extension HistoryRecord {
             return .none
         }
         return v
-    }
-}
-
-
-class HistoryController: ObservableObject {
-    let container = NSPersistentContainer(name: "History")
-    
-    init() {
-        container.loadPersistentStores { description, error in
-            if let error = error {
-                print("Core Data failed to load: \(error.localizedDescription)")
-            }
-        }
     }
 }

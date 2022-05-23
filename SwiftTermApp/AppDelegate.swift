@@ -7,13 +7,15 @@
 
 import SwiftUI
 import Shake
-var globalHistoryController = HistoryController()
+
+/// Databases (both configurations, local and cloudKit are here)
+var globalDataController = DataController ()
 
 @main
 struct SampleApp: App {
     @State var dates = [Date]()
     @State var launchHost: Host?
-    @StateObject private var historyController = globalHistoryController
+    @StateObject var dataController: DataController
     @Environment(\.scenePhase) var scenePhase
 
     func extendLifetime () {
@@ -27,7 +29,12 @@ struct SampleApp: App {
     }
     init () {
         if shakeKey != "" {
+            Shake.configuration.isCrashReportingEnabled = true
+            Shake.configuration.isAskForCrashDescriptionEnabled = true
             Shake.start(clientId: shakeId, clientSecret: shakeKey)
+            if let userId = UIDevice.current.identifierForVendor?.uuidString {
+                Shake.registerUser(userId: userId)
+            }
         }
         if settings.locationTrack {
             locationTrackerStart()
@@ -37,13 +44,15 @@ struct SampleApp: App {
 //            print("Family: \(family) Font names: \(names)")
 //        }
 //        print ("here")
+        
+        _dataController = StateObject(wrappedValue: globalDataController)
     }
     
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
-                    if Connections.shared.connections.count > 0 {
+                    if Connections.shared.sessions.count > 0 {
                         locationTrackerResume()
                     }
                 }
@@ -55,7 +64,9 @@ struct SampleApp: App {
                         extendLifetime ()
                     }
                 }
-                .environment(\.managedObjectContext, historyController.container.viewContext)
+                .environment(\.managedObjectContext, dataController.container.viewContext)
+                .environmentObject(dataController)
+
         }
         .commands {
             TerminalCommands()

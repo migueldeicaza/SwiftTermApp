@@ -27,6 +27,9 @@ class LibsshKnownHost {
         var kcopy = key
         
         let r = libssh2_knownhost_checkp(khHandle, hostName, port, &kcopy, key.count, LIBSSH2_KNOWNHOST_TYPE_PLAIN | LIBSSH2_KNOWNHOST_KEYENC_RAW, &ptr)
+        defer {
+            //ptr?.deallocate()
+        }
         switch r {
             
         case LIBSSH2_KNOWNHOST_CHECK_FAILURE:
@@ -52,6 +55,10 @@ class LibsshKnownHost {
     init (sessionActor: SessionActor, knownHost: OpaquePointer){
         self.sessionActor = sessionActor
         self.khHandle = knownHost
+    }
+    
+    deinit {
+        libssh2_knownhost_free (khHandle)
     }
     
     // returns nil on success, otherwise an error description

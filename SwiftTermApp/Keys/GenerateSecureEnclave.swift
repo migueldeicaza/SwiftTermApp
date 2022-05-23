@@ -8,8 +8,11 @@
 
 import SwiftUI
 
+let secureEnclaveKeyTag = "SwiftTermSecureEnclaveKeyTag"
 
 struct GenerateSecureEnclave: View {
+    @EnvironmentObject var dataController: DataController
+    @Environment(\.managedObjectContext) var moc
     @State var title = "SwiftTerm Enclave Key on \(UIDevice.current.name)"
     @Binding var showGenerator: Bool
     @State var showAlert: Bool = false
@@ -30,8 +33,9 @@ struct GenerateSecureEnclave: View {
     
     func callGenerateKey ()
     {
-        if let generated = KeyTools.generateKey (type: .ecdsa(inEnclave:true), secureEnclaveKeyTag: "SwiftTermSecureEnclaveKeyTag", comment: title, passphrase: "") {
-            DataStore.shared.save(key: generated)
+        if let generated = KeyTools.generateKey (type: .ecdsa(inEnclave:true), secureEnclaveKeyTag: secureEnclaveKeyTag, comment: title, passphrase: "") {
+            let _ = CKey (context: moc, blueprint: generated)
+            dataController.save ()
         }
     }
     

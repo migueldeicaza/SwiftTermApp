@@ -23,8 +23,8 @@ func getHostImage (forKind hostKind: String) -> some View
 }
 
 struct HostSummaryView: View {
-    @Binding var host: Host
-    @State var showingModal = false
+    @ObservedObject var host: CHost
+    @State var activatedItem: CHost?
     @State var createNewTerm = false
     //@Environment(\.editMode) var editMode
     @State var active = false
@@ -36,7 +36,7 @@ struct HostSummaryView: View {
                 getHostImage (forKind: host.hostKind)
                     .font (.system(size: 28))
                     .foregroundColor(.primary)
-                    .brightness(Connections.lookupActive(host: self.host) != nil ? 0 : 0.6)
+                    .brightness(Connections.lookupActiveSession(host: self.host) != nil ? 0 : 0.6)
                     //.colorMultiply(Color.white)
                 VStack (alignment: .leading, spacing: 4) {
                     HStack {
@@ -54,14 +54,14 @@ struct HostSummaryView: View {
                     .font(.system(size: 24))
                     .foregroundColor(Color.accentColor)
                 .onTapGesture {
-                    self.showingModal = true
+                    self.activatedItem = host
                 }
                 .accessibilityAction {
-                    self.showingModal = true
+                    self.activatedItem = host
                 }
                 .accessibilityLabel("Edit settings")
-            }.sheet(isPresented: $showingModal) {
-                HostEditView(host: self.host, showingModal: self.$showingModal)
+            }.sheet(item: $activatedItem) { item in
+                HostEditView(host: item)
             }
             .contextMenu {
                 HStack {
@@ -69,7 +69,7 @@ struct HostSummaryView: View {
                         createNewTerm = true
                         active = true
                     }) {
-                        Text("New Connection")
+                        Text("New Terminal")
                         Image(systemName: "plus.circle")
                     }
                 }
@@ -88,26 +88,29 @@ struct HostSummaryView: View {
 }
 
 struct iPadHostSummaryView: View {
-    @Binding var host: Host
-    @State var showingModal = false
+    @ObservedObject var host: CHost
+    @State var activatedItem: CHost? = nil
     @State var createNewTerm = false
     //@Environment(\.editMode) var editMode
     @State var active = false
+    
     var body: some View {
         VStack {
             HStack (spacing: 12){
                 getHostImage (forKind: host.hostKind)
                     .font (.system(size: 28))
-                    .brightness(Connections.lookupActive(host: self.host) != nil ? 0 : 0.6)
+                    .foregroundColor(.primary)
+                    .brightness(Connections.lookupActiveSession(host: self.host) != nil ? 0 : 0.6)
                     //.colorMultiply(Color.white)
                 VStack (alignment: .leading, spacing: 4) {
                     HStack {
                         Text ("\(host.alias)")
                             .bold()
+                            .foregroundColor(.primary)
                         Spacer ()
                     }
                     Text (host.summary ())
-                        .brightness(0.4)
+                        .foregroundColor(.secondary)
                         .font(.footnote)
                 }
                 Button (action: {
@@ -117,10 +120,10 @@ struct iPadHostSummaryView: View {
                         .font(.system(size: 24))
                 }
                 .onTapGesture {
-                    self.showingModal = true
+                    self.activatedItem = host
                 }
-            }.sheet(isPresented: $showingModal) {
-                HostEditView(host: self.host, showingModal: self.$showingModal)
+            }.sheet(item: $activatedItem) { item in
+                HostEditView(host: item)
             }
             .contextMenu {
                 HStack {
@@ -128,7 +131,7 @@ struct iPadHostSummaryView: View {
                         createNewTerm = true
                         active = true
                     }) {
-                        Text("New Connection")
+                        Text("New Terminal")
                         Image(systemName: "plus.circle")
                     }
                 }
@@ -155,29 +158,35 @@ struct iPadHostSummaryView: View {
 }
 
 struct HostsView : View {
+    @EnvironmentObject var dataController: DataController
     @State var showHostEdit: Bool = false
-    @ObservedObject var store: DataStore = DataStore.shared
-    //@State private var editMode = EditMode.inactive
-
-    func delete (at offsets: IndexSet)
-    {
-        store.removeHosts (atOffsets: offsets)
-        store.saveState()
+    private var hosts: FetchRequest<CHost>
+    @Environment(\.managedObjectContext) var moc
+    @State var newHost: Bool = false
+    
+    init () {
+        hosts = FetchRequest<CHost>(entity: CHost.entity(), sortDescriptors: [
+            NSSortDescriptor(keyPath: \CHost.sAlias, ascending: true)
+        ])
     }
     
-    private func move(source: IndexSet, destination: Int)
+    private func delete (at offsets: IndexSet)
     {
-        store.hosts.move (fromOffsets: source, toOffset: destination)
-        store.saveState()
+        let hostItems = hosts.wrappedValue
+        for offset in offsets {
+            dataController.delete(host: hostItems [offset])
+        }
+
+        dataController.save()
     }
     
     var body: some View {
         VStack {
             STButton (text: "Add Host", icon: "plus.circle") {
-                self.showHostEdit = true
+                newHost = true
             }
 
-            if store.hosts.count == 0 {
+            if hosts.wrappedValue.count == 0 {
                 HStack (alignment: .top){
                     Image (systemName: "desktopcomputer")
                         .font (.title)
@@ -188,12 +197,10 @@ struct HostsView : View {
             } else {
                 List {
                     Section {
-                        ForEach(self.store.hosts.indices, id: \.self) { idx in
-                            iPadHostSummaryView (host: self.$store.hosts [idx])
+                        ForEach(hosts.wrappedValue, id: \.self) { host in
+                            iPadHostSummaryView (host: host)
                         }
                         .onDelete(perform: delete)
-                        .onMove(perform: move)
-                        //.environment(\.editMode, $editMode)
                     }
                 }
                 .listStyle(DefaultListStyle())
@@ -205,8 +212,8 @@ struct HostsView : View {
             }
         }
         .navigationTitle(Text("Hosts"))
-        .sheet (isPresented: $showHostEdit) {
-            HostEditView(host: Host(), showingModal: self.$showHostEdit)
+        .sheet (isPresented: $newHost) {
+            HostEditView (host: nil)
         }
     }
 }
@@ -219,9 +226,13 @@ struct PrimaryLabel: ViewModifier {
 }
 
 struct Hosts_Previews: PreviewProvider {
+    static var dataController = DataController.preview
+
     static var previews: some View {
         NavigationView {
             HostsView()
+                .environment(\.managedObjectContext, dataController.container.viewContext)
+                .environmentObject(dataController)
         }
     }
 }

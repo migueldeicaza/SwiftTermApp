@@ -19,15 +19,17 @@ import Foundation
 ///  - password: the password to store, if nil, then no attribute is added for it
 ///  - fetch: set attributes to retrieve a value
 ///  - split: if split, then the updating attribute for the password is returned on the second CFDictionary, otherwise on the first
-func _getPassphraseQuery (kind: String, value: String, password: String?, fetch: Bool, split: Bool) -> (CFDictionary, CFDictionary) {
+func _getPassphraseQuery (kind: String, value: String, password: String?, fetch: Bool, split: Bool, forDelete: Bool) -> (CFDictionary, CFDictionary) {
     var query: [String: Any] = [
         kSecClass as String: kSecClassGenericPassword,
         
         kSecAttrService as String: kind,
         kSecAttrAccount as String: value,
-        
+        kSecAttrSynchronizable as String: kCFBooleanTrue!
     ]
+    
     var attrs: [String: Any] = [:]
+    if forDelete { return (query as CFDictionary, attrs as CFDictionary) }
     
     if let password = password {
         let data = Data (password.utf8) as CFData
@@ -37,6 +39,7 @@ func _getPassphraseQuery (kind: String, value: String, password: String?, fetch:
             query [kSecValueData as String] = data
         }
     }
+    query[kSecAttrSynchronizable as String] = kCFBooleanTrue
     if fetch {
         query [kSecMatchLimit as String] = kSecMatchLimitOne
         query [kSecReturnData as String] = kCFBooleanTrue
@@ -44,9 +47,9 @@ func _getPassphraseQuery (kind: String, value: String, password: String?, fetch:
         // Additional configuration
         //  - Key is backed up and moved to other devices
         query [kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlocked
-
+        
         // - iCloud sync: TODO, need to sync the other data as well
-        // query[kSecAttrSynchronizable as String] = kCFBooleanTrue
+        
     }
 
     return (query as CFDictionary, attrs as CFDictionary)
@@ -73,7 +76,7 @@ func _getPassphraseQuery (kind: String, value: String, password: String?, fetch:
 ///  - key: the key to store, if nil, then no attribute is added for it
 ///  - fetch: set attributes to retrieve a value
 ///  - split: if split, then the updating attribute for the password is returned on the second CFDictionary, otherwise on the first
-func _getPrivateKeyQuery (kind: String, value: String, key: String?, fetch: Bool, split: Bool) -> (CFDictionary, CFDictionary) {
+func _getPrivateKeyQuery (kind: String, value: String, key: String?, fetch: Bool, split: Bool, forDelete: Bool) -> (CFDictionary, CFDictionary) {
     var query: [String: Any] = [
         kSecClass as String: kSecClassKey,
 
@@ -83,8 +86,10 @@ func _getPrivateKeyQuery (kind: String, value: String, key: String?, fetch: Bool
         kSecAttrApplicationLabel as String: kind,
         kSecAttrApplicationTag as String: value,
         //kSecAttrKeyType as String: getKeyTypeForKeyChain (),
+        kSecAttrSynchronizable as String: kCFBooleanTrue!
     ]
     var attrs: [String: Any] = [:]
+    if forDelete { return (query as CFDictionary, attrs as CFDictionary) }
     if let key = key {
         let data = Data (key.utf8) as CFData
         if split {
@@ -100,9 +105,6 @@ func _getPrivateKeyQuery (kind: String, value: String, key: String?, fetch: Bool
         // Additional configuration
         //  - Key is backed up and moved to other devices
         query [kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlocked
-
-        //TODO
-        //query[kSecAttrSynchronizable as String] = kCFBooleanTrue
     }
     return (query as CFDictionary, attrs as CFDictionary)
 }
@@ -114,8 +116,8 @@ func _getPrivateKeyQuery (kind: String, value: String, key: String?, fetch: Bool
 ///  - fetch: set attributes to retrieve a value
 ///  - split: if split, then the updating attribute for the password is returned on the second CFDictionary, otherwise on the first
 
-public func getPrivateKeyQuery (id: String, key: String?, fetch: Bool = false, split: Bool = false) -> (CFDictionary, CFDictionary) {
-    return _getPrivateKeyQuery(kind: "SwiftTermAppPrivateKey", value: id, key: key, fetch: fetch, split: split)
+public func getPrivateKeyQuery (id: String, key: String?, fetch: Bool = false, split: Bool = false, forDelete: Bool = false) -> (CFDictionary, CFDictionary) {
+    return _getPrivateKeyQuery(kind: "SwiftTermAppPrivateKey", value: id, key: key, fetch: fetch, split: split, forDelete: forDelete)
 }
 
 /// Returns a pair of dictionaries suitable for storing passphrases: attributes for the query, and attributes to modify
@@ -125,8 +127,8 @@ public func getPrivateKeyQuery (id: String, key: String?, fetch: Bool = false, s
 ///  - fetch: set attributes to retrieve a value
 ///  - split: if split, then the updating attribute for the password is returned on the second CFDictionary, otherwise on the first
 
-public func getPassphraseQuery (id: String, password: String?, fetch: Bool = false, split: Bool = false) -> (CFDictionary, CFDictionary) {
-    return _getPassphraseQuery(kind: "SwiftTermAppKeyPassphrase", value: id, password: password, fetch: fetch, split: split)
+public func getPassphraseQuery (id: String, password: String?, fetch: Bool = false, split: Bool = false, forDelete: Bool = false) -> (CFDictionary, CFDictionary) {
+    return _getPassphraseQuery(kind: "SwiftTermAppKeyPassphrase", value: id, password: password, fetch: fetch, split: split, forDelete: forDelete)
 }
 
 /// Returns a pair of dictionaries suitable for storing host passwords: attributes for the query, and attributes to modify
@@ -136,6 +138,22 @@ public func getPassphraseQuery (id: String, password: String?, fetch: Bool = fal
 ///  - fetch: set attributes to retrieve a value
 ///  - split: if split, then the updating attribute for the password is returned on the second CFDictionary, otherwise on the first
 
-public func getHostPasswordQuery (id: String, password: String?, fetch: Bool = false, split: Bool = false) -> (CFDictionary, CFDictionary) {
-    return _getPassphraseQuery(kind: "SwiftTermAppHostPassword", value: id, password: password, fetch: fetch, split: split)
+public func getHostPasswordQuery (id: String, password: String?, fetch: Bool = false, split: Bool = false, forDelete: Bool = false) -> (CFDictionary, CFDictionary) {
+    return _getPassphraseQuery(kind: "SwiftTermAppHostPassword", value: id, password: password, fetch: fetch, split: split, forDelete: forDelete)
 }
+
+/// Returns a CFData suitable to store on the keychain for the given UUID (which we use to identify the key).
+public func getIdForKeychain (forId: UUID) -> CFData {
+    return "SwiftTermApp-\(forId.uuidString)".data(using: .utf8)! as CFData
+}
+
+/// Returns a dictionary array suitable to be used as a `query` parameter for the various SecKey operations on the keychain
+public func getKeyQuery (forId: UUID) -> CFDictionary {
+    let query: [String:Any] = [
+      kSecClass as String: kSecClassKey,
+      kSecAttrApplicationTag as String: getIdForKeychain(forId: forId),
+      kSecReturnRef as String: true
+    ]
+    return query as CFDictionary
+}
+

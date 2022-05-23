@@ -120,11 +120,9 @@ struct HostIconSelector: View {
 }
 
 struct HostEditView: View {
-    @ObservedObject var store: DataStore = DataStore.shared
+    @EnvironmentObject var dataController: DataController
     @State var alertClash: Bool = false
-    var _host: Host
-    @Binding var showingModal: Bool
-    @State var selectedKey = 0
+    @State var host: CHost?
     @State var keySelectorIsActive: Bool = false
     @State var showingPassword: Bool = false
 
@@ -142,33 +140,35 @@ struct HostEditView: View {
     @State var sshKey: UUID? = nil
     @State var reconnectType = 0
     @State var environmentVariables: [String:String] = [:]
+    @Environment(\.dismiss) private var dismiss
     
-    init (host: Host, showingModal: Binding<Bool>){
-        self._host = host
-        self._showingModal = showingModal
+    init (host: CHost?){
+        self._host = State (initialValue: host)
+        var reconnectType = 0
         
-        _originalAlias = State (initialValue: host.alias)
-        _alias = State (initialValue: host.alias)
-        _hostname = State (initialValue: host.hostname)
-        _backspaceAsControlH = State (initialValue: host.backspaceAsControlH)
-        _port = State (initialValue: host.port == 22 ? "" : "\(host.port)")
-        _usePassword = State (initialValue: host.usePassword)
-        _username = State (initialValue: host.username)
-        _password = State (initialValue: host.password)
-        _hostKind = State (initialValue: host.hostKind)
-        _style = State (initialValue: host.style)
-        _backgroundStyle = State (initialValue: host.background)
-        _sshKey = State (initialValue: host.sshKey)
-        _environmentVariables = State (initialValue: host.environmentVariables)
-        
-        var r = 0
-        switch host.reconnectType {
-        case "tmux":
-            r = 1
-        default:
-            r = 0
+        if let host = host {
+            _originalAlias = State (initialValue: host.alias)
+            _alias = State (initialValue: host.alias)
+            _hostname = State (initialValue: host.hostname)
+            _backspaceAsControlH = State (initialValue: host.backspaceAsControlH)
+            _port = State (initialValue: host.port == 22 || host.port == 0 ? "" : "\(host.port)")
+            _usePassword = State (initialValue: host.usePassword)
+            _username = State (initialValue: host.username)
+            _password = State (initialValue: host.password)
+            _hostKind = State (initialValue: host.hostKind)
+            _style = State (initialValue: host.style)
+            _backgroundStyle = State (initialValue: host.background)
+            _sshKey = State (initialValue: host.sshKey)
+            _environmentVariables = State (initialValue: host.environmentVariables)
+            switch host.reconnectType {
+            case "tmux":
+                reconnectType = 1
+            default:
+                reconnectType = 0
+            }
         }
-        _reconnectType = State (initialValue: r)
+        
+        _reconnectType = State (initialValue: reconnectType)
     }
     
     var disableSave: Bool {
@@ -177,32 +177,30 @@ struct HostEditView: View {
     
     func saveAndLeave ()
     {
-        _host.lastUsed = Date()
-        _host.alias = alias
-        _host.hostname = hostname
-        _host.backspaceAsControlH = backspaceAsControlH
-        _host.port = Int (port) ?? 22
-        _host.usePassword = usePassword
-        _host.username = username
-        _host.password = password
-        _host.hostKind = hostKind
-        _host.background = backgroundStyle
-        _host.style = style
-        _host.sshKey = sshKey
-        _host.reconnectType = reconnectType == 1 ? "tmux" : ""
-        _host.environmentVariables = environmentVariables
-        
-        store.save (host: _host)
-        
-        // Delaying the dismiss operation seems to prevent the SwiftUI crash:
-        // https://stackoverflow.com/questions/58404725/why-does-my-swiftui-app-crash-when-navigating-backwards-after-placing-a-navigat
-        //
-        // Note that it still seems to sometimes go back to the toplevel (???) and
-        // sometimes stay where we weref
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.showingModal = false
+        let host: CHost
+        if let existingHost = self.host {
+            host = existingHost
+        } else {
+            host = CHost (context: dataController.container.viewContext)
         }
+        dismiss()
+        host.objectWillChange.send ()
         
+        host.lastUsed = Date()
+        host.alias = alias
+        host.hostname = hostname
+        host.backspaceAsControlH = backspaceAsControlH
+        host.port = Int (port) ?? 22
+        host.usePassword = usePassword
+        host.username = username
+        host.password = password
+        host.hostKind = hostKind
+        host.background = backgroundStyle
+        host.style = style
+        host.sshKey = sshKey
+        host.reconnectType = reconnectType == 1 ? "tmux" : ""
+        host.environmentVariables = environmentVariables
+        dataController.save()
     }
     
     func assignKey (chosenKey: Key)
@@ -269,9 +267,9 @@ struct HostEditView: View {
                         HStack {
                             Text ("SSH Key")
                             
-                            if sshKey != nil && self.store.keyExistsInStore(key: self.sshKey!) {
+                            if sshKey != nil && dataController.keyExistsInStore(key: self.sshKey!) {
                                 Spacer ()
-                                Text (self.store.getKeyDisplayName (forKey: sshKey!))
+                                Text (dataController.getKeyDisplayName (forKey: sshKey!))
                                 Image (systemName: "multiply.circle.fill")
                                     .onTapGesture {
                                         self.sshKey = nil
@@ -325,12 +323,13 @@ struct HostEditView: View {
             .toolbar {
                 ToolbarItem (placement: .navigationBarLeading) {
                     Button ("Cancel") {
-                        self.showingModal.toggle()
+                        dismiss ()
+                        //self.activatedItem = nil
                     }
                 }
                 ToolbarItem (placement: .navigationBarTrailing) {
                     Button("Save") {
-                        if self.alias != self.originalAlias && self.store.hasHost(withAlias: self.alias) {
+                        if self.alias != self.originalAlias && dataController.hasHost(withAlias: self.alias) {
                             self.alertClash = true
                         } else {
                             self.saveAndLeave ()
@@ -339,7 +338,7 @@ struct HostEditView: View {
                     .disabled (disableSave)
                     .alert(isPresented: self.$alertClash) {
                         Alert (title: Text ("Duplicate Host"),
-                               message: Text ("There is already a host with the alias \(alias) declared, do you want to replace that host definition with this one?"), primaryButton: .cancel(), secondaryButton: .destructive(Text ("Proceed")) {
+                               message: Text ("There is already a host with the alias \(alias) declared, do you want to keep this name?"), primaryButton: .cancel(), secondaryButton: .destructive(Text ("Proceed")) {
                             self.saveAndLeave ()
                         })
                     }
@@ -360,10 +359,14 @@ struct HostEditView_Previews: PreviewProvider {
     }
     
     struct WrapperView: View {
-        @State var host = Host ()
+        @State var host = DataController.preview.createSampleHost(0)
+        @State var activatedHost: Host?
         
+        init () {
+            activatedHost = host
+        }
         var body: some View {
-            HostEditView(host: host, showingModal: .constant(true))
+            HostEditView(host: host /*, activatedItem: $activatedHost*/)
         }
     }
 }

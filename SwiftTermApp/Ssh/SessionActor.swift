@@ -41,9 +41,10 @@ actor SessionActor {
     ///  - recv: the method that is invoked by libssh2 to receive data from the connection
     ///  - debug: method to invoke when we receive a debug message from the server
     ///  - opaque: the C-level context/closure.   This should point to the Session, and is allocated by the session.
-    init (send: @escaping socketCbType, recv: @escaping socketCbType, disconnect: @escaping disconnectCbType, debug: @escaping debugCbType, opaque: UnsafeMutableRawPointer) {
+    init (send: @escaping socketCbType, recv: @escaping socketCbType, disconnect: @escaping disconnectCbType, debug: @escaping debugCbType, opaque: UnsafeMutableRawPointer, retHandle: inout OpaquePointer?) {
         libssh2_init (0)
         sessionHandle = libssh2_session_init_ex(nil, nil, nil, opaque)
+        retHandle = sessionHandle
         let flags: Int32 = 0
         
         libssh2_trace(sessionHandle, flags)

@@ -10,9 +10,10 @@
 import SwiftUI
 
 struct EditKey: View {
-    @ObservedObject var store: DataStore = DataStore.shared
-    @Binding var addKeyManuallyShown: Bool
-    var _key: Key
+    @EnvironmentObject var dataController: DataController
+    @Environment(\.dismiss) private var dismiss
+
+    @State var key: CKey?
     @State var disableChangePassword = false
     @State var showingPassword = false
     
@@ -23,18 +24,17 @@ struct EditKey: View {
     @State var passphrase: String = ""
     @State var keyTag: String = ""
     
-    public init (addKeyManuallyShown: Binding<Bool>, key: Key, disableChangePassword: Bool)
+    public init (key: CKey?, disableChangePassword: Bool)
     {
-        self._key = key
-        self._addKeyManuallyShown = addKeyManuallyShown
+        self._key = State (initialValue: key)
         self.disableChangePassword = disableChangePassword
-        
-        _name = State (initialValue: key.name)
-        _type = State (initialValue: key.type)
-        _privateKey = State (initialValue: key.privateKey)
-        _publicKey = State (initialValue: key.publicKey)
-        _passphrase = State (initialValue: key.passphrase)
-        _keyTag = State (initialValue: key.keyTag)
+        if let key = key {
+            _name = State (initialValue: key.name)
+            _type = State (initialValue: key.type)
+            _privateKey = State (initialValue: key.privateKey)
+            _publicKey = State (initialValue: key.publicKey)
+            _passphrase = State (initialValue: key.passphrase)
+        }
     }
     
     var privateKeyComplete: Bool {
@@ -47,14 +47,21 @@ struct EditKey: View {
     
     func saveAndLeave ()
     {
-        _key.name = name
-        _key.type = type
-        _key.privateKey = privateKey
-        _key.publicKey = publicKey
-        _key.passphrase = passphrase
-        _key.keyTag = keyTag
-        store.save (key: self._key)
-        addKeyManuallyShown = false
+        let key: CKey
+        if let existingKey = self.key {
+            key = existingKey
+        } else {
+            key = CKey (context: dataController.container.viewContext)
+        }
+        dismiss()
+        key.objectWillChange.send ()
+
+        key.name = name
+        key.type = type
+        key.privateKey = privateKey
+        key.publicKey = publicKey
+        key.passphrase = passphrase
+        dataController.save ()
     }
     
     // Tries to do something smart for adding the key by default
@@ -140,7 +147,7 @@ struct EditKey: View {
             .listStyle(GroupedListStyle())
             .toolbar {
                 ToolbarItem (placement: .navigationBarLeading) {
-                    Button ("Cancel") { self.addKeyManuallyShown = false }
+                    Button ("Cancel") { dismiss () }
                 }
                 ToolbarItem (placement: .navigationBarTrailing) {
                     Button("Save") { self.saveAndLeave() }
@@ -155,7 +162,7 @@ struct EditKey: View {
     }
 }
 
-var sampleKey = Key(id: UUID(),
+var sampleKey = MemoryKey(id: UUID(),
                     type: .rsa(1024),
                     name: "Sample Key",
                     privateKey:
@@ -205,16 +212,15 @@ var sampleKey = Key(id: UUID(),
 //
 // Implements adding a new Key from pasted data
 struct AddKeyManually: View {
-    @State var key: Key
-    @Binding var addKeyManuallyShown: Bool
+    @State var key: CKey?
     
     var body: some View {
-        EditKey(addKeyManuallyShown: $addKeyManuallyShown, key: key, disableChangePassword: false)
+        EditKey(key: key, disableChangePassword: false)
     }
 }
 
 struct PasteKey_Previews: PreviewProvider {
     static var previews: some View {
-        AddKeyManually(key: sampleKey, addKeyManuallyShown: .constant(true))
+        AddKeyManually(key: DataController.preview.createSampleKey ())
     }
 }

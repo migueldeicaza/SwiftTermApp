@@ -35,11 +35,12 @@ struct QuickLaunch: View {
         }
         let port = sp1.count > 1 ? Int (String (sp1 [1])) ?? 22 : 22
         
-        destHost = Host(alias: quickCommand,
-                        hostname: host,
-                        port: port,
-                        username: user,
-                        lastUsed: Date())
+        destHost = MemoryHost(
+            alias: quickCommand,
+            hostname: host,
+            port: port,
+            username: user,
+            lastUsed: Date())
         activate = true
     }
     

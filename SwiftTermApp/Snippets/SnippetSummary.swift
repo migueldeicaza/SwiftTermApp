@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct SnippetSummary: View {
-    @State var snippet: Snippet
+    @State var snippet: CUserSnippet
     var body: some View {
         VStack (alignment: .leading){
             Text (snippet.title)
@@ -24,6 +24,6 @@ struct SnippetSummary: View {
 
 struct SnippetSummary_Previews: PreviewProvider {
     static var previews: some View {
-        SnippetSummary(snippet: Snippet (title: "List files", command: "ls -l", platforms: []))
+        SnippetSummary(snippet: DataController.preview.createSampleSnippet())
     }
 }

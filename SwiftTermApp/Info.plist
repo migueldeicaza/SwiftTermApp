@@ -2,13 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>UIAppFonts</key>
-	<array>
-		<string>SourceCodePro-Medium.ttf</string>
-		<string>SourceCodePro-Bold.ttf</string>
-		<string>SourceCodePro-BoldItalic.ttf</string>
-		<string>SourceCodePro-Italic.ttf</string>
-	</array>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
@@ -93,6 +86,13 @@
 	<string>SwiftTermApp needs access to your microphone so you can attach voice notes when reporting an issue</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>SwiftTermApp needs access to your photo library so you can attach images when reporting an issue.</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>SourceCodePro-Medium.ttf</string>
+		<string>SourceCodePro-Bold.ttf</string>
+		<string>SourceCodePro-BoldItalic.ttf</string>
+		<string>SourceCodePro-Italic.ttf</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -115,6 +115,7 @@
 		<string>fetch</string>
 		<string>location</string>
 		<string>processing</string>
+		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

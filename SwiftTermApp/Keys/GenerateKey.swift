@@ -32,6 +32,8 @@ enum KeyType: Codable, Equatable, CustomStringConvertible {
 // ones with an optional passphrase
 //
 struct GenerateKey: View {
+    @EnvironmentObject var dataController: DataController
+    @Environment(\.managedObjectContext) var moc
     @State var keyStyle:Int = 0
     @State var keyBits:Int = 1
     @State var title = "SwiftTerm key on \(UIDevice.current.name)"
@@ -60,7 +62,8 @@ struct GenerateKey: View {
     {
         let v: KeyType = keyStyle == 0 ? .ecdsa(inEnclave: false) : .rsa(keyBits == 0 ? 1024 : keyBits == 1 ? 2048 : 4096)
         if let generated = KeyTools.generateKey (type: v, secureEnclaveKeyTag: "", comment: title, passphrase: passphrase) {
-            DataStore.shared.save(key: generated)
+            let _ = CKey (context: moc, blueprint: generated)
+            dataController.save ()
         } else {
             // TODO
         }

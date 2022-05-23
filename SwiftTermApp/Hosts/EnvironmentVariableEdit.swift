@@ -44,7 +44,6 @@ struct EnvironmentVariableEdit: View {
                         
                         TextField ("name", text: $variable.name)
                             .font (.system (.body, design: .monospaced))
-                            .disabled(variable.name != "")
                             .foregroundColor(newVariable ? .primary : .secondary)
                         padding()
                         Text ("Value")

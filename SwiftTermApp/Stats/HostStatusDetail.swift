@@ -619,6 +619,7 @@ struct HostStatusDetailLoader: View {
                         } catch {
                             // Shut down
                             monitor.stop()
+                            _monitor = nil
                             topMonitor = []
                         }
                     }

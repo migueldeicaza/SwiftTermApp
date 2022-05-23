@@ -20,29 +20,35 @@ struct PasteKeyButton: View {
 
 
 struct KeyManagementView: View {
+    @EnvironmentObject var dataController: DataController
+    private var keys: FetchRequest<CKey>
+    @Environment(\.managedObjectContext) var moc
     @State var newKeyShown = false
     @State var addFromFileShown = false
-    @ObservedObject var store: DataStore = DataStore.shared
     @State private var editMode = EditMode.inactive
-
-    var action: ((Key)-> ())? = nil
+    @State var action: ((Key)-> ())? = nil
     
+    init (action: ((Key)->())? = nil) {
+        _action = State (initialValue: action)
+        keys = FetchRequest<CKey>(entity: CKey.entity(), sortDescriptors: [
+            NSSortDescriptor(keyPath: \CKey.sName, ascending: true)
+        ])
+    }
+
     func delete (at offsets: IndexSet)
     {
-        store.removeKeys (atOffsets: offsets)
-        store.saveState()
+        let keyItems = keys.wrappedValue
+        for offset in offsets {
+            dataController.delete(key: keyItems [offset])
+        }
+
+        dataController.save()
     }
     
-    private func move(source: IndexSet, destination: Int)
-    {
-        store.keys.move (fromOffsets: source, toOffset: destination)
-        store.saveState()
-    }
-
     var body: some View {
         VStack {
             CreateLocalKeyButtons ()
-            if store.keys.count == 0 {
+            if keys.wrappedValue.count == 0 {
                 HStack (alignment: .top){
                     Image (systemName: "key")
                         .font (.title)
@@ -60,11 +66,10 @@ struct KeyManagementView: View {
     //                    .sheet (isPresented: self.$addFromFileShown, onDismiss: { self.addFromFileShown = false }) {
     //                        STFilePicker()
     //                    }
-                    ForEach(store.keys.indices, id: \.self){ idx in
-                        KeySummaryView (key: self.$store.keys [idx], action: self.action)
+                    ForEach(keys.wrappedValue, id: \.self) { key in
+                        KeySummaryView (key: key, action: self.action)
                     }
                     .onDelete(perform: delete)
-                    .onMove(perform: move)
                     .environment(\.editMode, $editMode)
                     .cornerRadius(10)
                 }.listStyle(DefaultListStyle())

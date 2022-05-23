@@ -51,7 +51,13 @@ struct HostConnectionError_Previews: PreviewProvider {
     }
     
     struct WrapperView: View {
-        var host = Host (alias: "dbserver", hostname: "dbserver.domain.com")
+        var host: Host
+        
+        init () {
+            host = CHost (context: DataController.preview.container.viewContext)
+            host.alias = "dbserver"
+            host.hostname = "dbserver.domain.com"
+        }
         
         var body: some View {
             HostConnectionError(host: host, error: "Connection closed")

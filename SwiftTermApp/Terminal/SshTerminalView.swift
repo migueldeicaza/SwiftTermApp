@@ -26,7 +26,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     public var currentDirectory: String? = nil
     
     var completeConnectSetup: () -> () = { }
-    var session: SocketSession!
+    var session: SocketSession?
     var sessionChannel: Channel?
 
     // Session restoration:
@@ -42,177 +42,11 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     
     // TODO, this should be based on the user locale, not forced here
     var lang = "en_US.UTF-8"
-    var reconnect: Bool = true
     
     // This is used to track when the session started, and if it is taking too long,
     // we start to output diagnostics on the connection
     var started: Date
 
-    // Delegate SocketSessionDelegate.authenticate: invoked to trigger authentication
-    func authenticate (session: Session) async -> String? {
-        @Sendable func loginWithKey (_ sshKey: Key) async -> String? {
-            switch sshKey.type {
-            case .rsa(_), .ecdsa(inEnclave: false):
-                var password: String
-                
-                if SshUtil.openSSHKeyRequiresPassword(key: sshKey.privateKey) && sshKey.passphrase == "" {
-                    password = self.passwordPrompt (challenge: "Key \(sshKey.name) requires a password to be unlocked")
-                } else {
-                    password = sshKey.passphrase
-                }
-                
-                return await session.userAuthPublicKeyFromMemory (username: host.username,
-                                                       passPhrase: password,
-                                                       publicKey: sshKey.publicKey,
-                                                       privateKey: sshKey.privateKey)
-            case .ecdsa(inEnclave: true):
-                if let keyHandle = sshKey.getKeyHandle() {
-                    return await session.userAuthWithCallback(username: host.username, publicKey: sshKey.getPublicKeyAsData()) { dataToSign in
-                        var error: Unmanaged<CFError>?
-                        guard let signed = SecKeyCreateSignature(keyHandle, .ecdsaSignatureMessageX962SHA256, dataToSign as CFData, &error) else {
-                            return nil
-                        }
-                        return signed as NSData as Data
-                    }
-                } else {
-                    return "Could not fetch the enclave key"
-                }
-            }
-        }
-        
-        var user = host.username
-        if user == "" {
-            user = userPrompt ()
-        }
-        
-        let authMethods = await session.userAuthenticationList(username: host.username)
-        logConnection("SSH: got \(authMethods)")
-        if authMethods == "" {
-            return nil
-        }
-        
-        var cumulativeErrors: [String] = []
-        
-        // First, try to use what the user configured
-        if authMethods.contains("publickey") && host.sshKey != nil {
-            if let sshKey = DataStore.shared.keys.first(where: { $0.id == host.sshKey! }) {
-                let passTask = Task.detached { () -> String? in
-                    self.logConnection("SSH: attempting authentication with \(sshKey.name)")
-                    if let error = await loginWithKey (sshKey) {
-                        return error
-                    } else {
-                        return nil
-                    }
-                }
-                let result = await passTask.result
-                if let error = try? result.get() {
-                    logConnection("SSH: authentication error \(error)")
-                    cumulativeErrors.append(error)
-                } else {
-                    return nil
-                }
-            }
-        }
-
-        // Some servers only send 'password', and not 'keyboard-interactive', so we want to prompt
-        // the user here.   On the other hand, some servers advertise keyboard-interactive, but
-        // fail if we attempt an interactive login.  Perhaps this needs a loop around the process
-        // to attempt the methods
-        if authMethods.contains ("password") && host.usePassword {
-            let password: String?
-            if host.password == "" {
-                logConnection("SSH: requesting keyboard input password")
-                password = await Task.detached {
-                    self.passwordPrompt(challenge: "Enter password")
-                }.value
-            } else {
-                password = host.password
-            }
-            if let password = password {
-                logConnection("SSH: attempting authentication with password")
-                if let error = await session.userAuthPassword (username: host.username, password: password) {
-                    logConnection("SSH: authentication error \(error)")
-                    cumulativeErrors.append (error)
-                } else {
-                    return nil
-                }
-            }
-        }
-        
-        // Ok, none of the presets work, try all the public keys that have a passphrase
-        if authMethods.contains ("publickey") {
-            let skip = host.sshKey == nil ? nil : DataStore.shared.keys.first(where: { $0.id == host.sshKey! })
-            
-            for sshKey in DataStore.shared.keys {
-                // Skip the key that was original bound to it
-                if skip != nil && skip!.id == sshKey.id {
-                    continue
-                }
-                let passTask = Task.detached { () -> String? in
-                    self.logConnection("SSH: attempting authentication with public key \(sshKey.name)")
-                    if let error = await loginWithKey (sshKey) {
-                        return error
-                    } else {
-                        return nil
-                    }
-                }
-                
-                let result = await passTask.result
-                if let error = try? result.get() {
-                    logConnection("SSH: authentication error \(error)")
-                    cumulativeErrors.append(error)
-                } else {
-                    return nil
-                }
-            }
-        }
-
-        if authMethods.contains ("keyboard-interactive") {
-            logConnection("SSH: attempting keyboard-interactive authentication")
-
-            if let error = await session.userAuthKeyboardInteractive(username: host.username, prompt: passwordPrompt) {
-                logConnection("SSH: authentication error \(error)")
-                
-                cumulativeErrors.append(error)
-            } else {
-                return nil
-            }
-        }
-        if cumulativeErrors.last == nil {
-            logConnection("SSH: No valid authentication options available \(authMethods)")
-        }
-        return cumulativeErrors.last ?? "No valid autentication options available: \(authMethods)"
-    }
-    
-    func connectionLog () {
-    
-    }
-    // Delegate SocketSessionDelegate.loginFailed, invoked if the authentication fails
-    func loginFailed(session: Session, details: String) {
-        DispatchQueue.main.async {
-            self.connectionError(error: details)
-        }
-    }
-    
-    /// Attempts a reconnection and state restoration if the connection supports it, and returns true if it is being attempted, false otherwise
-    func attemptReconnect () -> Bool {
-        if self.host.reconnectType == "tmux" {
-            self.session.shutdown()
-            self.session = SocketSession(host: host.hostname, port: UInt16 (host.port & 0xffff), delegate: self)
-            return true
-        }
-        return false
-    }
-    
-    // Delegate SessionDelegate.remoteEndDisconnected
-    func remoteEndDisconnected(session: Session) {
-        DispatchQueue.main.async {
-            if !self.attemptReconnect() {
-                self.connectionError(error: "Remote end disconnected")
-            }
-        }
-    }
-    
     nonisolated func channelReader (channel: Channel, data: Data?, error: Data?) {
         if let d = data {
             let sliced = Array(d) [0...]
@@ -280,7 +114,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             return false
         }
         if host.reconnectType == "tmux" {
-            if await tmuxConnection (channel) {
+            if await tmuxConnection (session, channel) {
                 return true
             }
         }
@@ -300,8 +134,8 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         return true
     }
 
-    func launchNewTmux (_ channel: Channel, usedIds: [Int]) async -> Bool {
-        serial = Connections.allocateConnectionId(avoidIds: usedIds)
+    func launchNewTmux (_ session: Session, _ channel: Channel, usedIds: [Int]) async -> Bool {
+        serial = session.allocateConnectionId(avoidIds: usedIds)
         let status = await channel.processStartup(request: "exec", message: "tmux \(tmuxFeatureFlags) new-session -s 'SwiftTermApp-\(serial)'")
         if status != 0 {
             DispatchQueue.main.async {
@@ -311,7 +145,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         return status == 0
     }
     
-    func attachTmux (_ channel: Channel, serial: Int) async -> Bool {
+    func attachTmux (_ session: Session, _ channel: Channel, serial: Int) async -> Bool {
         let tmuxAttachCommand = "tmux \(self.tmuxFeatureFlags) attach-session -t SwiftTermApp-\(serial)"
         let status = await channel.processStartup(request: "exec", message: tmuxAttachCommand)
         if status == 0 {
@@ -325,7 +159,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
     }
 
-    func tmuxConnection (_ channel: Channel) async -> Bool {
+    func tmuxConnection (_ session: Session, _ channel: Channel) async -> Bool {
         logConnection ("tmux: determining version")
         let oldTmux = await session.runSimple(command: "tmux -V", lang: lang) { (out, err) -> Bool in
             guard let str = out else {
@@ -375,7 +209,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         // 3. If that fails, we create a new session
         if serial == -2 {
             logConnection ("tmux: launching tmux")
-            if await !launchNewTmux(channel, usedIds: activeSessions.map { $0.id }) {
+            if await !launchNewTmux(session, channel, usedIds: activeSessions.map { $0.id }) {
                 return false
             }
         } else if serial == -1 {
@@ -383,27 +217,27 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             var foundSession = false
             for pair in activeSessions.sorted(by: { $0.sessionCount < $1.sessionCount }) {
                 logConnection ("tmux: attaching to tmux serial \(pair.id)")
-                if await attachTmux(channel, serial: pair.id) {
+                if await attachTmux(session, channel, serial: pair.id) {
                     foundSession = true
                     break
                 }
             }
             if !foundSession {
                 logConnection ("tmux: launching new tmux instance")
-                if await !launchNewTmux(channel, usedIds: activeSessions.map { $0.id }) {
+                if await !launchNewTmux(session, channel, usedIds: activeSessions.map { $0.id }) {
                     return false
                 }
             }
         } else {
             if activeSessions.contains (where: { $0.id == serial }) {
                 logConnection ("tmux: attempting to attach to tmux session \(serial)")
-                if await !attachTmux (channel, serial: serial) {
+                if await !attachTmux (session, channel, serial: serial) {
                     logConnection ("tmux: failed to attach to tmux session")
                     return false
                 }
             } else {
                 DispatchQueue.main.async {
-                    Connections.remove (self)
+                    self.closeTerminal()
                     let _: GenericConnectionIssue? = self.displayError("The tmux session no longer exists on the server")
                 }
                 return false
@@ -421,6 +255,9 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     }
     
     func directoryListing () async {
+        guard let session = session else {
+            return
+        }
         var dir = "/"
         await session.runSimple(command: "pwd", lang: lang) { out, err in
             dir = out ?? "/"
@@ -438,7 +275,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
 
     // Logs a connection to the history
     func historyRecordConnection (_ date: Date) {
-        let moc = globalHistoryController.container.viewContext
+        let moc = globalDataController.container.viewContext
         
         let history = HistoryRecord(context: moc)
         history.id = UUID()
@@ -457,8 +294,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
     }
     
-    // Delegate SocketSessionDelegate.loggedIn: invoked when the connection has been authenticated
-    func loggedIn (session: Session) async {
+    func setupTerminalChannel (session: Session) async {
         let _ = await setupChannel (session: session)
         
         canOutputToConsole = false
@@ -473,6 +309,28 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         }
         historyRecordConnection (connectionDate)
     }
+
+    // Delegate SocketSessionDelegate.loggedIn: invoked when the connection has been authenticated
+    func loggedIn (session: Session) async {
+        await setupTerminalChannel (session: session)
+    }
+    
+    func loginFailed(session: Session, details: String) {
+        closeTerminal()
+    }
+    
+    func closeTerminal () {
+        if let channel = sessionChannel {
+            session?.unregister(channel: channel)
+            sessionChannel = nil
+        }
+        session?.drop (terminal: self)
+        session = nil
+    }
+    
+    func reconnect (session: Session) async {
+       await setupTerminalChannel(session: session)
+    }
     
     init (frame: CGRect, host: Host, serial: Int = -1) throws
     {
@@ -481,103 +339,56 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         try super.init (frame: frame, host: host)
         feed (text: "Welcome to SwiftTerm\r\n\n")
         startConnectionMonitor ()
-        logConnection("Starting connection to \(host.hostname)")
-        session = SocketSession(host: host.hostname, port: UInt16 (host.port & 0xffff), delegate: self)
+        terminalDelegate = self
+        
+        var activeSession: SocketSession
+        if let existingSession = Connections.lookupActiveSession(host: host) as? SocketSession {
+            activeSession = existingSession
+            Task.detached {
+                await self.loggedIn(session: existingSession)
+            }
+        } else {
+            activeSession = SocketSession(host: host, delegate: self)
+            Connections.track(session: activeSession)
+        }
+        self.session = activeSession
+        activeSession.track(terminal: self)
+
         if !useDefaultBackground {
             updateBackground(background: host.background)
         }
-        terminalDelegate = self
-    }
-  
-    func getParentViewController () -> UIViewController? {
-        var parentResponder: UIResponder? = self
-        while parentResponder != nil {
-            parentResponder = parentResponder?.next
-            if let viewController = parentResponder as? UIViewController {
-                return viewController
-            }
-        }
-        return getCurrentKeyWindow()?.rootViewController
     }
     
-    /// Interactive prompt to request a password
-    var passwordTextField: UITextField?
-    nonisolated func passwordPrompt (challenge: String)-> String {
-        dispatchPrecondition(condition: .notOnQueue(DispatchQueue.main))
-        let semaphore = DispatchSemaphore(value: 0)
-        DispatchQueue.main.async {
-            guard let vc = self.getParentViewController() else {
-                return
-            }
-
-            let alertController = UIAlertController(title: "Authentication challenge", message: challenge, preferredStyle: .alert)
-            alertController.addTextField { [unowned self] (textField) in
-                textField.placeholder = challenge
-                textField.isSecureTextEntry = true
-                self.passwordTextField = textField
-            }
-            alertController.addAction(UIAlertAction(title: "OK", style: .default) { [unowned self] _ in
-                if let tf = self.passwordTextField {
-                    promptedPassword = tf.text ?? ""
-                }
-                semaphore.signal()
-                
-            })
-            vc.present(alertController, animated: true, completion: nil)
-        }
-        
-        let _ = semaphore.wait(timeout: DispatchTime.distantFuture)
-        return promptedPassword
+    /// This flag indicates that this terminal view would like to get a callback if the session drops and reconnects
+    var wantsSessionReconnect: Bool {
+        return host.reconnectType == "tmux"
     }
-
-    /// Interactive prompt to request a username
-    var usernameTextField: UITextField?
-    nonisolated func userPrompt ()-> String {
-        dispatchPrecondition(condition: .notOnQueue(DispatchQueue.main))
-        let semaphore = DispatchSemaphore(value: 0)
-        DispatchQueue.main.async {
-            guard let vc = self.getParentViewController() else {
-                return
-            }
-
-            let alertController = UIAlertController(title: "Username", message: "Enter your username", preferredStyle: .alert)
-            alertController.addTextField { [unowned self] (textField) in
-                textField.placeholder = ""
-                self.usernameTextField = textField
-            }
-            alertController.addAction(UIAlertAction(title: "OK", style: .default) { [unowned self] _ in
-                if let tf = self.usernameTextField {
-                    promptedUser = tf.text ?? ""
-                }
-                semaphore.signal()
-                
-            })
-            vc.present(alertController, animated: true, completion: nil)
-        }
-        
-        let _ = semaphore.wait(timeout: DispatchTime.distantFuture)
-        return promptedUser
+    
+    // SessionDelegate.getResponder method
+    func getResponder() -> UIResponder? {
+        return self
     }
-
+  
     func displayError<T: View & ConnectionMessage> (_ msg: String) -> T? {
         dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
         
-        Connections.remove(self)
-        if let parent = getParentViewController() {
-            var window: UIHostingController<T>!
-            window = UIHostingController<T>(rootView: T(host: host, message: msg, ok: {
-                window.dismiss(animated: true, completion: nil)
-            }))
-            
-            //if #available(iOS (15.0), *) {
-            
-                // Temporary workaround until beta2 https://developer.apple.com/forums/thread/682203
-                if let sheet = window.presentationController as? UISheetPresentationController {
-                    sheet.detents = [.medium()]
-                }
-            
-            parent.present(window, animated: true, completion: nil)
+        closeTerminal()
+        let parent = getParentViewController()
+        
+        var window: UIHostingController<T>!
+        window = UIHostingController<T>(rootView: T(host: host, message: msg, ok: {
+            window.dismiss(animated: true, completion: nil)
+        }))
+        
+        //if #available(iOS (15.0), *) {
+        
+        // Temporary workaround until beta2 https://developer.apple.com/forums/thread/682203
+        if let sheet = window.presentationController as? UISheetPresentationController {
+            sheet.detents = [.medium()]
         }
+        
+        parent.present(window, animated: true, completion: nil)
+        
         return nil
     }
     
@@ -585,23 +396,22 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     func connectionClosed (receivedEOF: Bool) {
         dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
         
-        Connections.remove(self)
-        if let parent = getParentViewController() {
-            var window: UIHostingController<HostConnectionClosed>!
-            window = UIHostingController<HostConnectionClosed>(rootView: HostConnectionClosed(host: host, receivedEOF: receivedEOF, ok: {
-                window.dismiss(animated: true, completion: nil)
-            }))
-            
-            //if #available(iOS (15.0), *) {
-            
-                // Temporary workaround until beta2 https://developer.apple.com/forums/thread/682203
-                if let sheet = window.presentationController as? UISheetPresentationController {
-                    sheet.detents = [.medium()]
-                }
-            
-            
-            parent.present(window, animated: true, completion: nil)
-        }
+        closeTerminal()
+        let parent = getParentViewController()
+        var window: UIHostingController<HostConnectionClosed>!
+        window = UIHostingController<HostConnectionClosed>(rootView: HostConnectionClosed(host: host, receivedEOF: receivedEOF, ok: {
+            window.dismiss(animated: true, completion: nil)
+        }))
+        
+        //if #available(iOS (15.0), *) {
+        
+            // Temporary workaround until beta2 https://developer.apple.com/forums/thread/682203
+            if let sheet = window.presentationController as? UISheetPresentationController {
+                sheet.detents = [.medium()]
+            }
+        
+        
+        parent.present(window, animated: true, completion: nil)
     }
     
     /// The connection has been closed, notify the user.
@@ -609,140 +419,24 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     func connectionError (error: String) {
         dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
         logConnection("Connection: \(error)")
-        Connections.remove(self)
-        if let parent = getParentViewController() {
-            var window: UIHostingController<HostConnectionError>!
-            window = UIHostingController<HostConnectionError>(rootView: HostConnectionError(host: host, error: error, ok: {
-                window.dismiss(animated: true, completion: nil)
-            }))
-            
-            //if #available(iOS (15.0), *) {
-            
-                // Temporary workaround until beta2 https://developer.apple.com/forums/thread/682203
-                if let sheet = window.presentationController as? UISheetPresentationController {
-                    sheet.detents = [.medium()]
-                }
-            
-            
-            parent.present(window, animated: true, completion: nil)
-        }
+        closeTerminal()
+        let parent = getParentViewController()
+        var window: UIHostingController<HostConnectionError>!
+        window = UIHostingController<HostConnectionError>(rootView: HostConnectionError(host: host, error: error, ok: {
+            window.dismiss(animated: true, completion: nil)
+        }))
+        
+        //if #available(iOS (15.0), *) {
+        
+            // Temporary workaround until beta2 https://developer.apple.com/forums/thread/682203
+            if let sheet = window.presentationController as? UISheetPresentationController {
+                sheet.detents = [.medium()]
+            }
+        
+        
+        parent.present(window, animated: true, completion: nil)
     }
         
-    var debugLog: [(Date,String)] = []
-    func debug(session: Session, alwaysDisplay: Bool, message: Data, language: Data) {
-        let msg = String (bytes: message, encoding: .utf8) ?? "<invalid encoding>"
-        print ("debug: \(msg)")
-        debugLog.append ((Date (),msg))
-    }
-
-    func getHostName (host: Host) -> String {
-        if host.port != 22 {
-            return "\(host.hostname):\(host.port)"
-        }
-        return host.hostname
-    }
-    
-    // When we connect to a new host that is unknown to us, let the user confirm
-    // that the key the host is sharing is the one they are expecting
-    //
-    // Returns true if the user wishes to proceed
-    func confirmHostAuthUnknown (hostKeyType: String, key: [Int8], fingerprint: String, knownHosts: LibsshKnownHost, host: Host) async -> Bool {
-
-        let ok: Bool = await withCheckedContinuation { c in
-            if let parent = self.getParentViewController() {
-                var window: UIHostingController<HostAuthUnknown>!
-                window = UIHostingController<HostAuthUnknown>(rootView: HostAuthUnknown(alias: self.host.alias, hostString: self.getHostName(host: host), fingerprint: fingerprint, cancelCallback: {
-                        Connections.remove(self)
-                        window.dismiss (animated: true) { c.resume(returning: false) }
-                    }, okCallback: {
-                        window.dismiss (animated: true) {
-                            c.resume(returning: true)
-                        }
-                    }))
-                parent.present(window, animated: true, completion: nil)
-            } else {
-                c.resume(returning: false)
-            }
-        }
-        
-        if ok {
-            if let addError = await knownHosts.add(hostname: self.host.hostname, port: Int32 (self.host.port), key: key, keyType: hostKeyType, comment: self.host.alias) {
-                print ("Error adding host to knownHosts: \(addError)")
-            }
-            if let writeError = await knownHosts.writeFile(filename: DataStore.shared.knownHostsPath) {
-                print ("Error writing knownhosts file \(writeError)")
-            }
-            DataStore.shared.loadKnownHosts()
-        }
-        return ok
-    }
-    /// Checks that we are connecting to the host we thought we were,
-    /// this uses and updates the `known_hosts` database to track the
-    /// known hosts
-    ///
-    /// Returns true on success, false on error
-    func checkHostIntegrity () async -> Bool {
-        guard let knownHosts = await session.makeKnownHost() else {
-            return false
-        }
-        
-        @MainActor
-        func getFingerPrint () async -> String {
-            guard let bytes = await session.getFingerprintBytes() else { return "Unknown" }
-            let d = Data (bytes)
-            return "SHA256:" + d.base64EncodedString()
-        }
-        
-        func closeConnection (description: String) {
-            
-        }
-        
-        @MainActor
-        func showHostKeyMismatch (fingerprint: String) async {
-            let _: Void = await withCheckedContinuation { c in
-                Connections.remove (self)
-                if let parent = self.getParentViewController() {
-                    var window: UIHostingController<HostAuthKeyMismatch>!
-                    
-                    window = UIHostingController<HostAuthKeyMismatch>(rootView: HostAuthKeyMismatch(alias: self.host.alias, hostString: self.getHostName(host: host), fingerprint: fingerprint, callback: {
-                        window.dismiss(animated: true, completion: {
-                            c.resume()
-                        })
-                        
-                    }))
-                    parent.present(window, animated: true, completion: nil)
-                }
-            }
-        }
-        
-        let _ = await knownHosts.readFile (filename: DataStore.shared.knownHostsPath)
-        
-        if let keyAndType = await session.hostKey() {
-            let res = knownHosts.check (hostName: host.hostname, port: Int32 (host.port), key: keyAndType.key)
-            let hostKeyType = SshUtil.keyTypeName (keyAndType.type)
-            
-//            var k: KnownHostStatus = .keyMismatch
-//            switch k {
-            switch res.status {
-            case .notFound, .failure:
-                if await confirmHostAuthUnknown(hostKeyType: hostKeyType, key: keyAndType.key, fingerprint: await getFingerPrint(), knownHosts: knownHosts, host: host) {
-                    return true
-                }
-                await session.disconnect(description: "User did not accept this host")
-                return false
-
-            case .keyMismatch:
-                await showHostKeyMismatch (fingerprint: await getFingerPrint())
-                await session.disconnect(description: "Known host key mismatch")
-                return false
-            case .match:
-                // We are good!
-                break
-            }
-        }
-        return true
-    }
-    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -806,6 +500,9 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     
     // Attempts to guess the kind of OS to update the icon displayed for the host.hostKind
     func guessOsIcon () async {
+        guard let session = session else {
+            return
+        }
         let sftp = await session.openSftp()
 
         // If this is a Linux system
@@ -846,49 +543,19 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
                 }
                 // Make a copy to make swift happy
                 let nos = os
-                DispatchQueue.main.async {
-                    DataStore.shared.updateKind(for: self.host, to: nos)
-                }
+                globalDataController.updateKind (hostId: self.host.id, newKind: nos)
             }
         } else {
-            DispatchQueue.main.async {
-                DataStore.shared.updateKind(for: self.host, to: "windows")
-            }
+            globalDataController.updateKind (hostId: self.host.id, newKind: "windows")
         }
     }
     
-    /// Connection Logging
-    
-    class MessageManager {
-        // Logged messages
-        var messages: [(time: Date, msg: String)] = []
-        var messageLock = NSLock ()
-        var messageLast = 0
-        
-        func log (_ msg: String) {
-            messageLock.lock()
-            messages.append((Date(), msg))
-            messageLock.unlock()
-        }
-        
-        func getMessages () -> ArraySlice<(time: Date, msg: String)> {
-            messageLock.lock ()
-            let start = messageLast
-            let end = messages.count
-            messageLast = end
-            messageLock.unlock()
-
-            return messages [start..<end]
-        }
-    }
-    
-    let messageManager: MessageManager = MessageManager ()
     // During the startup, we can output to the console, but once the connection is established,
     // we should not do this, as it will overlap the remote end data, and we need to show an
     // UI instead
     var canOutputToConsole = true
-    nonisolated func logConnection (_ msg: String) {
-        messageManager.log(msg)
+    func logConnection (_ msg: String) {
+        session?.logConnection(msg)
     }
  
     // Number of seconds before we start logging diagnostics information if the connection does not succeed
@@ -908,7 +575,10 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             guard self.canOutputToConsole else {
                 return
             }
-            for x in self.messageManager.getMessages() {
+            guard let session = self.session else {
+                return
+            }
+            for x in session.messageManager.getMessages() {
                 self.feed(text: "\(timeStampFormatter.string(from: x.time)): \(x.msg)\r\n")
             }
             DispatchQueue.main.asyncAfter(deadline: .now()+0.5, execute: self.flushMessages)
