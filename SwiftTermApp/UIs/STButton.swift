@@ -10,7 +10,7 @@ import Foundation
 import SwiftUI
 
 struct STButton: View {
-    var text: String
+    var text: LocalizedStringKey
     let icon: String
     @State var centered = true
     @Environment(\.colorScheme) var colorScheme
