@@ -281,19 +281,22 @@ struct HomeView: View {
         //.listStyle(.sidebar)
         .onOpenURL { url in
             var host = getHostFromUrl (url)
-            if host == nil { return }
+            guard let host = host else {
+                return
+            }
             
-            if host!.username == "" {
+            if host.username == "" {
                 if let window = getCurrentKeyWindow(), let vc = window.rootViewController {
                     Task {
+                        let newHost = host.asMemory()
                         if let user = await promptMissingUser (vc) {
-                            host!.username = user
-                            launch (host!)
+                            newHost.username = user
+                            launch (newHost)
                         }
                     }
                 }
             } else {
-                launch (host!)
+                launch (host)
             }
         }
         .sheet (isPresented: $firstRun) {
