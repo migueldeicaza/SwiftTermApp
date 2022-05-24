@@ -13,13 +13,22 @@ import SwiftUI
 /// getCurrentKeyWindow: returns the current key window from the application
 @MainActor
 func getCurrentKeyWindow () -> UIWindow? {
-    return UIApplication.shared.connectedScenes
-          .filter { $0.activationState == .foregroundActive }
-          .map { $0 as? UIWindowScene }
-          .compactMap { $0 }
-          .first?.windows
-          .filter { $0.isKeyWindow }
-          .first
+    func tryGetWindow (desiredState: UIScene.ActivationState) -> UIWindow? {
+        return UIApplication.shared.connectedScenes
+              .filter { $0.activationState == desiredState }
+              .map { $0 as? UIWindowScene }
+              .compactMap { $0 }
+              .first?.windows
+              .filter { $0.isKeyWindow }
+              .first
+    }
+    let states: [UIScene.ActivationState] = [.foregroundActive, .foregroundInactive, .background, .unattached]
+    for x in states {
+        if let window = tryGetWindow(desiredState: x) {
+            return window
+        }
+    }
+    return nil
 }
 
 @MainActor
