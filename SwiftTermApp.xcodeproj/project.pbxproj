@@ -96,6 +96,8 @@
 		49CA50E627EA6C0F00CA444E /* KeychainTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CA50E527EA6C0F00CA444E /* KeychainTools.swift */; };
 		49CA50E827EBBD0D00CA444E /* EnvironmentVariables.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CA50E727EBBD0D00CA444E /* EnvironmentVariables.swift */; };
 		49DA38152839D2AF00FC4945 /* CUserSnippet-DataHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DA38142839D2AF00FC4945 /* CUserSnippet-DataHelper.swift */; };
+		49DBA02C283C7D490068D16A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 49DBA02A283C7D490068D16A /* InfoPlist.strings */; };
+		49DBA02F283C7D490068D16A /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 49DBA02D283C7D490068D16A /* Localizable.strings */; };
 		49EED560245D0A0B00A8794E /* STButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EED55F245D0A0B00A8794E /* STButton.swift */; };
 		49F02ADF24610D7A00CFEB50 /* STFilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */; };
 		49F0740C2481B3ED00A83CDC /* ColorLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0740B2481B3ED00A83CDC /* ColorLoader.swift */; };
@@ -223,6 +225,8 @@
 		49CA50E527EA6C0F00CA444E /* KeychainTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTools.swift; sourceTree = "<group>"; };
 		49CA50E727EBBD0D00CA444E /* EnvironmentVariables.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentVariables.swift; sourceTree = "<group>"; };
 		49DA38142839D2AF00FC4945 /* CUserSnippet-DataHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CUserSnippet-DataHelper.swift"; sourceTree = "<group>"; };
+		49DBA02B283C7D490068D16A /* es-419 */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "es-419"; path = "es-419.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		49DBA02E283C7D490068D16A /* es-419 */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "es-419"; path = "es-419.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		49EED55F245D0A0B00A8794E /* STButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STButton.swift; sourceTree = "<group>"; };
 		49F02ADE24610D7A00CFEB50 /* STFilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STFilePicker.swift; sourceTree = "<group>"; };
 		49F0740B2481B3ED00A83CDC /* ColorLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorLoader.swift; sourceTree = "<group>"; };
@@ -297,6 +301,8 @@
 				49C650BA28333AC4005DFC17 /* SwiftTermApp.entitlements */,
 				497128C526656609005A2988 /* SwiftTermApp-Bridging-Header.h */,
 				490116832455378A002C1F85 /* Info.plist */,
+				49DBA02D283C7D490068D16A /* Localizable.strings */,
+				49DBA02A283C7D490068D16A /* InfoPlist.strings */,
 				4901167524553789002C1F85 /* AppDelegate.swift */,
 				49A4466026A3D76200A636DC /* Commands.swift */,
 				4967B9FB2459239700A9D2A6 /* Connections.swift */,
@@ -749,6 +755,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				495512D12800BD2A00B4CDA2 /* SourceCodePro-Italic.ttf in Resources */,
+				49DBA02C283C7D490068D16A /* InfoPlist.strings in Resources */,
 				49F1D13727DA5F11004A9CB1 /* openssl_1_1_1h.txt in Resources */,
 				49F1D13627DA5F11004A9CB1 /* swiftterm.txt in Resources */,
 				490116822455378A002C1F85 /* LaunchScreen.storyboard in Resources */,
@@ -757,6 +764,7 @@
 				495512CF2800BD2A00B4CDA2 /* SourceCodePro-Bold.ttf in Resources */,
 				495512D02800BD2A00B4CDA2 /* SourceCodePro-BoldItalic.ttf in Resources */,
 				4901167C2455378A002C1F85 /* Assets.xcassets in Resources */,
+				49DBA02F283C7D490068D16A /* Localizable.strings in Resources */,
 				4912EB6228207D210083638C /* swiftui-introspect.txt in Resources */,
 				495512CB2800BBB800B4CDA2 /* source-code-pro.txt in Resources */,
 				49F1D13827DA5F11004A9CB1 /* libssh.txt in Resources */,
@@ -910,6 +918,22 @@
 				49B84C512681215300B36066 /* es-419 */,
 			);
 			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		49DBA02A283C7D490068D16A /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				49DBA02B283C7D490068D16A /* es-419 */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		49DBA02D283C7D490068D16A /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				49DBA02E283C7D490068D16A /* es-419 */,
+			);
+			name = Localizable.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

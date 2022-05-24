@@ -1,0 +1,261 @@
+/* No comment provided by engineer. */
+"**Host:** %@" = "**Computadora:** %@";
+
+/* No comment provided by engineer. */
+"**It is possible that someone is doing something nasty**.\n\nSomeone could be eavesdropping on you right now (man-in-the-middle attack).\n\nIt is also possible that the host key has just been changed. The fingerprint for the RSA key sent by the remote host is:\n\n`%@`\n\nContact your system administrator to verify.\n\nIf this is expected, you can remove the existing known key from the Known Hosts settings." = "**Es posible que una persona esté tratando de hacer algo desagradable**\n\nAlguien podría estar monitoreando tu conección en este momento (un ataque de interposición).\n\nAunque es posible que la llave de su servidor haya cambiado.   La huella digital que ha enviado el servidor remoto es:\n\n`%@`\n\nContacte a su administrator de sistemas para verificarla.\n\nSi este cambio estaba anticipado, remueve el registro para esta computadaora de la lista de computadoras conocidas.\n        ";
+
+/* No comment provided by engineer. */
+"Active SSH sessions will appear here" = "Las conecciones activas SSH aparecerán aquí";
+
+/* No comment provided by engineer. */
+"Alias" = "Alias";
+
+"Terminals" = "Terminales";
+
+"Keys" = "Llaves";
+
+"tmux" = "tmux";
+
+"Known Hosts" = "Computadoras Conocidas";
+
+"Settings" = "Ajustes";
+
+"Credits" = "Créditos";
+
+"Add Host" = "Añadir Computadora";
+
+"Password" = "Contraseña";
+
+
+
+/* No comment provided by engineer. */
+"Authentication" = "Autentificación";
+
+/* No comment provided by engineer. */
+"Authors: %@" = "Autores";
+
+/* No comment provided by engineer. */
+"Background" = "Fondo";
+
+/* No comment provided by engineer. */
+"Background Style" = "Estilo del fondo";
+
+/* No comment provided by engineer. */
+"Beep" = "Bip";
+
+/* No comment provided by engineer. */
+"Below is the configuration" = "Abajo aparece la configuración";
+
+/* No comment provided by engineer. */
+"Bottom" = "Abajo";
+
+/* No comment provided by engineer. */
+"BUG" = "Error";
+
+/* No comment provided by engineer. */
+"Close Connection" = "Cerrar la conección";
+
+/* No comment provided by engineer. */
+"Color Theme" = "Tema de color";
+
+/* No comment provided by engineer. */
+"Columns" = "Columnas";
+
+/* No comment provided by engineer. */
+"Command" = "Comando";
+
+/* No comment provided by engineer. */
+"Comment" = "Comentario";
+
+/* No comment provided by engineer. */
+"Connect" = "Conectarse";
+
+/* No comment provided by engineer. */
+"Connected" = "Conectado";
+
+/* No comment provided by engineer. */
+"Connecting" = "Conectando";
+
+/* No comment provided by engineer. */
+"Connection to `%@:%@` %@" = "Conección a `%1$@:%2$@` %3$@";
+
+/* No comment provided by engineer. */
+"Continue" = "Continua";
+
+/* No comment provided by engineer. */
+"Create a host to define a machine you want to connect to." = "Crea una definición de computadora con la información necesaria para contactarse.";
+
+/* No comment provided by engineer. */
+"Created by: %@" = "Creado por: %@";
+
+/* No comment provided by engineer. */
+"Default" = "Básico";
+
+/* No comment provided by engineer. */
+"Disconnected" = "Desconectado";
+
+/* No comment provided by engineer. */
+"Duplicate Host" = "Computadora duplicada";
+
+/* No comment provided by engineer. */
+"Endpoint:" = "Punto de contacto:";
+
+/* No comment provided by engineer. */
+"Environment Variables" = "Variables de Entorno";
+
+/* No comment provided by engineer. */
+"error" = "error";
+
+/* No comment provided by engineer. */
+"Font" = "Fuente";
+
+/* No comment provided by engineer. */
+"Fourth" = "Cuarto";
+
+/* No comment provided by engineer. */
+"Hello" = "Hola";
+
+/* No comment provided by engineer. */
+"Hello, World!" = "Hola, Mundo!";
+
+/* No comment provided by engineer. */
+"History" = "Historia";
+
+/* No comment provided by engineer. */
+"Host" = "Computadora";
+
+/* No comment provided by engineer. */
+"Host Icon" = "Ícono de la computadora";
+
+/* No comment provided by engineer. */
+"Host: %@" = "Computadora: %@";
+
+/* No comment provided by engineer. */
+"Hosts" = "Computadoras";
+
+/* No comment provided by engineer. */
+"Keep Display On" = "Mantener la tela prendida";
+
+/* No comment provided by engineer. */
+"KEY TYPE" = "TIPO DE LLAVE";
+
+/* No comment provided by engineer. */
+"Key Type:" = "Tipo de la llave";
+
+/* No comment provided by engineer. */
+"Key Type: %@" = "Tipo de la llave: %@";
+
+/* No comment provided by engineer. */
+"Key:" = "Llave:";
+
+/* No comment provided by engineer. */
+"Live" = "En vivo";
+
+/* No comment provided by engineer. */
+"Name" = "Nombre";
+
+/* No comment provided by engineer. */
+"Name Conflict" = "Conflicto del nombre";
+
+/* No comment provided by engineer. */
+"New Terminal" = "Nueva Terminal";
+
+/* No comment provided by engineer. */
+"No active sessions" = "No hay sesiones activas";
+
+/* No comment provided by engineer. */
+"No Host" = "Sin computador";
+
+/* No comment provided by engineer. */
+"none" = "ninguno";
+
+/* No comment provided by engineer. */
+"NUMBER OF BITS" = "NÚMERO DE BITS";
+
+/* Default action */
+"OK" = "Aceptar";
+
+/* No comment provided by engineer. */
+"Other Options" = "Otras opciones";
+
+/* No comment provided by engineer. */
+"Passphrase" = "Frase de seguridad";
+
+/* No comment provided by engineer. */
+"Password" = "Seña";
+
+/* No comment provided by engineer. */
+"Port" = "Puerto";
+
+/* No comment provided by engineer. */
+"Private Key" = "Llave privada";
+
+/* No comment provided by engineer. */
+"Private Key Storage" = "Almacenamiento de la llave privada";
+
+/* No comment provided by engineer. */
+"Proceed" = "Continuar";
+
+/* No comment provided by engineer. */
+"Project site: [%@](%@)" = "Sitio del proyecto: [%1$@](%2$@)";
+
+/* No comment provided by engineer. */
+"Public Key" = "Llave pública";
+
+/* No comment provided by engineer. */
+"Recent" = "Reciente";
+
+/* No comment provided by engineer. */
+"Recent Connections" = "Conecciones recientes";
+
+/* No comment provided by engineer. */
+"Replace" = "Remplazar";
+
+/* No comment provided by engineer. */
+"Replace SSH Key" = "Replazar la llave SSH";
+
+/* No comment provided by engineer. */
+"Required" = "Requerido";
+
+/* No comment provided by engineer. */
+"Restoration" = "Restauración";
+
+/* No comment provided by engineer. */
+"Sessions" = "Sesiones";
+
+/* No comment provided by engineer. */
+"Silent" = "Silencioso";
+
+/* No comment provided by engineer. */
+"Size" = "Tamaño";
+
+/* No comment provided by engineer. */
+"Solid" = "Sólido";
+
+/* No comment provided by engineer. */
+"SSH Key" = "Llave SSH";
+
+/* No comment provided by engineer. */
+"Title:" = "Título:";
+
+/* No comment provided by engineer. */
+"Type" = "Tipo";
+
+/* No comment provided by engineer. */
+"Username" = "Nombre de usuario";
+
+/* No comment provided by engineer. */
+"Value" = "Valor";
+
+/* No comment provided by engineer. */
+"Variable" = "Variable";
+
+/* No comment provided by engineer. */
+"Vibrate" = "Vibrar";
+
+/* No comment provided by engineer. */
+"World" = "Mundo";
+
+/* No comment provided by engineer. */
+"You can then import existing SSH keys, or create new ones." = "Puedes importar tus llaves SSH, o crear nuevas llaves SSH";
+
