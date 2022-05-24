@@ -280,8 +280,7 @@ struct HomeView: View {
         }
         //.listStyle(.sidebar)
         .onOpenURL { url in
-            var host = getHostFromUrl (url)
-            guard let host = host else {
+            guard let host = getHostFromUrl (url) else {
                 return
             }
             

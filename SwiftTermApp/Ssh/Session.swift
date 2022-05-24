@@ -554,11 +554,12 @@ class Session: CustomDebugStringConvertible, Equatable {
     ///  - packetSize: Maximum number of bytes remote host is allowed to send in a single SSH_MSG_CHANNEL_DATA or SSG_MSG_CHANNEL_EXTENDED_DATA packet, defaults to 32k
     ///  - readCallback: method that is invoked when new data is available on the channel, it receives the channel source as a parameter, and two Data? parameters,
     ///   one for standard output, and one for standard error.
+    /// - Returns: nil on error, or a channel that needs to be activated to operate on it.
     public func openChannel (type: String,
                              windowSize: CUnsignedInt = 2*1024*1024,
                              packetSize: CUnsignedInt = 32768,
-                             readCallback: @escaping (Channel, Data?, Data?)async->()) async -> Channel? {
-        guard let channelHandle = await sessionActor.openChannel(type: type, windowSize: windowSize, packetSize: packetSize, readCallback: readCallback) else {
+                             readCallback: @escaping (Channel, Data?, Data?, Bool)async->()) async -> Channel? {
+        guard let channelHandle = await sessionActor.openChannel(type: type, windowSize: windowSize, packetSize: packetSize) else {
             return nil
         }
         return Channel (session: self, channelHandle: channelHandle, readCallback: readCallback, type: type)
@@ -570,7 +571,8 @@ class Session: CustomDebugStringConvertible, Equatable {
     ///  - lang: The desired value for the LANG environment variable to be set on the remote end
     ///  - readCallback: method that is invoked when new data is available on the channel, it receives the channel source as a parameter, and two Data? parameters,
     ///   one for standard output, and one for standard error.
-    public func openSessionChannel (lang: String, readCallback: @escaping (Channel, Data?, Data?)async->()) async -> Channel? {
+    /// - Returns: nil on error, or a channel that needs to be activated to operate on it.
+    public func openSessionChannel (lang: String, readCallback: @escaping (Channel, Data?, Data?, Bool)async->()) async -> Channel? {
         if let channel = await openChannel(type: "session", readCallback: readCallback) {
             await channel.setEnvironment(name: "LANG", value: lang)
             
@@ -579,13 +581,28 @@ class Session: CustomDebugStringConvertible, Equatable {
         return nil
     }
     
+    /// Creates a TCP tunnel from the machine the session is connected to a specified host.
+    /// - Parameters:
+    ///  - host: The name of the host on the connected end that we will connect to
+    ///  - port: the port to connect to.
+    ///  - originatingHost: Host to tell the SSH server the connection originated on.
+    ///  - originatingPort: Port to tell the SSH server the connection originated from.
+    /// - Returns: nil on error, or a channel that needs to be activated to operate on it.
+    public func tunnelTcp (host: String, port: Int32, originatingHost: String, originatingPort: Int32, readCallback: @escaping (Channel, Data?, Data?, Bool)async->()) async -> Channel? {
+        guard let channelHandle = await sessionActor.tunnelTcp(host: host, port: port, originatingHost: originatingHost, originatingPort: originatingPort) else {
+            return nil
+        }
+        return Channel (session: self, channelHandle: channelHandle, readCallback: readCallback, type: "tunnel")
+    }
+    
+
     /// Runs a command on the remote server using the specified language, and delivers the data to the callback
     /// - Parameters:
     ///  - command: the command to execute on the remote server
     ///  - lang: The desired value for the LANG environment variable to be set on the remote end
     ///  - readCallback: method that is invoked when new data is available on the channel, it receives the channel source as a parameter, and two Data? parameters,
     ///   one for standard output, and one for standard error.
-    public func runAsync (command: String, lang: String, readCallback: @escaping (Channel, Data?, Data?)async->()) async -> Channel? {
+    public func runAsync (command: String, lang: String, readCallback: @escaping (Channel, Data?, Data?, Bool)async->()) async -> Channel? {
         if let channel = await openSessionChannel(lang: lang, readCallback: readCallback) {
             let status = await channel.exec (command)
             if status == 0 {
@@ -615,14 +632,15 @@ class Session: CustomDebugStringConvertible, Equatable {
                 // on first login.
                 var usedHardeningUntilBugTracked = false
                 
-                let _ = await runAsync(command: command, lang: lang) { [weak self] channel, out, err in
+                let _ = await runAsync(command: command, lang: lang) { [weak self] channel, out, err, eof in
                     if let gotOut = out {
                         stdout.append(gotOut)
                     }
                     if let gotErr = err {
                         stderr.append(gotErr)
                     }
-                    if await channel.receivedEOF {
+                    
+                    if eof {
                         let s = String (bytes: stdout, encoding: .utf8)
                         let e = String (bytes: stderr, encoding: .utf8)
 
@@ -770,7 +788,7 @@ class SocketSession: Session {
         let send: socketCbType = { socket, buffer, length, flags, abstract in
             let n = SocketSession.send_callback(socket: socket, buffer: buffer, length: length, flags: flags, abstract: abstract)
             if debugIO {
-                print ("Sending \(length) bytes -> \(n)")
+                print ("SocketSession.send \(length) bytes -> \(n)")
             }
             return n
         }
@@ -778,7 +796,7 @@ class SocketSession: Session {
         let recv: socketCbType = { socket, buffer, length, flags, abstract in
             let n = SocketSession.recv_callback(socket: socket, buffer: buffer, length: length, flags: flags, abstract: abstract)
             if debugIO {
-                print ("Recv received: \(n)")
+                print ("SocketSession.recv: \(n)")
             }
             return n
         }
@@ -1040,7 +1058,7 @@ class SocketSession: Session {
         wasError = session.buffer.count == 0 && session.bufferError != nil ? session.bufferError : nil
         if debugIO {
             let n = session.buffer.count
-            print ("Retrieved \(consumedBytes) from the queue, and I have \(n) bytes left, requested=\(length)")
+            print ("NWConnection.recv \(consumedBytes) from the queue, and I have \(n) bytes left, requested=\(length)")
         }
         session.bufferLock.unlock()
 

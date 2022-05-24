@@ -9,7 +9,7 @@
 import Foundation
 @_implementationOnly import CSSH
 
-/// Surfaces operations on channels
+/// Surfaces operations on channels, channels need to be activated on the session to receive data
 public class Channel: Equatable {
     static var serial = 0
     static var channelLock = NSLock ()
@@ -19,11 +19,15 @@ public class Channel: Equatable {
     var buffer, bufferError: UnsafeMutablePointer<Int8>
     let bufferSize = 32*1024
     var sendQueue = DispatchQueue (label: "channelSend", qos: .userInitiated)
-    var readCallback: ((Channel, Data?, Data?)async->())
+    var readCallback: ((Channel, Data?, Data?, Bool)async->())
     var type: String
     var id: Int
     
-    init (session: Session, channelHandle: OpaquePointer, readCallback: @escaping (Channel, Data?, Data?)async->(), type: String) {
+    /// - Parameters:
+    ///  - readCallback: this callback is invoked when new data is received from the connection, and it
+    ///   contains the channel were the data was received, the stdout, stderr and an indicator whether this
+    ///   has reached the end (eof)
+    init (session: Session, channelHandle: OpaquePointer, readCallback: @escaping (Channel, Data?, Data?, Bool)async->(), type: String) {
         Channel.channelLock.lock ()
         Channel.serial += 1
         id = Channel.serial
@@ -78,12 +82,6 @@ public class Channel: Equatable {
         }
     }
 
-    public var receivedEOFunsafe: Bool {
-        get {
-            return libssh2_channel_eof (channelHandle) == 1
-        }
-    }
-
     // Invoked when there is some data received on the session, and we try to fetch it for the channel
     // if it is available, we dispatch it.   Returns true if the channel is still active
     func ping () async -> Bool {
@@ -91,7 +89,7 @@ public class Channel: Equatable {
         let pair = await sessionActor.ping(channel: self, eofDetected: &eof)
         
         if let channelData = pair {
-            await readCallback (self, channelData.0, channelData.1)
+            await readCallback (self, channelData.0, channelData.1, eof)
         }
         return !eof
     }

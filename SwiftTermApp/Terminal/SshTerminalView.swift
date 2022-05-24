@@ -47,7 +47,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     // we start to output diagnostics on the connection
     var started: Date
 
-    nonisolated func channelReader (channel: Channel, data: Data?, error: Data?) {
+    nonisolated func channelReader (channel: Channel, data: Data?, error: Data?, eof: Bool) {
         if let d = data {
             let sliced = Array(d) [0...]
 
@@ -73,7 +73,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             }
             #endif
         }
-        if channel.receivedEOFunsafe {
+        if eof {
             DispatchQueue.main.async {
                 self.connectionClosed (receivedEOF: true)
             }
