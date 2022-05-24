@@ -882,7 +882,6 @@ class SocketSession: Session {
     // all registered channels that new data is available, so they can pull and process.
     func pingChannels () {
         Task {
-            print ("pinging channels")
             // This lock is taken for too long over the iteration of the contents of channel
             // in the future, we could track which channels are dead, and then remove the
             // channels from channels, rather than the old race condition where the value
