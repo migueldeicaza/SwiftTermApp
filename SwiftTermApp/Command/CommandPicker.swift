@@ -18,7 +18,7 @@ struct CommandPicker: View {
 
     init (terminalGetter: @escaping ()->AppTerminalView?) {
         snippets = FetchRequest<CUserSnippet>(entity: CUserSnippet.entity(), sortDescriptors: [
-            NSSortDescriptor(keyPath: \CUserSnippet.title, ascending: true)
+            NSSortDescriptor(keyPath: \CUserSnippet.sTitle, ascending: true)
         ])
         self._terminalGetter = State (initialValue: terminalGetter)
     }
