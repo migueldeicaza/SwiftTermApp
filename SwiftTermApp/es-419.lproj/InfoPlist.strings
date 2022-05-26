@@ -1,9 +1,9 @@
 /* Privacy - Local Network Usage Description */
-"NSLocalNetworkUsageDescription" = "Necesario para conectarse a servidores con SSH en su red local";
+"NSLocalNetworkUsageDescription" = "Necesario para conectarse a computadoras con SSH en su red local";
 
 /* Privacy - Location Always and When In Use Usage Description */
 "NSLocationAlwaysAndWhenInUseUsageDescription" = "Al usar tu posición geográfica, iOS mantendrá a la terminal ejecutandose sin interrumpir la conección cuando la aplicación se pasa al fondo.";
 
 /* Privacy - Location When In Use Usage Description */
-"NSLocationWhenInUseUsageDescription" = "Petición inicial: Al usar tu posición geográfica, iOS mantendrá la terminal activa y conecciones a sus servidores activos.";
+"NSLocationWhenInUseUsageDescription" = "Petición inicial: Al usar tu posición geográfica, iOS mantendrá la terminal activa y conecciones a sus computadoras y servidores activos.";
 
