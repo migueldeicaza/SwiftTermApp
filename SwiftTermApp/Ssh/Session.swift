@@ -184,7 +184,10 @@ class Session: CustomDebugStringConvertible, Equatable {
         @MainActor
         func confirmHostAuthUnknown (hostKeyType: String, key: [Int8], fingerprint: String, knownHosts: LibsshKnownHost, host: Host) async -> Bool {
             let ok: Bool = await withCheckedContinuation { c in
-                let parent = getParentViewController (hint: delegate.getResponder())
+                guard let parent = getParentViewController (hint: delegate.getResponder()) else {
+                    c.resume(returning: false)
+                    return
+                }
                 
                 var window: UIHostingController<HostAuthUnknown>!
                 window = UIHostingController<HostAuthUnknown>(rootView: HostAuthUnknown(alias: self.host.alias, hostString: getHostName(host: host), fingerprint: fingerprint, cancelCallback: {
@@ -215,7 +218,9 @@ class Session: CustomDebugStringConvertible, Equatable {
         func showHostKeyMismatch (fingerprint: String) async {
             let _: Void = await withCheckedContinuation { c in
                 self.closeSession()
-                let parent = getParentViewController (hint: delegate.getResponder())
+                guard let parent = getParentViewController (hint: delegate.getResponder()) else {
+                    return
+                }
                 var window: UIHostingController<HostAuthKeyMismatch>!
                 
                 window = UIHostingController<HostAuthKeyMismatch>(rootView: HostAuthKeyMismatch(alias: self.host.alias, hostString: self.getHostName(host: host), fingerprint: fingerprint, callback: {
@@ -296,7 +301,9 @@ class Session: CustomDebugStringConvertible, Equatable {
                 var password: String
                 
                 if SshUtil.openSSHKeyRequiresPassword(key: sshKey.privateKey) && sshKey.passphrase == "" {
-                    let vc = await getParentViewController (hint: delegate.getResponder())
+                    guard let vc = await getParentViewController (hint: delegate.getResponder()) else {
+                        return logUIInvokedFromBackground (operation: "prompt user")
+                    }
                     password = Dialogs.password(vc: vc, challenge: "Key \(sshKey.name) requires a password to be unlocked")
                 } else {
                     password = sshKey.passphrase
@@ -323,7 +330,10 @@ class Session: CustomDebugStringConvertible, Equatable {
         
         var user = host.username
         if user == "" {
-            user = Dialogs.user(vc: await getParentViewController (hint: delegate.getResponder()))
+            guard let vc = await getParentViewController (hint: delegate.getResponder()) else {
+                return "Unable to prompt for the username from the background"
+            }
+            user = Dialogs.user(vc: vc)
         }
         
         let authMethods = await userAuthenticationList(username: host.username)
@@ -373,7 +383,10 @@ class Session: CustomDebugStringConvertible, Equatable {
             if host.password == "" {
                 logConnection("SSH: requesting keyboard input password")
                 password = await Task.detached {
-                    let vc = await getParentViewController (hint: self.delegate.getResponder())
+                    guard let vc = await getParentViewController (hint: self.delegate.getResponder()) else {
+                        self.logUIInvokedFromBackground(operation: "request password")
+                        return ""
+                    }
                     return Dialogs.password (vc: vc, challenge: "Enter password")
                 }.value
             } else {
@@ -423,7 +436,10 @@ class Session: CustomDebugStringConvertible, Equatable {
 
         if authMethods.contains ("keyboard-interactive") {
             logConnection("SSH: attempting keyboard-interactive authentication")
-            let dialog = Dialogs (parentVC: await getParentViewController (hint: delegate.getResponder()))
+            guard let vc = await getParentViewController (hint: delegate.getResponder()) else {
+                return logUIInvokedFromBackground(operation: "prompt for a password")
+            }
+            let dialog = Dialogs (parentVC: vc)
             
             if let error = await userAuthKeyboardInteractive(username: host.username, prompt: dialog.passwordPrompt(challenge:)) {
                 logConnection("SSH: authentication error \(error)")
@@ -439,6 +455,13 @@ class Session: CustomDebugStringConvertible, Equatable {
         return cumulativeErrors.last ?? "No valid autentication options available: \(authMethods)"
     }
         
+    @discardableResult
+    func logUIInvokedFromBackground (operation: String) -> String {
+        let msg = "Unable to complete `\(operation)` as it was triggered when the app was not in the foreground"
+        logConnection(msg)
+        return msg
+    }
+    
     func setupSshConnection () async
     {
         logConnection ("SSH: sending handshake")
@@ -483,7 +506,10 @@ class Session: CustomDebugStringConvertible, Equatable {
     func connectionError (error: String) {
         logConnection("Connection: \(error)")
         self.closeSession()
-        let parent = getParentViewController (hint: delegate.getResponder())
+        guard let parent = getParentViewController (hint: delegate.getResponder()) else {
+            logUIInvokedFromBackground(operation: "showing connection error '\(error)'")
+            return
+        }
         var window: UIHostingController<HostConnectionError>!
         window = UIHostingController<HostConnectionError>(rootView: HostConnectionError(host: host, error: error, ok: {
             window.dismiss(animated: true, completion: nil)
