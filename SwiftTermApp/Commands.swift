@@ -48,68 +48,69 @@ struct TerminalCommands: Commands {
     
     
     @CommandsBuilder var body: some Commands {
-        CommandMenu ("Terminal") {
-            Button ("Export Text", action: currentTerminalExportContents)
+        CommandMenu (String (localized: "Terminal")) {
+            Button (String (localized: "Export Text"), action: currentTerminalExportContents)
                 .keyboardShortcut(KeyEquivalent("s"), modifiers: [.command])
             
-            Button ("Export Selection", action: currentTerminalExportSelection)
+            Button (String (localized: "Export Selection"), action: currentTerminalExportSelection)
                 .keyboardShortcut(KeyEquivalent("s"), modifiers: [.shift, .command])
 
             Section {
-                Button ("Soft Reset", action: {
+                Button (String (localized: "Soft Reset"), action: {
                     guard let current = TerminalViewController.visibleTerminal else { return }
                     current.getTerminal().softReset()
                 }).keyboardShortcut(KeyEquivalent("r"), modifiers: [/*@START_MENU_TOKEN@*/.command/*@END_MENU_TOKEN@*/, .option])
                 
-                Button ("Hard Reset", action: {
+                Button (String (localized: "Hard Reset"), action: {
                     guard let current = TerminalViewController.visibleTerminal else { return }
                     current.getTerminal().resetToInitialState()
                 }).keyboardShortcut(KeyEquivalent("r"), modifiers: [/*@START_MENU_TOKEN@*/.command/*@END_MENU_TOKEN@*/, .option, .control])
             }
         }
-        CommandMenu ("Keys") {
-            Button ("Escape", action: {
+
+        CommandMenu (String (localized: "Keys ")) {
+            Button (String (localized: "Escape"), action: {
                 guard let current = TerminalViewController.visibleTerminal else { return }
                 current.send([0x1b])
             }).keyboardShortcut(KeyEquivalent("["), modifiers: [.control])
-            Button ("F1", action: {
+            Button (String (localized:"F1"), action: {
                 guard let current = TerminalViewController.visibleTerminal else { return }
                 current.send(EscapeSequences.cmdF [0])
             }).keyboardShortcut(KeyEquivalent ("1"), modifiers: [.command, .shift])
-            Button ("F2", action: {
+            Button (String (localized:"F2"), action: {
                 guard let current = TerminalViewController.visibleTerminal else { return }
                 current.send(EscapeSequences.cmdF [1])
             }).keyboardShortcut(KeyEquivalent ("2"), modifiers: [.command, .shift])
-            Button ("F3", action: {
+            Button (String (localized:"F3"), action: {
                 guard let current = TerminalViewController.visibleTerminal else { return }
                 current.send(EscapeSequences.cmdF [2])
             }).keyboardShortcut(KeyEquivalent ("3"), modifiers: [.command, .shift])
-            Button ("F4", action: {
+            Button (String (localized:"F4"), action: {
                 guard let current = TerminalViewController.visibleTerminal else { return }
                 current.send(EscapeSequences.cmdF [3])
             }).keyboardShortcut(KeyEquivalent ("4"), modifiers: [.command, .shift])
-            Button ("F5", action: {
+            Button (String (localized:"F5"), action: {
                 guard let current = TerminalViewController.visibleTerminal else { return }
                 current.send(EscapeSequences.cmdF [4])
             }).keyboardShortcut(KeyEquivalent ("5"), modifiers: [.command, .shift])
             HStack {
-                Button ("F6", action: {
+                Button (String (localized:"F6"), action: {
                     guard let current = TerminalViewController.visibleTerminal else { return }
                     current.send(EscapeSequences.cmdF [5])
                 }).keyboardShortcut(KeyEquivalent ("6"), modifiers: [.command, .shift])
-                Button ("F7", action: {
+                Button (String (localized:"F7"), action: {
                     guard let current = TerminalViewController.visibleTerminal else { return }
                     current.send(EscapeSequences.cmdF [6])
                 }).keyboardShortcut(KeyEquivalent ("7"), modifiers: [.command, .shift])
-                Button ("F8", action: {
+                Button (String (localized:"F8"), action: {
                     guard let current = TerminalViewController.visibleTerminal else { return }
                     current.send(EscapeSequences.cmdF [7])
                 }).keyboardShortcut(KeyEquivalent ("8"), modifiers: [.command, .shift])
-                Button ("F9", action: {
+                Button (String (localized:"F9"), action: {
                     guard let current = TerminalViewController.visibleTerminal else { return }
                     current.send(EscapeSequences.cmdF [8])
                 }).keyboardShortcut(KeyEquivalent ("9"), modifiers: [.command, .shift])
-                Button ("F10", action: {
+                Button (String (localized:"F10"), action: {
                     guard let current = TerminalViewController.visibleTerminal else { return }
                     current.send(EscapeSequences.cmdF [9])
                 }).keyboardShortcut(KeyEquivalent ("0"), modifiers: [.command, .shift])

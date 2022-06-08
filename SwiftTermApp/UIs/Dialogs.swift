@@ -42,13 +42,13 @@ public class Dialogs {
     func passwordPrompt (challenge: String) -> String {
         let semaphore = DispatchSemaphore(value: 0)
         DispatchQueue.main.async {
-            let alertController = UIAlertController(title: "Authentication challenge", message: challenge, preferredStyle: .alert)
+            let alertController = UIAlertController(title: String (localized: "Authentication challenge"), message: challenge, preferredStyle: .alert)
             alertController.addTextField { [unowned self] (textField) in
                 textField.placeholder = challenge
                 textField.isSecureTextEntry = true
                 self.passwordTextField = textField
             }
-            alertController.addAction(UIAlertAction(title: "OK", style: .default) { [unowned self] _ in
+            alertController.addAction(UIAlertAction(title: String (localized: "OK"), style: .default) { [unowned self] _ in
                 if let tf = self.passwordTextField {
                     promptedPassword = tf.text ?? ""
                 }

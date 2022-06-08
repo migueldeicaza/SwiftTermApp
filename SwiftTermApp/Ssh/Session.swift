@@ -387,7 +387,7 @@ class Session: CustomDebugStringConvertible, Equatable {
                         self.logUIInvokedFromBackground(operation: "request password")
                         return ""
                     }
-                    return Dialogs.password (vc: vc, challenge: "Enter password")
+                    return Dialogs.password (vc: vc, challenge: String (localized: "Enter password"))
                 }.value
             } else {
                 password = host.password

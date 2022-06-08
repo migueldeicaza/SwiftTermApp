@@ -82,7 +82,7 @@ struct EditKey: View {
     
     struct Footer: View {
         var body: some View {
-            Text ("Clicking on the file selector icons allows you to use Files to select your private and public keys.\n\nThe private key is required, and if it needs a passphrase, you will need to provide it")
+            Text ("Using the file selector icons allows you to use Files to select your private and public keys.\n\nThe private key is required, and if it needs a passphrase, you will need to provide it")
         }
     }
     
