@@ -165,11 +165,11 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             guard let str = out else {
                 return true
             }
-            if str.starts(with: "tmux 2.") || str.starts(with: "1.") {
+            if str.starts(with: "tmux 2.") || str.starts(with: "tmux 1.") || str.starts(with: "1.") {
                 return true
             }
             // Only versions 3.2 and higher support -T, so rule out 3.0 and 3.1 manually (they contain letter suffixes and dashes for release candidates)
-            if str.starts(with: "tmux 3.0") || str.starts(with: "3.1") {
+            if str.starts(with: "tmux 3.0") || str.starts(with: "tmux 3.1") {
                 return true
             }
             // It is a new one
