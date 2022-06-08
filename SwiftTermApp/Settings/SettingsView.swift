@@ -91,7 +91,7 @@ class Settings: ObservableObject {
         keepOn = defaults?.bool(forKey: "keepOn") ?? true
         beepConfig = BeepKind (rawValue: defaults?.string(forKey: "beepConfig") ?? "vibrate") ?? .vibrate
         themeName = defaults?.string (forKey: "theme") ?? "Pro"
-        fontName = defaults?.string (forKey: "fontName") ?? "Courier"
+        fontName = defaults?.string (forKey: "fontName") ?? "SF Mono"
         
         if let fontSizeConfig = defaults?.double(forKey: fontSizeKey) {
             fontSize = fontSizeConfig == 0 ? 0 : max (5.0, fontSizeConfig)

@@ -66,13 +66,16 @@ actor SessionActor {
         libssh2_session_callback_set(sessionHandle, LIBSSH2_CALLBACK_DEBUG, unsafeBitCast(debug, to: UnsafeMutableRawPointer.self))
     }
     
-    var suspendedTasks = 0
+    /// Invokes the provided operation, if it returns `true`, it means that it could not complete its operation
+    /// due to lack of data, so it gets placed on the list of pending tasks.  When new data arrives on the
+    /// connection, all the pending tasks are notified, and they are executed again.
+    /// - Parameter task: an operation that returns true if it needs to be attempted again, false if it completed execution, and invoked c.resume
+
     func track (task: @escaping queuedOp) {
         if task () {
             if debugIO {
                 print ("Suspending task due to EAGAIN")
             }
-            suspendedTasks += 1
             tasks.append (task)
         }
     }
@@ -213,6 +216,7 @@ actor SessionActor {
         }
     }
     
+    // MARK: authentication APIs
     public func userAuthKeyboardInteractive (username: String) async -> String? {
         return await authErrorToString(code: callSsh {
             let usernameCount = UInt32 (username.utf8.count)
@@ -293,6 +297,7 @@ actor SessionActor {
         return authErrorToString(code: ret)
     }
     
+    // MARK: host validation utilities and known hosts
     public func makeKnownHost () -> LibsshKnownHost? {
         guard let kh = libssh2_knownhost_init (sessionHandle) else {
             return nil
@@ -340,15 +345,17 @@ actor SessionActor {
 
         return ret == 0 ? nil : libSsh2ErrorToString(error: ret)
     }
+    
+    // MARK: Disconnect
     public func disconnect (reason: Int32 = SSH_DISCONNECT_BY_APPLICATION, description: String) async {
         let _ = await callSsh {
             libssh2_session_disconnect_ex(self.sessionHandle, reason, description, "")
         }
     }
     
-    // Channel APIs
+    // MARK: Channel APIs
     
-    public func openChannel (type: String, windowSize: CUnsignedInt = 2*1024*1024, packetSize: CUnsignedInt = 32768, readCallback: @escaping (Channel, Data?, Data?)async->()) async -> OpaquePointer? {
+    public func openChannel (type: String, windowSize: CUnsignedInt = 2*1024*1024, packetSize: CUnsignedInt = 32768) async -> OpaquePointer? {
         
         return await callSshPtr {
             return libssh2_channel_open_ex(self.sessionHandle, type, UInt32(type.utf8.count), windowSize, packetSize, nil, 0)
@@ -424,6 +431,7 @@ actor SessionActor {
         return libssh2_channel_eof (channel.channelHandle) != 0
     }
     
+    /// Sends the provided data over the channel and invokes the callback with the status code from invoking this call.
     public func send (channel: Channel, data: Data, callback: @escaping (Int)->()) async {
         if data.count == 0 {
             return
@@ -453,7 +461,20 @@ actor SessionActor {
         libssh2_channel_free(channelHandle)
     }
     
-    // SFTP APIs
+    /// Creates a TCP tunnel from the machine the session is connected to a specified host.
+    /// - Parameters:
+    ///  - host: The name of the host on the connected end that we will connect to
+    ///  - port: the port to connect to.
+    ///  - originatingHost: Host to tell the SSH server the connection originated on.
+    ///  - originatingPort: Port to tell the SSH server the connection originated from.
+    /// - Returns:a handle to the channel that can be used for IO, or nil on error
+    public func tunnelTcp (host: String, port: Int32, originatingHost: String, originatingPort: Int32) async -> OpaquePointer? {
+        return await callSshPtr {
+            libssh2_channel_direct_tcpip_ex(self.sessionHandle, host, port, originatingHost, originatingPort)
+        }
+    }
+    
+    // MARK: SFTP APIs
     public func openSftp () async -> OpaquePointer? {
         return await callSshPtr { libssh2_sftp_init(self.sessionHandle) }
     }

@@ -47,7 +47,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
     // we start to output diagnostics on the connection
     var started: Date
 
-    nonisolated func channelReader (channel: Channel, data: Data?, error: Data?) {
+    nonisolated func channelReader (channel: Channel, data: Data?, error: Data?, eof: Bool) {
         if let d = data {
             let sliced = Array(d) [0...]
 
@@ -73,7 +73,7 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
             }
             #endif
         }
-        if channel.receivedEOFunsafe {
+        if eof {
             DispatchQueue.main.async {
                 self.connectionClosed (receivedEOF: true)
             }
@@ -369,11 +369,21 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         return self
     }
   
+    @discardableResult
+    func logUIInvokedFromBackground (operation: String) -> String {
+        return session?.logUIInvokedFromBackground(operation: operation) ?? operation
+    }
+    
+    // TODO: the reason for the return value is to use the "T:View" parameter
+    // need to find a workaround that does not do that.
     func displayError<T: View & ConnectionMessage> (_ msg: String) -> T? {
         dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
         
         closeTerminal()
-        let parent = getParentViewController()
+        guard let parent = getParentViewController() else {
+            logUIInvokedFromBackground (operation: "display message '\(msg)'")
+            return nil
+        }
         
         var window: UIHostingController<T>!
         window = UIHostingController<T>(rootView: T(host: host, message: msg, ok: {
@@ -397,7 +407,10 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
         
         closeTerminal()
-        let parent = getParentViewController()
+        guard let parent = getParentViewController() else {
+            logUIInvokedFromBackground(operation: "Unable to inform the user that the connection closed from the background")
+            return
+        }
         var window: UIHostingController<HostConnectionClosed>!
         window = UIHostingController<HostConnectionClosed>(rootView: HostConnectionClosed(host: host, receivedEOF: receivedEOF, ok: {
             window.dismiss(animated: true, completion: nil)
@@ -420,7 +433,10 @@ public class SshTerminalView: AppTerminalView, TerminalViewDelegate, SessionDele
         dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
         logConnection("Connection: \(error)")
         closeTerminal()
-        let parent = getParentViewController()
+        guard let parent = getParentViewController() else {
+            logUIInvokedFromBackground(operation: "show connection error '\(error)'")
+            return
+        }
         var window: UIHostingController<HostConnectionError>!
         window = UIHostingController<HostConnectionError>(rootView: HostConnectionError(host: host, error: error, ok: {
             window.dismiss(animated: true, completion: nil)

@@ -14,7 +14,7 @@ struct Explanation: View {
     var body: some View {
         NavigationView {
             VStack (alignment: .leading){
-                Text ("SwiftTermApp remembers the keys that each host you have connected to uses.   These keys are used to ensure that you do not accidentally log into a malicious host that can steal information from you.\n\nIn some scenarios, when a computer system is reinstalled the keys might change, and you might want to consider removing it from the list of known hosts.\n\nYou can use the fingerprint to visually inspect if the key matches the host you are trying to connect to.")
+                Text ("SwiftTermApp remembers the digital fingerprints of each host you have connected to.   These fingerprints are used to ensure that you do not accidentally log into a malicious host that can steal information from you.\n\nIn some scenarios, when a computer system is reinstalled the keys might change, and you might want to consider removing it from the list of known hosts.\n\nYou can use the fingerprint to visually inspect if the key matches the host you are trying to connect to.")
                 Spacer ()
             }
             .padding()

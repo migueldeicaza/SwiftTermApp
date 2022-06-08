@@ -16,8 +16,7 @@ func getCurrentKeyWindow () -> UIWindow? {
     func tryGetWindow (desiredState: UIScene.ActivationState) -> UIWindow? {
         return UIApplication.shared.connectedScenes
               .filter { $0.activationState == desiredState }
-              .map { $0 as? UIWindowScene }
-              .compactMap { $0 }
+              .compactMap { $0 as? UIWindowScene }
               .first?.windows
               .filter { $0.isKeyWindow }
               .first
@@ -32,7 +31,7 @@ func getCurrentKeyWindow () -> UIWindow? {
 }
 
 @MainActor
-func getParentViewController (hint: UIResponder? = nil) -> UIViewController {
+func getParentViewController (hint: UIResponder? = nil) -> UIViewController? {
     var parentResponder = hint
     while parentResponder != nil {
         parentResponder = parentResponder?.next
@@ -42,7 +41,7 @@ func getParentViewController (hint: UIResponder? = nil) -> UIViewController {
     }
     
     // playing with fire here
-    return getCurrentKeyWindow()!.rootViewController!
+    return getCurrentKeyWindow()?.rootViewController
 }
 
 

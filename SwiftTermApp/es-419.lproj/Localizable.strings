@@ -2,7 +2,10 @@
 "**Host:** %@" = "**Computadora:** %@";
 
 /* No comment provided by engineer. */
-"**It is possible that someone is doing something nasty**.\n\nSomeone could be eavesdropping on you right now (man-in-the-middle attack).\n\nIt is also possible that the host key has just been changed. The fingerprint for the RSA key sent by the remote host is:\n\n`%@`\n\nContact your system administrator to verify.\n\nIf this is expected, you can remove the existing known key from the Known Hosts settings." = "**Es posible que una persona esté tratando de hacer algo desagradable**\n\nAlguien podría estar monitoreando tu conección en este momento (un ataque de interposición).\n\nAunque es posible que la llave de su servidor haya cambiado.   La huella digital que ha enviado el servidor remoto es:\n\n`%@`\n\nContacte a su administrator de sistemas para verificarla.\n\nSi este cambio estaba anticipado, remueve el registro para esta computadaora de la lista de computadoras conocidas.\n        ";
+"**It is possible that someone is doing something nasty**.\n\nSomeone could be eavesdropping on you right now (man-in-the-middle attack).\n\nIt is also possible that the host key has just been changed. The fingerprint for the RSA key sent by the remote host is:\n\n`%@`\n\nContact your system administrator to verify.\n\nIf this is expected, you can remove the existing known key from the Known Hosts settings." = "**Es posible que una persona esté tratando de hacer algo desagradable**\n\nAlguien podría estar monitoreando tu conección en este momento (un ataque de interposición).\n\nAunque es posible que la llave del servidor o computadora haya cambiado.   La huella digital que ha enviado el servidor remoto es:\n\n`%@`\n\nContacte a su administrator de sistemas para verificarla.\n\nSi este cambio estaba anticipado, remueve el registro para esta computadaora de la lista de computadoras conocidas.\n        ";
+
+/* No comment provided by engineer. */
+"A terminal emulator and SSH client for iOS" = "Un emulador de terminal y cliente de SSH para iOS";
 
 /* No comment provided by engineer. */
 "Active SSH sessions will appear here" = "Las conecciones activas SSH aparecerán aquí";
@@ -10,23 +13,11 @@
 /* No comment provided by engineer. */
 "Alias" = "Alias";
 
-"Terminals" = "Terminales";
+/* No comment provided by engineer. */
+"Appearance" = "Apariencia";
 
-"Keys" = "Llaves";
-
-"tmux" = "tmux";
-
-"Known Hosts" = "Computadoras Conocidas";
-
-"Settings" = "Ajustes";
-
-"Credits" = "Créditos";
-
-"Add Host" = "Añadir Computadora";
-
-"Password" = "Contraseña";
-
-
+/* No comment provided by engineer. */
+"Auth" = "Auth";
 
 /* No comment provided by engineer. */
 "Authentication" = "Autentificación";
@@ -50,7 +41,7 @@
 "Bottom" = "Abajo";
 
 /* No comment provided by engineer. */
-"BUG" = "Error";
+"BUG" = "ERROR";
 
 /* No comment provided by engineer. */
 "Close Connection" = "Cerrar la conección";
@@ -83,19 +74,25 @@
 "Continue" = "Continua";
 
 /* No comment provided by engineer. */
-"Create a host to define a machine you want to connect to." = "Crea una definición de computadora con la información necesaria para contactarse.";
+"Create a host to define a machine you want to connect to." = "Crea una definición para una computadora con la información necesaria para contactarse.";
 
 /* No comment provided by engineer. */
 "Created by: %@" = "Creado por: %@";
 
 /* No comment provided by engineer. */
-"Default" = "Básico";
+"Default" = "Ninguno";
 
 /* No comment provided by engineer. */
 "Disconnected" = "Desconectado";
 
 /* No comment provided by engineer. */
 "Duplicate Host" = "Computadora duplicada";
+
+/* No comment provided by engineer. */
+"ecdsa-sha2-nistp256" = "ecdsa-sha2-nistp256";
+
+/* No comment provided by engineer. */
+"ed25519" = "ed25519";
 
 /* No comment provided by engineer. */
 "Endpoint:" = "Punto de contacto:";
@@ -150,6 +147,12 @@
 
 /* No comment provided by engineer. */
 "Live" = "En vivo";
+
+/* No comment provided by engineer. */
+"Location unavailable" = "La ubicación no está disponible";
+
+/* No comment provided by engineer. */
+"Moved" = "Cambió de lugar";
 
 /* No comment provided by engineer. */
 "Name" = "Nombre";
@@ -221,6 +224,12 @@
 "Restoration" = "Restauración";
 
 /* No comment provided by engineer. */
+"Secure Enclave" = "Enclave Seguro";
+
+/* No comment provided by engineer. */
+"Secure Enclave Key" = "Llave del Enclave Seguro";
+
+/* No comment provided by engineer. */
 "Sessions" = "Sesiones";
 
 /* No comment provided by engineer. */
@@ -230,13 +239,40 @@
 "Size" = "Tamaño";
 
 /* No comment provided by engineer. */
+"Snippets are groups of commands that you can paste in your terminal with the snippet icon." = "Los Fragmnetos son grupos de comandos que se pueden insertar en su terminal con el icono del fragmento.";
+
+/* No comment provided by engineer. */
 "Solid" = "Sólido";
 
 /* No comment provided by engineer. */
 "SSH Key" = "Llave SSH";
 
 /* No comment provided by engineer. */
+"SwiftTerm" = "SwiftTerm";
+
+/* No comment provided by engineer. */
+"Test" = "Prueba";
+
+/* No comment provided by engineer. */
+"There is already a host with the alias %@ declared, do you want to keep this name?" = "Ya existe una computadora con el alias %@ declarado, ¿desea mantener este nombre?";
+
+/* No comment provided by engineer. */
+"These are the macOS settings" = "Estas son las opciones de configuración de macOS";
+
+/* No comment provided by engineer. */
+"Third" = "Tercero";
+
+/* No comment provided by engineer. */
 "Title:" = "Título:";
+
+/* No comment provided by engineer. */
+"tmux" = "tmux";
+
+/* No comment provided by engineer. */
+"To get started, create a new host definition that includes the address of the machine you want to connect to, and the username to login as." = "Para empezar, cree una nueva definición de la computadora que incluya la dirección a conectarse, y el nombre de usuario.";
+
+/* No comment provided by engineer. */
+"Track Location" = "Seguir tu ubicación";
 
 /* No comment provided by engineer. */
 "Type" = "Tipo";
@@ -254,8 +290,81 @@
 "Vibrate" = "Vibrar";
 
 /* No comment provided by engineer. */
+"Welcome to SwiftTerm" = "Bienvenido a SwiftTerm";
+
+/* No comment provided by engineer. */
 "World" = "Mundo";
 
 /* No comment provided by engineer. */
 "You can then import existing SSH keys, or create new ones." = "Puedes importar tus llaves SSH, o crear nuevas llaves SSH";
 
+
+"Terminals" = "Terminales";
+
+"Keys" = "Llaves";
+
+"tmux" = "tmux";
+
+"Known Hosts" = "Computadoras Conocidas";
+
+"Settings" = "Ajustes";
+
+"Credits" = "Créditos";
+
+"Add Host" = "Añadir Computadora";
+
+"Password" = "Contraseña";
+
+"Snippets" = "Fragmentos";
+
+"Support" = "Soporte";
+
+"Home" = "Inicio";
+
+"Create Enclave Key" = "Crea llave en el Enclave";
+
+"Create New Key" = "Crea una nueva llave";
+
+"Add Existing Key" = "Añade una nueva llave";
+
+"Keys allow you to easily log into hosts without having to type in passwords.\n\n[Learn More...](https://github.com/migueldeicaza/SwiftTermApp/wiki/Keys)" = "Las llaves ayudan a entrar a una computadora facilmente, sin tener que usar contraseñas.\n\n[Aprende Más](https://github.com/migueldeicaza/SwiftTermApp/wiki/Keys)";
+    
+"SwiftTermApp is built using the kind work of many open source developers, these are the projects that are used by SwiftTermApp" = "SwiftTermApp ha sido escrito usando el generoso trabajo de various proyectos de software libre.   Estos son los proyectos empleados por SwiftTermApp";
+
+"The lists of hosts you have connected to, along with their fingerprints will be listed here.   These fingerprints are checked on each connection to ensure that a machine is not swapped behind your back and you get tricked into logging into a machine controlled by an adversary" = "La lista de computadoras a las cuales te has contectado, asi como sus huellas digitales están listadas aquí.   Estas huellas digitales se verifican en cada conección para asegurar que te estás conectando a la misma computaodra, y que nadie la ha alterado o cambiado tratando de engañarte para que entres a una computadora controlada por un adversario.";
+
+"Dismiss" = "Descartar";
+
+"Add Snippet" = "Añadir Fragmento";
+
+"Prevents sleep mode from activating while you are connected" = "Evita que el sistema de apagado del sistema se active cuando estás conectado a una computadora remota";
+
+"Tracks your location to keep the terminal running in the background, you can review the locations from the History tab" = "Al seguir tu ubicación, el sistema mantendrá la terminal ejecutándose en el fondo, sin terminar tu conección.  Puedes revisar la historia de lugares a los que te has conectado en la pestaña Historia.";
+
+"Name" = "Nombre";
+
+"USER" = "Usuario";
+
+"While it is possible to configure environment variables, some servers disable setting environment variables.   Check your `sshd_config` file on your server for the *PermitUserEnvironment* setting" = "Aunque es posible definir variables de entorno, algunos servidores desactivan esta opción.   Verifica el valor de la variable *PermitUserEnvironment* en el archivo de configuración `sshd_config` en su servidor";
+
+"Cancel" = "Cancelar";
+
+"Save" = "Guardar";
+
+"The authenticity of host '`%@`' can not be established.\n\nIf this is the first time you connect to this host, you can check that the fingertprint for the host matches the fingerprint you recognize and then proceed. Otherwise, select cancel.\n\nFingerprint:\n\n`%@`\n\nDo you want to continue connecting?" = "La autenticidad de la computaodra '`%@`' no puede ser establecida.\n\nSi esta es la primera ves que te conectas a esta computadora, puedes verificar que su huella digital concuerda con una huella digital que reconoces y continuar.   De otra manera, cancela.\n\nHuella digital:\n\n`%@'\n\nDeseas continuar?";
+
+"Yes" = "Si";
+
+"Name" = "Nombre";
+
+"Date" = "Fecha";
+
+"Time" = "Hora";
+
+"Longitude" = "Longitud";
+
+"Latitude" = "Latitud";
+
+"Address" = "Dirección";
+
+"Clear" = "Borrar";
