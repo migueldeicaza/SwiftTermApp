@@ -68,7 +68,9 @@
 "Connecting" = "Conectando";
 
 /* No comment provided by engineer. */
-"Connection to `%@:%@` %@" = "Conección a `%1$@:%2$@` %3$@";
+"Connection to `%@:%@` was terminated" = "La conección a `%1$@:%2$@` se interrumpió";
+
+"Connection to `%@:%@` was closed" = "La conección a `%1$@:%2$@` se cerró";
 
 /* No comment provided by engineer. */
 "Continue" = "Continua";

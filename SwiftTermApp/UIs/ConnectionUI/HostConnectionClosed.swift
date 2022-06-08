@@ -31,8 +31,14 @@ struct HostConnectionClosed: View {
             .background(Color(UIColor.secondarySystemBackground))
             //.background(.yellow)
             VStack (alignment: .center){
-                Text ("Connection to `\(host.hostname):\(String (host.port))` \(receivedEOF ? " was closed" : " terminated")")
-                    .padding ([.bottom])
+                if receivedEOF {
+                    Text ("Connection to `\(host.hostname):\(String (host.port))` was closed")
+                        .padding ([.bottom])
+                } else {
+                    Text ("Connection to `\(host.hostname):\(String (host.port))` was terminated")
+                        .padding ([.bottom])
+                }
+                    
                 Spacer ()
                 HStack (alignment: .center, spacing: 20) {
                     Button ("Ok") { ok () }
