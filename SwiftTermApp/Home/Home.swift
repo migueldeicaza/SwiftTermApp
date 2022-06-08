@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import Shake
+//import Shake
 import Introspect
 import CoreData
 
@@ -90,7 +90,13 @@ func getHostFromUrl (_ url: URL, visiblePrefix: String = "Dynamic") -> Host? {
         }
         hr.fetchLimit = 1
         if let match = try? globalDataController.container.viewContext.fetch(hr).first {
-            return match
+            let modified = match.asMemory()
+            
+            // Clear the password from any values returned from the database, as
+            // we want to avoid the user getting tricked into SSH-ing into a host that
+            // the attacker has control over, and we leak the password to them.
+            modified.password = ""
+            return modified
         }
         
         return MemoryHost (
@@ -244,11 +250,11 @@ struct HomeView: View {
                     label: {
                         Label("Credits", systemImage: "info.circle")
                     })
-                Button (
-                    action: { Shake.show(.home) },
-                    label: {
-                        Label("Support", systemImage: "questionmark.circle")
-                    })
+//                Button (
+//                    action: { Shake.show(.home) },
+//                    label: {
+//                        Label("Support", systemImage: "questionmark.circle")
+//                    })
             }
             
             #if DEBUG
