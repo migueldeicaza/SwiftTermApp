@@ -12,7 +12,7 @@ class HostTracking {
     weak var session: Session?
     var channel: Channel!
     
-    func readCallback (channel: Channel, stdout: Data?, stderr: Data?) {
+    func readCallback (channel: Channel, stdout: Data?, stderr: Data?, eof: Bool) {
         print ("In read callback outBytes=\(stdout?.count) errBytes=\(stderr?.count)")
         stdout?.dump()
         stderr?.dump()
