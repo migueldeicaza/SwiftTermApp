@@ -31,7 +31,9 @@ class MetalHostView: UIView {
     }
 
     deinit {
-        metal.stopRunning()
+        DispatchQueue.main.async {
+            self.metal.stopRunning()
+        }
     }
     
     public override var frame: CGRect {
