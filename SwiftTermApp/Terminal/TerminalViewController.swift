@@ -164,8 +164,12 @@ typealias Controller = TerminalViewController
 //
 // This is the wrapper to use the TerminalViewController in Swift
 //
-final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocumentPickerDelegate {
+struct SwiftUITerminal: UIViewControllerRepresentable {
     var terminalView: SshTerminalView?
+    class MutableSideData {
+        var viewController: TerminalViewController?
+    }
+    
     typealias UIViewControllerType = TerminalViewController
     
     enum Kind {
@@ -175,12 +179,14 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
     
     var kind: Kind
     var interactive: Bool
+    let mutableSideData: MutableSideData
     
     /// Creates a new SwiftUITerminal, either it creates a new one based on a host configuration (`host` is not nil), in which
     /// case the `createNew` parameter indicates if this should createa  new host or not.   If `host` is nil, then
     /// this assumes that this is going to rehost an existing SshTerminalView, in that case, `existing` should not
     /// be nil.
     init (host: Host?, existing: SshTerminalView?, createNew: Bool, interactive: Bool) {
+        self.mutableSideData = MutableSideData ()
         if host == nil {
             assert (existing != nil)
             self.terminalView = existing
@@ -190,20 +196,17 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
             kind = .host(host: host!, createNew: createNew)
         }
         self.interactive = interactive
-        super.init ()
     }
 
     // This might be called in a view that has no viewController
     func rehost ()
     {
         if let tv = terminalView {
-            if let vc = viewController {
+            if let vc = mutableSideData.viewController {
                 vc.view.addSubview(tv)
             }
         }
     }
-    
-    var viewController: TerminalViewController?
 
     func makeUIViewController(context: UIViewControllerRepresentableContext<SwiftUITerminal>) -> TerminalViewController {
         
@@ -212,16 +215,16 @@ final class SwiftUITerminal: NSObject, UIViewControllerRepresentable, UIDocument
             if !createNew {
                 if let v = Connections.lookupActiveTerminal(host: host) {
                     let ret = TerminalViewController(terminalView: v, interactive: interactive)
-                    viewController = ret
+                    mutableSideData.viewController = ret
                     return ret
                 }
             }
             let ret = TerminalViewController (host: host, interactive: interactive, serial: createNew ? -2 : -1)
-            viewController = ret
+            mutableSideData.viewController = ret
             return ret
         case .rehost(rehost: let terminalView):
             let ret = TerminalViewController(terminalView: terminalView, interactive: interactive)
-            viewController = ret
+            mutableSideData.viewController = ret
             return ret
         }
     }
