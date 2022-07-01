@@ -152,6 +152,7 @@ func promptMissingUser (_ parentController: UIViewController) async -> String? {
 }
 
 func getFirstRun () -> Bool {
+    return true
     let key = "launchedBefore"
     let ran = UserDefaults.standard.bool(forKey: key)
     UserDefaults.standard.set (true, forKey: key)

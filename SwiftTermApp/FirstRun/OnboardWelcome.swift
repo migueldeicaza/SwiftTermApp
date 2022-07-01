@@ -17,43 +17,35 @@ struct OnboardWelcome: View {
                 Image (systemName: "terminal.fill")
                     .font (.system(size: 72))
                 VStack (alignment: .leading){
-                    Text ("Welcome to SwiftTerm")
+                    Text ("Want to try something new?")
                         .fontWeight(.semibold)
                         .font (.title)
-                    Text ("A terminal emulator and SSH client for iOS")
+                    Text ("Coming soon...")
                         .font (.title2)
                 }
             }
             VStack {
                 HStack (alignment: .top){
-                    Image (systemName: "desktopcomputer")
+                    Image (systemName: "paperplane")
                         .font(.system(size: 30))
                         .foregroundColor(Color.accentColor)
                         .frame(minWidth: 50)
-                    Text ("To get started, create a new host definition that includes the address of the machine you want to connect to, and the username to login as.")
+                    Text ("In preparation for an iOS App Store launch, we’re giving this app a new name, new branding, and some new features.\n\nWe’d love to have discerning terminal enthusiasts such as yourself come along for the ride. ")
                         .minimumScaleFactor(0.7)
                     Spacer ()
                 }.padding ()
 
                 HStack (alignment: .top){
-                    Image (systemName: "key")
+                    Image (systemName: "envelope")
                         .font(.system(size: 30))
                         .foregroundColor(Color.accentColor)
                         .frame(minWidth: 50)
-                    Text ("You can then import existing SSH keys, or create new ones.")
+                    Text ("If this sounds like you, please fill out [this short form](https://bit.ly/3I7luFH) to sign up for our new TestFlight program.")
                         .minimumScaleFactor(0.7)
                     Spacer ()
                 }.padding()
                 
-                HStack (alignment: .top){
-                    Image (systemName: "questionmark")
-                        .font(.system(size: 30))
-                        .foregroundColor(Color.accentColor)
-                        .frame(minWidth: 50)
-                    Text ("Need help?  Shake your device or use the 'Support' menu option to report a bug or to share feedback or a feature request.")
-                        .minimumScaleFactor(0.7)
-                    Spacer ()
-                }.padding()
+                
                 Button ("Dismiss") {
                     showOnboarding = false
                 }
