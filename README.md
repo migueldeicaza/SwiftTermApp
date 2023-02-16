@@ -1,7 +1,10 @@
 # SwiftTermApp
 
 SwiftTermApp is a terminal emulator and SSH client application for iOS
-using the [SwiftTerm](https://github.com/migueldeicaza/SwiftTerm) engine and written in SwiftUI.
+using the [SwiftTerm](https://github.com/migueldeicaza/SwiftTerm) engine and written in SwiftUI. It is the open 
+core of [La Terminal](https://apps.apple.com/us/app/la-terminal-ssh-client/id1629902861), available in the 
+App Store for iPhone and iPad.
+
 
 Some of the features:
 * Comprehensive terminal emulator, based on SwiftTerm - which is both very comprehensive in terms of emulation, 
