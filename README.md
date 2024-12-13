@@ -5,6 +5,9 @@ using the [SwiftTerm](https://github.com/migueldeicaza/SwiftTerm) engine and wri
 core of [La Terminal](https://apps.apple.com/us/app/la-terminal-ssh-client/id1629902861), available in the 
 App Store for iPhone and iPad.
 
+This repository is not actively updated, but you can still use it as sample code, but I wont like be fixing
+or updating it.
+
 
 Some of the features:
 * Comprehensive terminal emulator, based on SwiftTerm - which is both very comprehensive in terms of emulation, 
